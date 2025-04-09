@@ -1,228 +1,105 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Divider from '@mui/material/Divider';
-import FormLabel from '@mui/material/FormLabel';
-import FormControl from '@mui/material/FormControl';
-import Link from '@mui/material/Link';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import MuiCard from '@mui/material/Card';
-import { styled } from '@mui/material/styles';
-import ForgotPassword from '@/components/common/ForgotPassword';
-import { FaGoogle, FaFacebook } from "react-icons/fa";
+import Button from "@mui/material/Button";
+import FormLabel from "@mui/material/FormLabel";
+import Link from "@mui/material/Link";
+import TextField from "@mui/material/TextField";
+import Divider from "@mui/material/Divider";
+import { FaGoogle } from "react-icons/fa";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { loginFields, IFormInputs } from "@/lib/data/signUpdata";
+import { Card } from "@mui/material";
+import styles from "@/styles/pages/Login.module.scss";
+import { useRouter } from "next/router";
+import { auth, provide } from "@/config/firebase";
+import { signInWithPopup } from "firebase/auth";
 
-const Card = styled(MuiCard)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignSelf: 'center',
-  width: '100%',
-  padding: theme.spacing(4),
-  gap: theme.spacing(2),
-  margin: 'auto',
-  [theme.breakpoints.up('sm')]: {
-    maxWidth: '450px',
-  },
-  boxShadow:
-    'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
-  ...theme.applyStyles('dark', {
-    boxShadow:
-      'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
-  }),
-}));
+export default function Login() {
+  const router = useRouter();
 
-const SignInContainer = styled(Stack)(({ theme }) => ({
-  height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
-  minHeight: '100%',
-  padding: theme.spacing(2),
-  [theme.breakpoints.up('sm')]: {
-    padding: theme.spacing(4),
-  },
-  '&::before': {
-    content: '""',
-    display: 'block',
-    position: 'absolute',
-    zIndex: -1,
-    inset: 0,
-    backgroundImage:
-      'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
-    backgroundRepeat: 'no-repeat',
-    ...theme.applyStyles('dark', {
-      backgroundImage:
-        'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
-    }),
-  },
-}));
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<IFormInputs>({
+    mode: "onBlur",
+    reValidateMode: "onChange",
+  });
 
-export default function SignIn(props: { disableCustomTheme?: boolean }) {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [open, setOpen] = React.useState(false);
-
-  const handleClickOpen = () => {
-    setOpen(true);
+  const onSubmit: SubmitHandler<IFormInputs> = (data) => {
+    console.log(data);
+    alert("註冊資料已提交！");
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    if (emailError || passwordError) {
-      event.preventDefault();
-      return;
+  const googleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, provide);
+      console.log(result)
+      sessionStorage.setItem('token', result.user.accessToken)
+      router.push('/')
+    } catch {
+      console.log('登入失敗!!')
     }
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
-
-  const validateInputs = () => {
-    const email = document.getElementById('email') as HTMLInputElement;
-    const password = document.getElementById('password') as HTMLInputElement;
-
-    let isValid = true;
-
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-      setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage('');
-    }
-
-    if (!password.value || password.value.length < 6) {
-      setPasswordError(true);
-      setPasswordErrorMessage('Password must be at least 6 characters long.');
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage('');
-    }
-
-    return isValid;
-  };
+  }
 
   return (
-    <div>
-      <CssBaseline enableColorScheme />
-      <SignInContainer direction="column" justifyContent="space-between">
-        <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
-            Sign in
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              width: '100%',
-              gap: 2,
-            }}
-          >
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
-                id="email"
-                type="email"
-                name="email"
-                placeholder="your@email.com"
-                autoComplete="email"
-                autoFocus
-                required
-                fullWidth
-                variant="outlined"
-                color={emailError ? 'error' : 'primary'}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                autoFocus
-                required
-                fullWidth
-                variant="outlined"
-                color={passwordError ? 'error' : 'primary'}
-              />
-            </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
-            <ForgotPassword open={open} handleClose={handleClose} />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick={validateInputs}
-            >
-              Sign in
-            </Button>
-            <Link
-              component="button"
-              type="button"
-              onClick={handleClickOpen}
-              variant="body2"
-              sx={{ alignSelf: 'center' }}
-            >
-              Forgot your password?
-            </Link>
-          </Box>
-          <Divider>or</Divider>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert('Sign in with Google')}
-              startIcon={<FaGoogle />}
-            >
-              Sign in with Google
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert('Sign in with Facebook')}
-              startIcon={<FaFacebook />}
-            >
-              Sign in with Facebook
-            </Button>
-            <Typography sx={{ textAlign: 'center' }}>
-              Don&apos;t have an account?{' '}
-              <Link
-                href="/material-ui/getting-started/templates/sign-in/"
-                variant="body2"
-                sx={{ alignSelf: 'center' }}
-              >
-                Sign up
-              </Link>
-            </Typography>
-          </Box>
-        </Card>
-      </SignInContainer>
-    </div>
+    <section className={styles.container}>
+      <Card className={styles.content}>
+        <h1>登入</h1>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className={styles.fields}>
+            {loginFields.map((item, index) => (
+              <div key={index} className={styles.fieldWrap}>
+                <FormLabel htmlFor={item.name} className={styles.label}>
+                  {item.label}{" "}
+                  {errors[item.name as keyof IFormInputs] && (
+                    <span className={styles.errorMessage}>
+                      *
+                      {errors[
+                        item.name as keyof IFormInputs
+                      ]?.message?.toString()}
+                    </span>
+                  )}
+                </FormLabel>
+                <TextField
+                  sx={{ marginBottom: "1rem" }}
+                  type={item.type}
+                  className={styles.textField}
+                  id={item.name}
+                  variant="outlined"
+                  autoFocus={item.autoFocus}
+                  error={!!errors[item.name as keyof IFormInputs]}
+                  {...register(item.name as keyof IFormInputs, item.validation)}
+                />
+              </div>
+            ))}
+          </div>
+
+          <Button type="submit" className={styles.submitButton}>
+            登入
+          </Button>
+        </form>
+
+        <Divider sx={{ margin: "1.5rem 0" }}>或</Divider>
+
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={() => googleLogin()}
+          startIcon={<FaGoogle />}
+          sx={{
+            borderRadius: "4px",
+            textTransform: "none",
+          }}
+        >
+          使用 Google 登入
+        </Button>
+
+        <p style={{ marginTop: "1.5rem", textAlign: "center" }}>
+          還沒有註冊嗎?{" "}
+          <Link href="/sign-up" variant="body2" sx={{ alignSelf: "center" }}>
+            註冊
+          </Link>
+        </p>
+      </Card>
+    </section>
   );
 }
