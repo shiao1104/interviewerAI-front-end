@@ -1,0 +1,550 @@
+@import "../../base/variables";
+@import "../../base/mixin";
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.dashboardContainer {
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    hsl(214, 25%, 65%),
+    hsl(227, 35%, 17%)
+  );
+  position: relative;
+  padding-bottom: 70px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 3rem;
+    position: relative;
+    z-index: 3;
+    animation: fadeIn 0.6s ease;
+
+    .welcomeSection {
+      .welcomeText {
+        margin-bottom: 0.5rem;
+        color: white;
+        font-weight: 700;
+        text-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .welcomeSubtext {
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 400;
+      }
+    }
+
+    .headerActions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .actionButton {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        color: white;
+        border-radius: 50%;
+        padding: 0.5rem;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.25);
+          transform: translateY(-2px);
+        }
+      }
+
+      .userAvatar {
+        width: 45px;
+        height: 45px;
+        background: $gradient_accent;
+        border: 2px solid rgba(255, 255, 255, 0.7);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+  }
+
+  // 主要內容區域
+  .mainContent {
+    padding: 0 3rem 2rem;
+    position: relative;
+    z-index: 3;
+
+    // 每個主要區塊的共用樣式
+    .section {
+      margin-bottom: 2.5rem;
+      animation: fadeIn 0.8s ease;
+
+      .sectionHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+
+        .sectionTitle {
+          color: white;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+
+          .sectionIcon {
+            color: $accent_color;
+          }
+        }
+
+        .viewAllButton {
+          color: rgba(255, 255, 255, 0.85);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 20px;
+          font-size: 0.85rem;
+          padding: 0.25rem 1rem;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+          }
+        }
+      }
+    }
+
+    // 面試卡片區域
+    .interviewCards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+      gap: 1.5rem;
+
+      .interviewCard {
+        background: $card_bg;
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: $tech_border;
+        box-shadow: $light_box_shadow;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        animation: fadeIn 0.8s ease forwards;
+        animation-delay: calc(0.1s * var(--animation-order, 0));
+        opacity: 0;
+
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: $main_box_shadow;
+        }
+
+        .cardHeader {
+          display: flex;
+          align-items: center;
+          margin-bottom: 1.5rem;
+
+          .companyLogo {
+            width: 48px;
+            height: 48px;
+            background: $gradient_accent;
+            margin-right: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          }
+
+          .interviewInfo {
+            flex: 1;
+          }
+
+          .statusBadge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: white;
+
+            &.準備中 {
+              background-color: $status_ready;
+            }
+
+            &.已確認 {
+              background-color: $status_confirmed;
+            }
+          }
+        }
+
+        .cardDetails {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-bottom: 1.5rem;
+
+          .detailItem {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            .detailIcon {
+              color: $sub_color;
+              font-size: 1.25rem;
+            }
+          }
+        }
+
+        .cardActions {
+          display: flex;
+          gap: 1rem;
+
+          .primaryButton {
+            flex: 1;
+            background: $gradient_accent;
+            color: white;
+            border-radius: 8px;
+            text-transform: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+
+            &::after {
+              content: "";
+              position: absolute;
+              top: -50%;
+              left: -50%;
+              width: 200%;
+              height: 200%;
+              background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.15),
+                transparent
+              );
+              transform: rotate(30deg);
+              transition: 0.6s;
+              opacity: 0;
+            }
+
+            &:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 5px 15px rgba(47, 128, 237, 0.3);
+
+              &::after {
+                opacity: 1;
+                left: 100%;
+              }
+            }
+          }
+
+          .secondaryButton {
+            flex: 1;
+            color: $main_color;
+            border: 1px solid $main_color;
+            border-radius: 8px;
+            text-transform: none;
+            transition: all 0.3s ease;
+
+            &:hover {
+              background: rgba(47, 128, 237, 0.05);
+              transform: translateY(-2px);
+            }
+          }
+        }
+      }
+
+      // 已完成面試卡片
+      .completedInterviewsCard {
+        background: $card_bg;
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: $tech_border;
+        box-shadow: $light_box_shadow;
+        padding: 1.5rem;
+        grid-column: 1 / -1;
+        animation: fadeIn 0.8s ease 0.2s forwards;
+        opacity: 0;
+
+        .completedHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+
+          .completedIcon {
+            color: $main_color;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+          }
+        }
+
+        .completedList {
+          padding: 0;
+
+          .completedItem {
+            padding: 0.75rem 0;
+            transition: background-color 0.3s ease;
+            border-radius: 8px;
+
+            &:hover {
+              background-color: rgba(0, 0, 0, 0.02);
+            }
+
+            .listIcon {
+              color: $sub_color;
+            }
+
+            .feedbackButton {
+              color: $main_color;
+              font-size: 0.85rem;
+              padding: 0.25rem 0.75rem;
+              border-radius: 20px;
+              transition: all 0.3s ease;
+
+              &:hover {
+                background: rgba(47, 128, 237, 0.1);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Grid 佈局
+    .dashboardGrid {
+      margin-top: 1rem;
+    }
+
+    // 面試準備工具區域
+    .toolsGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+
+      .toolCard {
+        background: $card_bg;
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: $tech_border;
+        box-shadow: $light_box_shadow;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: all 0.4s ease;
+        animation: fadeIn 0.8s ease, float 5s ease infinite;
+        animation-delay: calc(0.1s * var(--animation-order, 0)), 1s;
+
+        &:hover {
+          transform: translateY(-8px);
+          box-shadow: $main_box_shadow;
+        }
+
+        .toolIcon {
+          font-size: 2.5rem;
+          color: $main_color;
+          margin-bottom: 1rem;
+          padding: 1rem;
+          background: rgba(47, 128, 237, 0.1);
+          border-radius: 50%;
+        }
+
+        h6 {
+          margin-bottom: 0.75rem;
+          font-weight: 600;
+        }
+
+        .toolButton {
+          margin-top: 1.5rem;
+          color: $main_color;
+          border: 1px solid $main_color;
+          border-radius: 20px;
+          padding: 0.35rem 1.25rem;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background: rgba(47, 128, 237, 0.1);
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+
+    // 通知卡片
+    .notificationsCard {
+      background: $card_bg;
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      border: $tech_border;
+      box-shadow: $light_box_shadow;
+      animation: fadeIn 0.8s ease 0.3s forwards;
+      opacity: 0;
+      max-height: 400px;
+      overflow-y: auto;
+
+      .notificationsList {
+        padding: 0;
+
+        .notificationItem {
+          padding: 1rem 1.5rem;
+          transition: background-color 0.3s ease;
+
+          &.unread {
+            background-color: $unread_bg;
+            border-left: 3px solid $main_color;
+            animation: slideIn 0.5s ease;
+          }
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+          }
+
+          .notificationContent {
+            width: 100%;
+
+            .notificationTitle {
+              font-weight: 600;
+              margin-bottom: 0.25rem;
+            }
+
+            .notificationDescription {
+              color: rgba(0, 0, 0, 0.7);
+              margin-bottom: 0.5rem;
+            }
+
+            .notificationTime {
+              color: rgba(0, 0, 0, 0.5);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 底部
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 1.25rem 3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+
+    .footerLinks {
+      display: flex;
+      gap: 1.5rem;
+
+      button {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        text-transform: none;
+        transition: all 0.3s ease;
+
+        &:hover {
+          color: white;
+          transform: translateY(-2px);
+        }
+      }
+    }
+
+    .copyright {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  // 響應式設計
+  @media (max-width: 1200px) {
+    .interviewCards {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .headerActions {
+        align-self: flex-end;
+      }
+    }
+
+    .mainContent {
+      padding: 0 1.5rem 2rem;
+    }
+
+    .toolsGrid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .footer {
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+
+      .footerLinks {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .copyright {
+        align-self: center;
+      }
+    }
+  }
+}
