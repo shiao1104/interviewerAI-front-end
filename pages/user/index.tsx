@@ -1,13 +1,10 @@
-import React, { useState } from "react";
 import styles from "@/styles/pages/user/Home.module.scss";
 import { useRouter } from "next/router";
 import {
   Card,
   Typography,
   Button,
-  IconButton,
   Avatar,
-  Badge,
   Divider,
   List,
   ListItem,
@@ -16,118 +13,56 @@ import {
   Grid,
 } from "@mui/material";
 import {
-  Settings,
   NotificationsActive,
   EventNote,
   AssignmentTurnedIn,
   Videocam,
   Description,
   Lightbulb,
-  Help,
-  Security,
   CalendarToday,
   Timer,
   BusinessCenter,
-  LocationOn,
   Person,
   CheckCircle,
   Visibility,
 } from "@mui/icons-material";
+import Layout from "@/components/Layout/Layout";
+import React, { useState } from "react";
+import {
+  completedInterviews,
+  notificationItems,
+  upcomingInterviews,
+} from "@/lib/data/testData";
+import ConfirmPopup from "@/components/common/user/ConfirmPupup";
+
+export interface interviewData {
+  position: string;
+  company: string;
+  date: string;
+  time: string;
+}
 
 export default function InterviewerDashboard() {
   const router = useRouter();
-  const [notifications] = useState(3);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState<interviewData | null>(null);
 
-  // 模擬數據
-  const upcomingInterviews = [
-    {
-      id: 1,
-      company: "科技未來有限公司",
-      position: "資深前端工程師",
-      date: "2025/04/10",
-      time: "14:30-15:30",
-      location: "線上視訊面試",
-      status: "準備中",
-      logo: "/company-logo-1.png",
-    },
-    {
-      id: 2,
-      company: "數位創新科技",
-      position: "UI/UX 設計師",
-      date: "2025/04/15",
-      time: "10:00-11:00",
-      location: "台北市信義區松高路1號5樓",
-      status: "已確認",
-      logo: "/company-logo-2.png",
-    },
-  ];
+  const handleOpenDialog = (interview: interviewData) => {
+    setSelectedInterview(interview);
+    setOpenDialog(true);
+  };
 
-  const completedInterviews = [
-    {
-      id: 3,
-      company: "網路應用服務",
-      position: "全端工程師",
-      date: "2025/03/28",
-      feedback: true,
-    },
-    {
-      id: 4,
-      company: "雲端系統開發",
-      position: "系統架構師",
-      date: "2025/03/20",
-      feedback: true,
-    },
-  ];
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedInterview(null);
+  };
 
-  const notificationItems = [
-    {
-      id: 1,
-      title: "面試確認通知",
-      description: "您與「科技未來有限公司」的面試已確認",
-      time: "1小時前",
-      read: false,
-    },
-    {
-      id: 2,
-      title: "面試回饋已送達",
-      description: "「網路應用服務」已提供您面試回饋",
-      time: "1天前",
-      read: false,
-    },
-    {
-      id: 3,
-      title: "系統更新通知",
-      description: "系統已更新模擬面試功能，包含更多行業問題",
-      time: "2天前",
-      read: false,
-    },
-  ];
+  const handleStartInterview = () => {
+    router.push("/user/interview");
+  };
 
   return (
-    <div className={styles.dashboardContainer}>
-      {/* 頂部：歡迎標語 + 快捷設定 */}
-      <div className={styles.header}>
-        <div className={styles.welcomeSection}>
-          <Typography variant="h4" className={styles.welcomeText}>
-            您好，王小明
-          </Typography>
-          <Typography variant="subtitle1" className={styles.welcomeSubtext}>
-            今天是準備面試的好日子！您有 2 個即將到來的面試。
-          </Typography>
-        </div>
-        <div className={styles.headerActions}>
-          <IconButton className={styles.actionButton}>
-            <Settings />
-          </IconButton>
-          <IconButton className={styles.actionButton}>
-            <Badge badgeContent={notifications} color="error">
-              <NotificationsActive />
-            </Badge>
-          </IconButton>
-          <Avatar className={styles.userAvatar}>王</Avatar>
-        </div>
-      </div>
-
+    <Layout>
       <div className={styles.mainContent}>
         {/* 面試排程概覽 */}
         <section className={styles.section}>
@@ -158,13 +93,6 @@ export default function InterviewerDashboard() {
                       {interview.company}
                     </Typography>
                   </div>
-                  <div
-                    className={`${styles.statusBadge} ${
-                      styles[interview.status]
-                    }`}
-                  >
-                    {interview.status}
-                  </div>
                 </div>
                 <div className={styles.cardDetails}>
                   <div className={styles.detailItem}>
@@ -175,21 +103,16 @@ export default function InterviewerDashboard() {
                     <Timer className={styles.detailIcon} />
                     <Typography variant="body2">{interview.time}</Typography>
                   </div>
-                  <div className={styles.detailItem}>
-                    <LocationOn className={styles.detailIcon} />
-                    <Typography variant="body2">
-                      {interview.location}
-                    </Typography>
-                  </div>
                 </div>
                 <div className={styles.cardActions}>
                   <Button
                     variant="contained"
                     className={styles.primaryButton}
-                    onClick={() => router.push("/user/record")}
+                    onClick={() => handleOpenDialog(interview)}
                   >
                     準備面試
                   </Button>
+
                   <Button variant="outlined" className={styles.secondaryButton}>
                     查看詳情
                   </Button>
@@ -333,18 +256,12 @@ export default function InterviewerDashboard() {
           </Grid>
         </Grid>
       </div>
-
-      {/* 底部：幫助中心、設定、隱私條款 */}
-      <footer className={styles.footer}>
-        <div className={styles.footerLinks}>
-          <Button startIcon={<Help />}>幫助中心</Button>
-          <Button startIcon={<Settings />}>設定</Button>
-          <Button startIcon={<Security />}>隱私條款</Button>
-        </div>
-        <Typography variant="caption" className={styles.copyright}>
-          © 2025 面試達人. 版權所有
-        </Typography>
-      </footer>
-    </div>
+      <ConfirmPopup
+        open={openDialog}
+        onClose={handleCloseDialog}
+        onConfirm={handleStartInterview}
+        interview={selectedInterview}
+      />
+    </Layout>
   );
 }
