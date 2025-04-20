@@ -3,17 +3,23 @@ import FormLabel from "@mui/material/FormLabel";
 import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Divider from "@mui/material/Divider";
-import { FaGoogle } from "react-icons/fa";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { loginFields, IFormInputs } from "@/lib/data/signUpdata";
 import { Card } from "@mui/material";
 import styles from "@/styles/pages/Login.module.scss";
 import { useRouter } from "next/router";
-import { auth, provide } from "@/config/firebase";
-import { signInWithPopup } from "firebase/auth";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import { GoogleUser } from "@/lib/types/googleUser";
 
 export default function Login() {
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const {
     register,
@@ -29,16 +35,16 @@ export default function Login() {
     alert("註冊資料已提交！");
   };
 
-  const googleLogin = async () => {
-    try {
-      const result = await signInWithPopup(auth, provide);
-      console.log(result)
-      sessionStorage.setItem('token', result.user.accessToken)
-      router.push('/')
-    } catch {
-      console.log('登入失敗!!')
+  const login = (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      const decoded: GoogleUser = jwtDecode(credentialResponse.credential);
+      console.log("登入成功:", decoded);
+      sessionStorage.setItem("google_token", "sssssssssssssssss");
+      sessionStorage.setItem("name", decoded.name);
+      sessionStorage.setItem("email", decoded.email);
+      router.push("/");
     }
-  }
+  };
 
   return (
     <section className={styles.container}>
@@ -80,18 +86,14 @@ export default function Login() {
 
         <Divider sx={{ margin: "1.5rem 0" }}>或</Divider>
 
-        <Button
-          fullWidth
-          variant="outlined"
-          onClick={() => googleLogin()}
-          startIcon={<FaGoogle />}
-          sx={{
-            borderRadius: "4px",
-            textTransform: "none",
-          }}
-        >
-          使用 Google 登入
-        </Button>
+        {isClient && (
+          <GoogleLogin
+            onSuccess={(credentialResponse) => login(credentialResponse)}
+            onError={() => {
+              console.log("登入失敗");
+            }}
+          />
+        )}
 
         <p style={{ marginTop: "1.5rem", textAlign: "center" }}>
           還沒有註冊嗎?{" "}
