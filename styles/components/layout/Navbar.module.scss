@@ -57,3 +57,111 @@
     }
   }
 }
+
+.menuPaper, .notificationPaper {
+  margin-top: 0.5rem;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  overflow: visible;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 24px;
+    width: 12px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.98);
+    transform: rotate(45deg);
+  }
+}
+
+.menuPaper {
+  min-width: 200px;
+}
+
+.notificationPaper {
+  min-width: 320px;
+  max-width: 350px;
+  
+  &::before {
+    right: 54px;
+  }
+}
+
+.menuItem {
+  padding: 0.8rem 1.5rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.notificationHeader {
+  display: flex;
+  align-items: center;
+  padding: 5px 1rem;
+
+  svg {
+    margin-right: 5px;
+    color: $main_color;
+  }
+}
+
+.notificationList {
+  max-height: 350px;
+  max-width: 350px;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.notificationItem {
+  padding: 1rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.03);
+  }
+}
+
+.notificationContent {
+  width: 100%;
+}
+
+.notificationTitle {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.notificationMessage {
+  color: rgba(0, 0, 0, 0.7);
+  margin-bottom: 0.5rem;
+}
+
+.notificationTime {
+  display: block;
+  color: rgba(0, 0, 0, 0.5);
+  text-align: right;
+}
+
+.viewAllContainer {
+  text-align: center;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.viewAllText {
+  color: $main_color;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    color: darken($main_color, 10%);
+    text-decoration: underline;
+  }
+}

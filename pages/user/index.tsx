@@ -34,6 +34,7 @@ import {
   upcomingInterviews,
 } from "@/lib/data/testData";
 import ConfirmPopup from "@/components/common/user/ConfirmPupup";
+import CompanyIntroPopup from "@/components/common/user/CompanyIntroPopup";
 
 export interface interviewData {
   position: string;
@@ -46,15 +47,24 @@ export default function InterviewerDashboard() {
   const router = useRouter();
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<interviewData | null>(null);
+  const [openDetail, setOpenDetail] = useState(false);
 
   const handleOpenDialog = (interview: interviewData) => {
     setSelectedInterview(interview);
     setOpenDialog(true);
   };
 
-  const handleCloseDialog = () => {
+  const handleOpendetail = (interview: interviewData) => {
+    setSelectedInterview(interview);
+    setOpenDetail(true);
+  };
+
+  const handleCloseConfirmDialog = () => {
     setOpenDialog(false);
-    setSelectedInterview(null);
+  };
+
+  const handleCloseDetailDialog = () => {
+    setOpenDetail(false);
   };
 
   const handleStartInterview = () => {
@@ -113,7 +123,10 @@ export default function InterviewerDashboard() {
                     準備面試
                   </Button>
 
-                  <Button variant="outlined" className={styles.secondaryButton}>
+                  <Button 
+                  variant="outlined" 
+                  className={styles.secondaryButton}
+                  onClick={() => handleOpendetail(interview)}>
                     查看詳情
                   </Button>
                 </div>
@@ -256,10 +269,19 @@ export default function InterviewerDashboard() {
           </Grid>
         </Grid>
       </div>
+      
+      {/* 使用單獨的關閉函數 */}
       <ConfirmPopup
         open={openDialog}
-        onClose={handleCloseDialog}
+        onClose={handleCloseConfirmDialog}
         onConfirm={handleStartInterview}
+        interview={selectedInterview}
+      />
+      
+      {/* 使用單獨的關閉函數 */}
+      <CompanyIntroPopup
+        open={openDetail}
+        onClose={handleCloseDetailDialog}
         interview={selectedInterview}
       />
     </Layout>
