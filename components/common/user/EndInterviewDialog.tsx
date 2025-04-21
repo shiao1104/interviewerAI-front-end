@@ -24,14 +24,14 @@ export function EndInterviewDialog({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isComplete ? "面試完成" : "確認退出"}</DialogTitle>
       <DialogContent>
-        <Typography>
+        <Typography sx={{color: isComplete ? '#000': 'red'}}>
           {isComplete
             ? "恭喜你完成了所有問題！是否要退出並查看結果？"
-            : "確定要退出面試嗎？未完成的進度將會保存。"}
+            : "確定要退出面試嗎？退出後不得再進入。"}
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>取消</Button>
+        {isComplete ? '' : <Button onClick={onClose}>取消</Button>}
         <Button
           variant="contained"
           color={isComplete ? "primary" : "error"}
