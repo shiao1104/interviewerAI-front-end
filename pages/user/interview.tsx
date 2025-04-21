@@ -1,4 +1,4 @@
-// Interview.tsx - 整合實時音頻可視化的面試頁面
+// Interview.tsx - 整合實時音頻可視化和自動錄影的面試頁面
 import { useState, useEffect, useRef } from "react";
 import styles from "@/styles/pages/user/Interview.module.scss";
 import {
@@ -27,11 +27,13 @@ import {
 // 導入音頻可視化相關組件
 import { RecordingIndicator } from "@/components/common/user/RecordingIndicator";
 import { NonRecordingUI } from "@/components/common/user/NonRecordingUI";
+import VideoRecorder, {
+  VideoRecorderRef,
+} from "@/components/common/user/VideoRecorder";
 
 export default function Interview() {
   const [isClient, setIsClient] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [isRecording, setIsRecording] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
   const [showEndDialog, setShowEndDialog] = useState(false);
@@ -42,7 +44,7 @@ export default function Interview() {
     severity: "info" as "info" | "error" | "success" | "warning",
   });
 
-  // New states
+  // 面試狀態
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [showStartDialog, setShowStartDialog] = useState(true);
   const [mediaPermissions, setMediaPermissions] = useState({
@@ -51,21 +53,25 @@ export default function Interview() {
     checking: false,
   });
 
-  // Preparation time related states
+  // 準備時間相關狀態
   const [isPreparing, setIsPreparing] = useState(false);
-  const [prepTimeLeft, setPrepTimeLeft] = useState(60); // 1 minute = 60 seconds
+  const [prepTimeLeft, setPrepTimeLeft] = useState(60); // 1分鐘 = 60秒
 
-  // Using NodeJS.Timeout type for timer references
+  // 使用 NodeJS.Timeout 類型的計時器引用
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const prepTimerRef = useRef<NodeJS.Timeout | null>(null);
   const nextQuestionTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 錄影相關
+  const recorderRef = useRef<VideoRecorderRef>(null);
+  const [isRecording, setIsRecording] = useState(false);
 
   // 初始化客戶端渲染
   useEffect(() => {
     setIsClient(true);
 
+    // 組件卸載時清除所有計時器
     return () => {
-      // 清除所有計時器
       clearAllTimers();
     };
   }, []);
@@ -78,7 +84,7 @@ export default function Interview() {
     }
     if (prepTimerRef.current !== null) {
       clearInterval(prepTimerRef.current);
-      prepTimerRef.current = null; 
+      prepTimerRef.current = null;
     }
     if (nextQuestionTimerRef.current !== null) {
       clearTimeout(nextQuestionTimerRef.current);
@@ -88,6 +94,51 @@ export default function Interview() {
 
   // 當前題目
   const currentQuestion = mockInterviewQuestions[currentQuestionIndex];
+
+  // 開始錄影函數
+  const handleStartRecording = () => {
+    if (recorderRef.current) {
+      recorderRef.current.startRecording();
+      setIsRecording(true);
+    }
+  };
+
+  // 停止錄影函數
+  const handleStopRecording = () => {
+    if (recorderRef.current) {
+      recorderRef.current.stopRecording();
+      setIsRecording(false);
+    }
+  };
+
+  // 錄影完成處理函數
+  const handleRecordingComplete = (blobs: Blob[]) => {
+    console.log("錄製完成，獲取到", blobs.length, "個數據片段");
+
+    // 這裡可以實現將錄製的視頻上傳到服務器的邏輯
+    // 例如:
+    // const formData = new FormData();
+    // formData.append('questionId', currentQuestion.id.toString());
+    // formData.append('questionIndex', currentQuestionIndex.toString());
+    //
+    // blobs.forEach((blob, index) => {
+    //   formData.append(`video-chunk-${index}`, blob);
+    // });
+    //
+    // fetch('/api/upload-interview-video', {
+    //   method: 'POST',
+    //   body: formData
+    // })
+    // .then(response => response.json())
+    // .then(data => {
+    //   console.log('上傳成功:', data);
+    //   showNotification("視頻上傳成功", "success");
+    // })
+    // .catch(error => {
+    //   console.error('上傳錯誤:', error);
+    //   showNotification("視頻上傳失敗", "error");
+    // });
+  };
 
   // 檢查媒體權限
   const checkMediaPermissions = async () => {
@@ -136,6 +187,11 @@ export default function Interview() {
       // 開始準備時間
       startPreparationTime();
 
+      // 啟動攝像頭預覽
+      if (recorderRef.current) {
+        recorderRef.current.startPreview();
+      }
+
       showNotification("面試已開始，您有1分鐘準備時間", "success");
     } else {
       showNotification("請先允許攝像頭和麥克風權限才能開始面試", "error");
@@ -146,7 +202,7 @@ export default function Interview() {
   const startPreparationTime = () => {
     // 先清除任何現有的計時器
     clearAllTimers();
-    
+
     // 重置準備狀態
     setIsPreparing(true);
     setIsRecording(false);
@@ -168,16 +224,20 @@ export default function Interview() {
     }, 1000);
   };
 
-  // 結束準備時間，開始回答
+  // 結束準備時間，自動開始錄影和回答
   const finishPreparation = () => {
     // 確保準備計時器已被清除
     if (prepTimerRef.current !== null) {
       clearInterval(prepTimerRef.current);
       prepTimerRef.current = null;
     }
-    
+
     setIsPreparing(false);
+
+    // 自動開始錄影和回答
+    handleStartRecording(); // 開始錄影
     startAnswering();
+
     showNotification("準備時間結束，開始回答", "info");
   };
 
@@ -196,7 +256,6 @@ export default function Interview() {
       timerRef.current = null;
     }
 
-    setIsRecording(true);
     setTimeLeft(currentQuestion.timeLimit);
 
     // 開始計時
@@ -217,15 +276,17 @@ export default function Interview() {
     showNotification("開始計時回答", "info");
   };
 
-  // 結束回答
+  // 結束回答並自動停止錄影
   const finishAnswer = () => {
     // 確保回答計時器已被清除
     if (timerRef.current !== null) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
-    setIsRecording(false);
+
+    // 自動停止錄影
+    handleStopRecording();
+
     setCompletedQuestions((prev) => [...prev, currentQuestion.id]);
     showNotification("回答已完成並儲存", "success");
 
@@ -242,7 +303,7 @@ export default function Interview() {
         setIsInterviewComplete(true);
         setShowEndDialog(true);
       }
-      
+
       // 清除 next question 計時器引用
       nextQuestionTimerRef.current = null;
     }, 1000); // 延遲1秒後自動進入下一題
@@ -280,11 +341,21 @@ export default function Interview() {
 
   // 確認退出面試
   const handleConfirmExit = () => {
+    // 停止錄影（如果正在錄影）
+    if (isRecording) {
+      handleStopRecording();
+    }
+
+    // 停止預覽
+    if (recorderRef.current) {
+      recorderRef.current.stopPreview();
+    }
+
     // 清除所有計時器
     clearAllTimers();
-    
+
     // 實作退出面試功能
-    window.location.href = "/dashboard"; // 假設退出後返回儀表板
+    window.location.href = "/user"; // 假設退出後返回儀表板
   };
 
   if (!isClient) {
@@ -458,7 +529,7 @@ export default function Interview() {
                 className={styles.actionButton}
                 fullWidth
               >
-                {'>  '}下一題
+                {">  "}下一題
               </Button>
             )}
 
@@ -475,28 +546,41 @@ export default function Interview() {
           </Box>
         </Box>
 
-        <div className={styles.videoRecorderContainer}>
-          {/* 音頻可視化區域 */}
-          {isRecording ? (
-            <RecordingIndicator 
-              isRecording={isRecording} 
-              timeLeft={timeLeft} 
-              formatTime={formatTime} 
-            />
-          ) : (
-            <NonRecordingUI 
-              isInterviewStarted={isInterviewStarted}
-              isPreparing={isPreparing}
-              prepTimeLeft={prepTimeLeft}
-              formatTime={formatTime}
-              mediaPermissions={{
-                camera: mediaPermissions.camera,
-                microphone: mediaPermissions.microphone
-              }}
-              onCheckPermissions={checkMediaPermissions}
-            />
-          )}
-        </div>
+        <Box className={styles.videoRecorderContainer}>
+          {/* 影片錄製元件 - 使用鏡像反轉並調整比例 */}
+          <VideoRecorder
+            ref={recorderRef}
+            onRecordingComplete={handleRecordingComplete}
+            width="100%"
+            height="auto" // 設為 auto 讓它根據比例自動調整
+            autoStartPreview={false} // 不自動開始，而是在開始面試時手動啟動
+            mirrored={true} // 啟用鏡像反轉
+            aspectRatio="16:9" // 使用 16:9 的寬高比例
+          />
+
+          {/* 錄製狀態指示器 */}
+          <Box className={styles.recordingStatusOverlay}>
+            {isRecording ? (
+              <RecordingIndicator
+                isRecording={isRecording}
+                timeLeft={timeLeft}
+                formatTime={formatTime}
+              />
+            ) : (
+              <NonRecordingUI
+                isInterviewStarted={isInterviewStarted}
+                isPreparing={isPreparing}
+                prepTimeLeft={prepTimeLeft}
+                formatTime={formatTime}
+                mediaPermissions={{
+                  camera: mediaPermissions.camera,
+                  microphone: mediaPermissions.microphone,
+                }}
+                onCheckPermissions={checkMediaPermissions}
+              />
+            )}
+          </Box>
+        </Box>
       </Box>
 
       {/* 使用拆分後的彈跳視窗組件 */}
