@@ -16,6 +16,38 @@ export const upcomingInterviews = [
     time: "10:00-11:00",
     logo: "/company-logo-2.png",
   },
+  {
+    id: 1,
+    company: "科技未來有限公司",
+    position: "資深前端工程師",
+    date: "2025/04/10",
+    time: "14:30-15:30",
+    logo: "/company-logo-1.png",
+  },
+  {
+    id: 2,
+    company: "數位創新科技",
+    position: "UI/UX 設計師",
+    date: "2025/04/15",
+    time: "10:00-11:00",
+    logo: "/company-logo-2.png",
+  },
+  {
+    id: 1,
+    company: "科技未來有限公司",
+    position: "資深前端工程師",
+    date: "2025/04/10",
+    time: "14:30-15:30",
+    logo: "/company-logo-1.png",
+  },
+  {
+    id: 2,
+    company: "數位創新科技",
+    position: "UI/UX 設計師",
+    date: "2025/04/15",
+    time: "10:00-11:00",
+    logo: "/company-logo-2.png",
+  },
 ];
 
 export const completedInterviews = [
@@ -91,3 +123,43 @@ export const mockInterviewQuestions = [
     category: "職業觀點",
   },
 ];
+
+export const companyInfo = {
+  name: '科技未來有限公司',
+  logo: '科',
+  industry: "資訊科技",
+  location: "台北市信義區",
+  size: "500-1000人",
+  founded: "2010年",
+  website: "www.example.com",
+  description:
+    "科技未來有限公司是一家專注於人工智能、雲端運算和大數據分析的科技公司。我們致力於開發創新解決方案，協助企業優化營運流程、提升效率並創造價值。通過前沿技術與行業專業知識的結合，我們為客戶提供定制化的服務，滿足其獨特需求。",
+  culture:
+    "我們擁有開放、創新的工作文化，鼓勵員工分享想法、勇於嘗試。我們重視團隊合作和持續學習，定期舉辦知識分享和培訓活動，協助員工成長和發展。我們提供彈性工作安排和舒適的工作環境，確保員工工作與生活的平衡。",
+  benefits: [
+    "彈性工作時間",
+    "優質健康保險",
+    "年度旅遊補助",
+    "教育訓練津貼",
+    "免費健身房",
+    "股票選擇權",
+  ],
+  keyProjects: ["雲端數據分析平台", "智能客戶服務系統", "企業資源規劃解決方案"],
+};
+
+export const companyType = [
+  { key: 1, value: "科技類" },
+  { key: 2, value: "金融業" },
+  { key: 3, value: "製造業" },
+  { key: 4, value: "貿易/批發業" },
+  { key: 5, value: "零售業" },
+  { key: 6, value: "建築營造" },
+  { key: 7, value: "運輸物流" },
+  { key: 8, value: "餐飲服務業" },
+  { key: 9, value: "旅遊觀光" },
+  { key: 10, value: "醫療保健業" },
+  { key: 11, value: "教育/訓練" },
+  { key: 12, value: "法律服務" },
+  { key: 13, value: "顧問/顧問服務" },
+  { key: 14, value: "媒體/廣告/公關" },
+]
