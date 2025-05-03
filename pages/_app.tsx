@@ -2,8 +2,20 @@ import "@/styles/main.scss";
 import type { AppProps } from "next/app";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { SessionProvider } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+  const pathname = usePathname()
+
+  useEffect(() => {
+    if (!sessionStorage.getItem("google_token") && pathname !== '/login') {
+      router.push('/login')
+    }
+  }, [pathname, router])
+  
   return (
     <SessionProvider>
       <GoogleOAuthProvider
