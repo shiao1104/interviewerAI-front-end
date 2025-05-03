@@ -15,8 +15,8 @@ export default function Home() {
     e.preventDefault();
     if (selectedRole === 'user') {
       router.push('/user');
-    } else if (selectedRole === 'interviewer') {
-      router.push('/interviewer');
+    } else if (selectedRole === 'manage') {
+      router.push('/manage');
     }
   };
 
@@ -33,8 +33,8 @@ export default function Home() {
             面試者身分
           </Button>
           <Button 
-            className={selectedRole === 'interviewer' ? styles.selectedButton : ''}
-            onClick={() => handleRoleSelect('interviewer')}
+            className={selectedRole === 'manage' ? styles.selectedButton : ''}
+            onClick={() => handleRoleSelect('manage')}
             type="button"
           >
             面試官身分
