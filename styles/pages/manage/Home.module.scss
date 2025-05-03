@@ -1,0 +1,12 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .content {
+        padding: 2rem;
+        width: 900px;
+        background-color: #fff;
+        min-height: 500px;
+    }
+}
