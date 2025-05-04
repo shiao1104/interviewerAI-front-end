@@ -125,8 +125,8 @@ export const mockInterviewQuestions = [
 ];
 
 export const companyInfo = {
-  name: '科技未來有限公司',
-  logo: '科',
+  name: "科技未來有限公司",
+  logo: "科",
   industry: "資訊科技",
   location: "台北市信義區",
   size: "500-1000人",
@@ -162,4 +162,55 @@ export const companyType = [
   { key: 12, value: "法律服務" },
   { key: 13, value: "顧問/顧問服務" },
   { key: 14, value: "媒體/廣告/公關" },
-]
+];
+
+export const questionsData = [
+  {
+    id: 1,
+    position: "通用問題",
+    type: "自我介紹",
+    question: "請介紹一下你自己以及你過去的工作經驗",
+    timeAllowed: "3分鐘",
+    difficulty: "簡單",
+  },
+  {
+    id: 2,
+    position: "通用問題",
+    type: "針對前端工程師職位",
+    question: "請解釋你如何解決前端性能問題",
+    timeAllowed: "5分鐘",
+    difficulty: "中等",
+  },
+  {
+    id: 3,
+    position: "通用問題",
+    type: "針對後端工程師職位",
+    question: "談談你對資料庫優化的經驗",
+    timeAllowed: "5分鐘",
+    difficulty: "困難",
+  },
+  {
+    id: 4,
+    position: "通用問題",
+    type: "團隊合作",
+    question: "描述一個你在團隊中解決衝突的經驗",
+    timeAllowed: "4分鐘",
+    difficulty: "中等",
+  },
+  {
+    id: 5,
+    position: "通用問題",
+    type: "問題解決能力",
+    question: "分享一個你在工作中面臨的挑戰以及你如何解決它",
+    timeAllowed: "6分鐘",
+    difficulty: "困難",
+  },
+];
+
+export const questionTableTitle = [
+  "針對職缺",
+  "問題類型",
+  "問題內容",
+  "作答時間",
+  "難易度",
+];
