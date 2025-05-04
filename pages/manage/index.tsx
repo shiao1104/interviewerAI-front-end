@@ -37,7 +37,7 @@ export default function Home() {
                 cursor: "pointer",
                 border: 1,
               }}
-              onClick={() => router.push("/manage/edit-company-info")}
+              onClick={() => router.push("/manage/edit-company")}
             >
               編輯
               <CiEdit />
