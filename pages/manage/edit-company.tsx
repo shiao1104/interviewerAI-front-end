@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { IoIosSave } from "react-icons/io";
 import Layout from "@/components/Layout/manage/Layout";
 import InputField from "@/components/common/InputField";
 import styles from "@/styles/pages/manage/EditCompany.module.scss";
@@ -8,26 +9,24 @@ import {
   Box,
   Button,
   Card,
-  TextField,
   Typography,
   Grid,
   IconButton,
-  Stepper,
-  Step,
-  StepLabel,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
-import { editCompanyInput } from "@/lib/data/editCompanyInput";
+import {
+  editCompanyInput,
+  editInsertOptions,
+} from "@/lib/data/editCompanyInput";
+import InsertOptions from "@/components/common/InsertOptions";
 
 export default function EditCompanyInfo() {
   const formProps = useForm();
   const router = useRouter();
-  const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState({
+  const [formData] = useState({
     name: companyInfo.name,
     industry: companyInfo.industry,
     location: companyInfo.location,
@@ -37,16 +36,13 @@ export default function EditCompanyInfo() {
     logo: companyInfo.logo,
   });
 
-  const handleNext = () => {
-    // 這裡可以添加表單驗證邏輯
-    router.push("/manage/edit-company-details");
+  const handleSave = () => {
+    router.push("/manage");
   };
 
   const handleCancel = () => {
     router.push("/manage");
   };
-
-  const steps = ["基本資訊", "詳細資訊"];
 
   return (
     <Layout>
@@ -58,14 +54,6 @@ export default function EditCompanyInfo() {
             </IconButton>
             <Typography>返回</Typography>
           </Box>
-
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
 
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom>
@@ -110,7 +98,7 @@ export default function EditCompanyInfo() {
           </Box>
 
           <Grid className={styles.inputWrap}>
-            {editCompanyInput.map((item, index) => (
+            {editCompanyInput.slice(0, 6).map((item, index) => (
               <Grid key={index}>
                 <InputField
                   name={item.name}
@@ -124,24 +112,52 @@ export default function EditCompanyInfo() {
             ))}
           </Grid>
 
+          <Grid sx={{ mt: 2 }}>
+            {editCompanyInput.slice(6).map((item, index) => (
+              <Grid key={index} sx={{ mt: 2 }}>
+                <InputField
+                  name={item.name}
+                  label={item.label}
+                  type={item.type}
+                  placeholder={item.placeholder}
+                  dropdownData={item.dropdownData}
+                  formProps={formProps}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
+          <Grid sx={{ mt: 2 }}>
+            {editInsertOptions.map((item, index) => (
+              <Grid key={index} sx={{ mt: 2 }}>
+                <InsertOptions
+                  name={item.name}
+                  label={item.label}
+                  type={item.type}
+                  placeholder={item.placeholder}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "end",
               mt: 4,
               pt: 2,
               borderTop: "1px solid #e0e0e0",
             }}
           >
-            <Button variant="outlined" onClick={handleCancel}>
+            <Button variant="outlined" onClick={handleCancel} sx={{ mr: 2 }}>
               取消
             </Button>
             <Button
               variant="contained"
-              endIcon={<NavigateNextIcon />}
-              onClick={handleNext}
+              endIcon={<IoIosSave />}
+              onClick={handleSave}
             >
-              下一步
+              保存
             </Button>
           </Box>
         </Card>
