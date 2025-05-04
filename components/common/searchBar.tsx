@@ -16,7 +16,7 @@ export type Props = {
   textClassName?: string;
 };
 
-export default function InputField({
+export default function SearchBar({
   name,
   label,
   type,
@@ -28,7 +28,7 @@ export default function InputField({
   const { register } = formProps;
   const today = new Date().toISOString().split("T")[0];
 
-  const renderField = () => {
+  const renderSearchBar = () => {
     switch (type) {
       case "text":
       case "password":
@@ -36,14 +36,18 @@ export default function InputField({
       case "number":
         return (
           <>
-            <Typography variant="subtitle1" className={textClassName}>
-              {label}
-            </Typography>
             <TextField
               fullWidth
               required
-              placeholder={placeholder ? placeholder : `請輸入${label}`}
+              placeholder={label}
               type={type}
+              sx={{
+                backgroundColor: "#fff",
+                borderRadius: "5px",
+                "& .MuiOutlinedInput-input": {
+                  padding: "10px 14px",
+                },
+              }}
               {...register(name)}
             />
           </>
@@ -65,15 +69,42 @@ export default function InputField({
       case "dropdown":
         return (
           <>
-            <Typography variant="subtitle1" className={textClassName}>
-              {label}
-            </Typography>
             <TextField
               select
               fullWidth
               required
+              displayEmpty
+              defaultValue=""
+              SelectProps={{
+                displayEmpty: true,
+                renderValue: (selected) => {
+                  if (selected === "") {
+                    return (
+                      <em style={{ color: "#757575" }}>
+                        {placeholder || label}
+                      </em>
+                    );
+                  }
+                  return selected;
+                },
+              }}
+              sx={{
+                backgroundColor: "#fff",
+                minWidth: "150px",
+                borderRadius: "5px",
+                "& .MuiOutlinedInput-input": {
+                  padding: "10px 14px",
+                },
+                "& .MuiSelect-select.MuiSelect-select": {
+                  color: (selected: string) =>
+                    selected === "" ? "#757575" : "inherit",
+                },
+              }}
               {...register(name)}
             >
+              <MenuItem disabled value="">
+                <em>{placeholder || label}</em>
+              </MenuItem>
               {dropdownData?.map((option) => (
                 <MenuItem key={option.key} value={option.value}>
                   {option.value}
@@ -87,5 +118,5 @@ export default function InputField({
     }
   };
 
-  return <>{renderField()}</>;
+  return <>{renderSearchBar()}</>;
 }
