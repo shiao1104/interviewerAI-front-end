@@ -1,4 +1,4 @@
-import { MenuItem, TextField } from "@mui/material";
+import { MenuItem, TextField, Typography } from "@mui/material";
 
 export type DropdownOption = {
   key: number;
@@ -10,8 +10,10 @@ export type Props = {
   label: string;
   type: string;
   placeholder?: string;
-  dropdownData?: DropdownOption[]; // ← 改為陣列
+  dropdownData?: DropdownOption[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formProps?: any;
+  textClassName?: string;
 };
 
 export default function InputField({
@@ -21,6 +23,7 @@ export default function InputField({
   placeholder,
   dropdownData,
   formProps,
+  textClassName,
 }: Props) {
   const { register } = formProps;
   const today = new Date().toISOString().split("T")[0];
@@ -32,35 +35,43 @@ export default function InputField({
       case "email":
       case "number":
         return (
-          <TextField
-            fullWidth
-            label={label}
-            required
-            placeholder={placeholder}
-            type={type}
-            {...register(name)}
-          />
+          <>
+            <Typography variant="subtitle1" className={textClassName}>
+              {label}
+            </Typography>
+            <TextField
+              fullWidth
+              required
+              placeholder={placeholder ? placeholder : `請輸入${label}`}
+              type={type}
+              {...register(name)}
+            />
+          </>
         );
       case "date":
         return (
-          <TextField
-            fullWidth
-            label={label}
-            required
-            placeholder={placeholder}
-            type={type}
-            defaultValue={today}
-            {...register(name)}
-          />
+          <>
+            <Typography variant="subtitle1">{label}</Typography>
+            <TextField
+              fullWidth
+              required
+              placeholder={placeholder}
+              type={type}
+              defaultValue={today}
+              {...register(name)}
+            />
+          </>
         );
       case "dropdown":
         return (
+          <>
+            <Typography variant="subtitle1" className={textClassName}>
+              {label}
+            </Typography>
             <TextField
               select
               fullWidth
-              label={label}
               required
-              defaultValue=""
               {...register(name)}
             >
               {dropdownData?.map((option) => (
@@ -69,7 +80,8 @@ export default function InputField({
                 </MenuItem>
               ))}
             </TextField>
-          );
+          </>
+        );
       default:
         return null;
     }

@@ -1,5 +1,6 @@
 import { Props } from "@/components/common/InputField";
 import { companyType } from "./testData";
+import { OptionsProps } from "@/components/common/InsertOptions";
 
 export const editCompanyInput: Props[] = [
   {
@@ -13,7 +14,7 @@ export const editCompanyInput: Props[] = [
     name: "industry",
     type: "dropdown",
     placeholder: "請選擇行業別",
-    dropdownData: companyType
+    dropdownData: companyType,
   },
   {
     label: "公司地點",
@@ -38,5 +39,32 @@ export const editCompanyInput: Props[] = [
     name: "website",
     type: "text",
     placeholder: "請輸入公司網站",
+  },
+  {
+    label: "公司簡介",
+    name: "description",
+    type: "textarea",
+    placeholder: "請描述公司的背景、業務範圍及目標等",
+  },
+  {
+    label: "公司文化",
+    name: "culture",
+    type: "textarea",
+    placeholder: "請描述公司的文化理念、價值觀等",
+  },
+];
+
+export const editInsertOptions: OptionsProps[] = [
+  {
+    label: "員工福利",
+    name: "benefits",
+    type: "options",
+    placeholder: '例如：五險一金、彈性工作時間',
+  },
+  {
+    label: "主要專案",
+    name: "projects",
+    type: "options",
+    placeholder: '例如：智能客服系統、跨境電商平台',
   },
 ];
