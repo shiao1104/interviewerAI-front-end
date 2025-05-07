@@ -46,8 +46,10 @@ export interface interviewData {
 export default function InterviewerDashboard() {
   const router = useRouter();
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedInterview, setSelectedInterview] = useState<interviewData | null>(null);
+  const [selectedInterview, setSelectedInterview] =
+    useState<interviewData | null>(null);
   const [openDetail, setOpenDetail] = useState(false);
+  const [showAllInterviews, setShowAllInterviews] = useState<boolean>(false);
 
   const handleOpenDialog = (interview: interviewData) => {
     setSelectedInterview(interview);
@@ -85,13 +87,17 @@ export default function InterviewerDashboard() {
               variant="outlined"
               size="small"
               className={styles.viewAllButton}
+              onClick={() => setShowAllInterviews(!showAllInterviews)}
             >
               查看全部
             </Button>
           </div>
 
           <div className={styles.interviewCards}>
-            {upcomingInterviews.map((interview) => (
+            {(showAllInterviews
+              ? upcomingInterviews
+              : upcomingInterviews.slice(0, 4)
+            ).map((interview) => (
               <Card key={interview.id} className={styles.interviewCard}>
                 <div className={styles.cardHeader}>
                   <Avatar src={interview.logo} className={styles.companyLogo}>
@@ -123,10 +129,11 @@ export default function InterviewerDashboard() {
                     準備面試
                   </Button>
 
-                  <Button 
-                  variant="outlined" 
-                  className={styles.secondaryButton}
-                  onClick={() => handleOpendetail(interview)}>
+                  <Button
+                    variant="outlined"
+                    className={styles.secondaryButton}
+                    onClick={() => handleOpendetail(interview)}
+                  >
                     查看詳情
                   </Button>
                 </div>
@@ -269,7 +276,7 @@ export default function InterviewerDashboard() {
           </Grid>
         </Grid>
       </div>
-      
+
       {/* 使用單獨的關閉函數 */}
       <ConfirmPopup
         open={openDialog}
@@ -277,7 +284,7 @@ export default function InterviewerDashboard() {
         onConfirm={handleStartInterview}
         interview={selectedInterview}
       />
-      
+
       {/* 使用單獨的關閉函數 */}
       <CompanyIntroPopup
         open={openDetail}

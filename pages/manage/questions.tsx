@@ -1,29 +1,24 @@
 import Layout from "@/components/Layout/manage/Layout";
-import { useState } from "react";
-import styles from "@/styles/pages/manage/Questions.module.scss";
+import { useEffect, useState } from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Typography,
   Box,
   Chip,
-  Grid,
-  Button,
 } from "@mui/material";
-import { questionsData, questionTableTitle } from "@/lib/data/testData";
-import InputField from "@/components/common/InputField";
+import { questionsData } from "@/lib/data/testData";
 import { questionsSearchData } from "@/lib/data/questionsSearchData";
+import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
 import { useForm } from "react-hook-form";
-import { Search } from "@mui/icons-material";
 import SearchBar from "@/components/common/searchBar";
+import DataTable from "@/components/common/DataTables";
 
 export default function Questions() {
   const formProps = useForm();
+  const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
+
+  useEffect(() => {
+    console.log(searchParams);
+  });
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -36,6 +31,31 @@ export default function Questions() {
       default:
         return "default";
     }
+  };
+
+  const columns = [
+    { id: "position", label: "職位" },
+    { id: "type", label: "類型" },
+    { id: "question", label: "問題" },
+    { id: "timeAllowed", label: "時間" },
+    {
+      id: "difficulty",
+      label: "難度",
+      render: (value: string) => (
+        <Chip label={value} color={getDifficultyColor(value)} size="small" />
+      ),
+    },
+    { id: "createDate", label: "建立日期" },
+  ];
+
+  const handleEdit = (id: string) => {
+    console.log("Edit item:", id);
+    // Implement edit logic
+  };
+
+  const handleDelete = (id: string) => {
+    console.log("Delete item:", id);
+    // Implement delete logic
   };
 
   return (
@@ -55,78 +75,21 @@ export default function Questions() {
           面試問題管理
         </Typography>
 
-        <Box sx={{backgroundColor: '#fff', borderRadius: '10px'}}>
-          <Grid className={styles.searchBarWrap}>
-            {questionsSearchData.map((item, index) => (
-              <Grid key={index}>
-                <SearchBar
-                  textClassName={styles.searchLabel}
-                  name={item.name}
-                  label={item.label}
-                  type={item.type}
-                  formProps={formProps}
-                  dropdownData={item.dropdownData}
-                />
-              </Grid>
-            ))}
-
-            <Button
-              endIcon={<Search />}
-              variant="outlined"
-              sx={{
-                height: "43px",
-                color: "#000",
-                borderColor: "#000",
-                transition: "scale .5s",
-                "&:hover": {
-                  color: "#000",
-                  borderColor: "#000",
-                  backgroundColor: "#fff",
-                  scale: 1.3
-                },
-              }}
-              onClick={() => {
-                const values = formProps.getValues();
-                console.log("搜尋欄位資料:", values);
-              }}
-            >
-              搜尋
-            </Button>
-          </Grid>
-
-          <TableContainer component={Paper} sx={{ borderRadius: '10px' }}>
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                  {questionTableTitle.map((item, index) => (
-                    <TableCell key={index} sx={{ fontWeight: "bold" }}>
-                      {item}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {questionsData.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    sx={{ "&:hover": { backgroundColor: "#f9f9f9" } }}
-                  >
-                    <TableCell>{row.position}</TableCell>
-                    <TableCell>{row.type}</TableCell>
-                    <TableCell>{row.question}</TableCell>
-                    <TableCell>{row.timeAllowed}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={row.difficulty}
-                        color={getDifficultyColor(row.difficulty)}
-                        size="small"
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        <Box sx={{ backgroundColor: "#fff", borderRadius: "10px" }}>
+          <SearchBar
+            items={questionsSearchData}
+            formProps={formProps}
+            handleParams={(params: QuestionsSearchType) =>
+              setSearchParams(params)
+            }
+          />
+          
+          <DataTable
+            columns={columns}
+            data={questionsData}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </Box>
       </Box>
     </Layout>
