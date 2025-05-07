@@ -1,122 +1,80 @@
-import { MenuItem, TextField, Typography } from "@mui/material";
+import React from "react";
+import { Grid, Button } from "@mui/material";
+import { Search } from "@mui/icons-material";
+import styles from "@/styles/components/common/manage/SearchBar.module.scss";
+import InputField from "./InputField";
 
 export type DropdownOption = {
   key: number;
   value: string;
 };
 
-export type Props = {
+export type SearchBarItem = {
   name: string;
   label: string;
   type: string;
   placeholder?: string;
   dropdownData?: DropdownOption[];
+};
+
+export type SearchBarProps = {
+  items: SearchBarItem[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formProps?: any;
+  formProps: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSearch?: (values: any) => void;
+  className?: string;
   textClassName?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleParams: (params: any) => void;
 };
 
 export default function SearchBar({
-  name,
-  label,
-  type,
-  placeholder,
-  dropdownData,
+  items,
   formProps,
-  textClassName,
-}: Props) {
-  const { register } = formProps;
-  const today = new Date().toISOString().split("T")[0];
+  handleParams,
+}: SearchBarProps) {
+  const { getValues } = formProps;
 
-  const renderSearchBar = () => {
-    switch (type) {
-      case "text":
-      case "password":
-      case "email":
-      case "number":
-        return (
-          <>
-            <TextField
-              fullWidth
-              required
-              placeholder={label}
-              type={type}
-              sx={{
-                backgroundColor: "#fff",
-                borderRadius: "5px",
-                "& .MuiOutlinedInput-input": {
-                  padding: "10px 14px",
-                },
-              }}
-              {...register(name)}
-            />
-          </>
-        );
-      case "date":
-        return (
-          <>
-            <Typography variant="subtitle1">{label}</Typography>
-            <TextField
-              fullWidth
-              required
-              placeholder={placeholder}
-              type={type}
-              defaultValue={today}
-              {...register(name)}
-            />
-          </>
-        );
-      case "dropdown":
-        return (
-          <>
-            <TextField
-              select
-              fullWidth
-              required
-              displayEmpty
-              defaultValue=""
-              SelectProps={{
-                displayEmpty: true,
-                renderValue: (selected) => {
-                  if (selected === "") {
-                    return (
-                      <em style={{ color: "#757575" }}>
-                        {placeholder || label}
-                      </em>
-                    );
-                  }
-                  return selected;
-                },
-              }}
-              sx={{
-                backgroundColor: "#fff",
-                minWidth: "150px",
-                borderRadius: "5px",
-                "& .MuiOutlinedInput-input": {
-                  padding: "10px 14px",
-                },
-                "& .MuiSelect-select.MuiSelect-select": {
-                  color: (selected: string) =>
-                    selected === "" ? "#757575" : "inherit",
-                },
-              }}
-              {...register(name)}
-            >
-              <MenuItem disabled value="">
-                <em>{placeholder || label}</em>
-              </MenuItem>
-              {dropdownData?.map((option) => (
-                <MenuItem key={option.key} value={option.value}>
-                  {option.value}
-                </MenuItem>
-              ))}
-            </TextField>
-          </>
-        );
-      default:
-        return null;
-    }
+  const handleSearch = () => {
+    const params = getValues();
+
+    handleParams({ nowPage: "0", ...params });
   };
 
-  return <>{renderSearchBar()}</>;
+  return (
+    <Grid className={styles.searchBarWrap}>
+      {items.map((item, index) => (
+        <Grid key={index}>
+          <InputField
+            textClassName={styles.searchLabel}
+            name={item.name}
+            label={item.label}
+            type={item.type}
+            formProps={formProps}
+            dropdownData={item.dropdownData}
+          />
+        </Grid>
+      ))}
+      <Button
+        endIcon={<Search />}
+        variant="outlined"
+        sx={{
+          height: "43px",
+          color: "#000",
+          borderColor: "#000",
+          transition: "scale .5s",
+          "&:hover": {
+            color: "#000",
+            borderColor: "#000",
+            backgroundColor: "#fff",
+            scale: 1.3,
+          },
+        }}
+        onClick={handleSearch}
+      >
+        搜尋
+      </Button>
+    </Grid>
+  );
 }

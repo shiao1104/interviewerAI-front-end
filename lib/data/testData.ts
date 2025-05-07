@@ -172,6 +172,7 @@ export const questionsData = [
     question: "請介紹一下你自己以及你過去的工作經驗",
     timeAllowed: "3分鐘",
     difficulty: "簡單",
+    createDate: "2025/1/1",
   },
   {
     id: 2,
@@ -180,6 +181,7 @@ export const questionsData = [
     question: "請解釋你如何解決前端性能問題",
     timeAllowed: "5分鐘",
     difficulty: "中等",
+    createDate: "2025/1/1",
   },
   {
     id: 3,
@@ -188,6 +190,7 @@ export const questionsData = [
     question: "談談你對資料庫優化的經驗",
     timeAllowed: "5分鐘",
     difficulty: "困難",
+    createDate: "2025/1/1",
   },
   {
     id: 4,
@@ -196,6 +199,7 @@ export const questionsData = [
     question: "描述一個你在團隊中解決衝突的經驗",
     timeAllowed: "4分鐘",
     difficulty: "中等",
+    createDate: "2025/1/1",
   },
   {
     id: 5,
@@ -204,13 +208,6 @@ export const questionsData = [
     question: "分享一個你在工作中面臨的挑戰以及你如何解決它",
     timeAllowed: "6分鐘",
     difficulty: "困難",
+    createDate: "2025/1/1",
   },
-];
-
-export const questionTableTitle = [
-  "針對職缺",
-  "問題類型",
-  "問題內容",
-  "作答時間",
-  "難易度",
 ];
