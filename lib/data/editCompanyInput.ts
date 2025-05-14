@@ -1,8 +1,8 @@
-import { Props } from "@/components/common/InputField";
 import { companyType } from "./testData";
 import { OptionsProps } from "@/components/common/InsertOptions";
+import { InputFieldTypes } from "../types/inputFieldTypes";
 
-export const editCompanyInput: Props[] = [
+export const editCompanyInput: InputFieldTypes[] = [
   {
     label: "公司名稱",
     name: "name",

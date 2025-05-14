@@ -1,31 +1,29 @@
 .container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 3rem;
+
+  .content {
+    width: 100%;
     padding: 2rem;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-    .content {
-        padding: 2rem;
-        width: 900px;
-        background-color: #fff;
-        min-height: 500px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-        .inputWrap {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-        }
+    .inputWrap {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
     }
+  }
 }
 
 @media (max-width: 960px) {
-    .container {
-        padding: 1rem;
-        
-        .content {
-            width: 100%;
-            padding: 1.5rem;
-        }
+  .container {
+    padding: 1rem;
+
+    .content {
+      width: 100%;
+      padding: 1.5rem;
     }
+  }
 }
