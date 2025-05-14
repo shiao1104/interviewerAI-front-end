@@ -1,4 +1,4 @@
-import Layout from "@/components/Layout/manage/Layout";
+import Layout from "@/components/Layout/ManageLayout";
 import styles from "@/styles/pages/manage/Home.module.scss";
 import { companyInfo } from "@/lib/data/testData";
 import { Business, Language, LocationOn, People } from "@mui/icons-material";

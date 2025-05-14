@@ -59,18 +59,7 @@ export default function SearchBar({
       <Button
         endIcon={<Search />}
         variant="outlined"
-        sx={{
-          height: "43px",
-          color: "#000",
-          borderColor: "#000",
-          transition: "scale .5s",
-          "&:hover": {
-            color: "#000",
-            borderColor: "#000",
-            backgroundColor: "#fff",
-            scale: 1.3,
-          },
-        }}
+        sx={{ height: "43px" }}
         onClick={handleSearch}
       >
         搜尋

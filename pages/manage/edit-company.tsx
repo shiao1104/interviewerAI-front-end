@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IoIosSave } from "react-icons/io";
-import Layout from "@/components/Layout/manage/Layout";
+import Layout from "@/components/Layout/ManageLayout";
 import InputField from "@/components/common/InputField";
 import styles from "@/styles/pages/manage/EditCompany.module.scss";
 import { companyInfo } from "@/lib/data/testData";
