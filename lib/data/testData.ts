@@ -211,3 +211,27 @@ export const questionsData = [
     createDate: "2025/1/1",
   },
 ];
+
+export const intervieweeData = [
+  {
+    id: "A001",
+    name: "王小明",
+    type: "前端工程師",
+    difficulty: "2025-05-15 14:00",
+    createDate: "2025-05-10",
+  },
+  {
+    id: "A002",
+    name: "陳美麗",
+    type: "資料分析師",
+    difficulty: "已完成",
+    createDate: "2025-05-11",
+  },
+  {
+    id: "A003",
+    name: "李大衛",
+    type: "AI 模型訓練師",
+    difficulty: "未到場",
+    createDate: "2025-05-12",
+  },
+];

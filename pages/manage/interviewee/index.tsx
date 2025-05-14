@@ -1,15 +1,17 @@
 import Layout from "@/components/Layout/ManageLayout";
 import { useEffect, useState } from "react";
 import { Typography, Box, Chip, IconButton, Button } from "@mui/material";
-import { questionsData } from "@/lib/data/testData";
-import { questionsSearchData } from "@/lib/data/questionsSearchData";
+import { intervieweeData } from "@/lib/data/testData";
+import { intervieweeSearchData } from "@/lib/data/intervieweeSearchData";
 import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
-import { Add, AssessmentOutlined, Delete, Edit } from "@mui/icons-material";
+import { Add, AssessmentOutlined, MoreHoriz } from "@mui/icons-material";
+import { useRouter } from "next/router";
 
-export default function Questions() {
+export default function Interviewee() {
+  const router = useRouter();
   const formProps = useForm();
   const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
 
@@ -19,59 +21,47 @@ export default function Questions() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case "簡單":
+      case "已完成":
         return "success";
-      case "中等":
+      case "未到場":
         return "warning";
-      case "困難":
-        return "error";
       default:
         return "default";
     }
   };
 
   const columns = [
-    { id: "position", label: "職位" },
-    { id: "type", label: "類型" },
-    { id: "question", label: "問題" },
-    { id: "timeAllowed", label: "時間" },
+    { id: "id", label: "ID" },
+    { id: "name", label: "姓名", textAlign: "center" },
+    { id: "type", label: "應徵職位", textAlign: "center" },
     {
       id: "difficulty",
-      label: "難度",
+      label: "面試時間",
       render: (value: string) => (
         <Chip label={value} color={getDifficultyColor(value)} size="small" />
       ),
+      textAlign: "center",
     },
-    { id: "createDate", label: "建立日期" },
+    { id: "createDate", label: "建立日期", textAlign: "center" },
     {
       id: "actions",
       label: "操作",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (_: any, row: any) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <IconButton onClick={() => handleEdit(row.id)} size="small">
-            <Edit fontSize="small" />
-          </IconButton>
-          <IconButton
-            onClick={() => handleDelete(row.id)}
-            size="small"
-            color="error"
-          >
-            <Delete fontSize="small" />
+        <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+          <IconButton onClick={() => handleShow(row.id)} size="small">
+            <MoreHoriz fontSize="small" />
           </IconButton>
         </Box>
       ),
+      textAlign: "center",
     },
   ];
 
-  const handleEdit = (id: string) => {
+  const handleShow = (id: string) => {
     console.log("Edit item:", id);
+    router.push(`/manage/interviewee/${id}`);
     // Implement edit logic
-  };
-
-  const handleDelete = (id: string) => {
-    console.log("Delete item:", id);
-    // Implement delete logic
   };
 
   return (
@@ -85,12 +75,12 @@ export default function Questions() {
         }}
       >
         {/* 改進的標題與按鈕排版 */}
-        <Box 
-          sx={{ 
-            display: "flex", 
-            justifyContent: "space-between", 
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
             alignItems: "center",
-            mb: 3
+            mb: 3,
           }}
         >
           <Typography
@@ -102,23 +92,23 @@ export default function Questions() {
             }}
           >
             <AssessmentOutlined color="primary" sx={{ fontSize: "35px" }} />
-            面試問題管理
+            面試者列表
           </Typography>
 
           <Button
             variant="contained"
             color="primary"
             startIcon={<Add />}
-            onClick={() => console.log("新增問題")}
+            onClick={() => router.push("/manage/interviewee/create")}
             sx={{ height: 40 }}
           >
-            新增問題
+            新增面試者
           </Button>
         </Box>
 
         <Box sx={{ mb: 3 }}>
           <SearchBar
-            items={questionsSearchData}
+            items={intervieweeSearchData}
             formProps={formProps}
             handleParams={(params: QuestionsSearchType) =>
               setSearchParams(params)
@@ -134,7 +124,7 @@ export default function Questions() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={questionsData} />
+          <DataTable columns={columns} data={intervieweeData} />
         </Box>
       </Box>
     </Layout>
