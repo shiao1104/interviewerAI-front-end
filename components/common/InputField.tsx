@@ -1,8 +1,6 @@
 import { InputFieldTypes } from "@/lib/types/inputFieldTypes";
 import { MenuItem, TextField, Typography } from "@mui/material";
 
-
-
 export default function InputField({
   name,
   label,

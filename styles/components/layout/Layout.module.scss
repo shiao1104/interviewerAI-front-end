@@ -1,9 +1,17 @@
 .layout {
-  background: radial-gradient(
-    ellipse at 50% 50%,
-    hsl(214, 25%, 65%),
-    hsl(227, 35%, 17%)
-  );
+  background: radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%));
   position: relative;
   min-height: 100vh;
+}
+
+.manageLayout {
+  background-color: #eae9e9;
+  min-height: calc(100vh - 71px);
+  position: relative;
+  display: flex;
+
+  .chill {
+    margin-left: 269px;
+    width: calc(100vw - 269px);
+  }
 }
