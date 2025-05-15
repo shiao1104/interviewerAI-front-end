@@ -3,7 +3,7 @@ import { companyType } from "./testData";
 
 export const intervieweeSearchData: InputFieldTypes[] = [
   {
-    label: "id",
+    label: "ID",
     name: "position",
     type: "text",
   },

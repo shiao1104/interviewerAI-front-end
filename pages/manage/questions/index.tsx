@@ -7,9 +7,11 @@ import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
-import { Add, AssessmentOutlined, Delete, Edit } from "@mui/icons-material";
+import { Add, Delete, Edit, HelpOutline } from "@mui/icons-material";
+import { useRouter } from "next/router";
 
 export default function Questions() {
+  const router = useRouter();
   const formProps = useForm();
   const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
 
@@ -49,7 +51,10 @@ export default function Questions() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (_: any, row: any) => (
         <Box sx={{ display: "flex", gap: 1 }}>
-          <IconButton onClick={() => handleEdit(row.id)} size="small">
+          <IconButton
+            onClick={() => router.push(`/manage/questions/${row.id}`)}
+            size="small"
+          >
             <Edit fontSize="small" />
           </IconButton>
           <IconButton
@@ -63,11 +68,6 @@ export default function Questions() {
       ),
     },
   ];
-
-  const handleEdit = (id: string) => {
-    console.log("Edit item:", id);
-    // Implement edit logic
-  };
 
   const handleDelete = (id: string) => {
     console.log("Delete item:", id);
@@ -85,12 +85,12 @@ export default function Questions() {
         }}
       >
         {/* 改進的標題與按鈕排版 */}
-        <Box 
-          sx={{ 
-            display: "flex", 
-            justifyContent: "space-between", 
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
             alignItems: "center",
-            mb: 3
+            mb: 3,
           }}
         >
           <Typography
@@ -101,15 +101,15 @@ export default function Questions() {
               gap: 1,
             }}
           >
-            <AssessmentOutlined color="primary" sx={{ fontSize: "35px" }} />
-            面試問題管理
+            <HelpOutline color="primary" sx={{ fontSize: "35px" }} />
+            問題管理
           </Typography>
 
           <Button
             variant="contained"
             color="primary"
             startIcon={<Add />}
-            onClick={() => console.log("新增問題")}
+            onClick={() => router.push("/manage/questions/create")}
             sx={{ height: 40 }}
           >
             新增問題
