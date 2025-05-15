@@ -1,67 +1,77 @@
 import Layout from "@/components/Layout/ManageLayout";
 import { useEffect, useState } from "react";
-import { Typography, Box, Chip, IconButton, Button } from "@mui/material";
-import { intervieweeData } from "@/lib/data/testData";
-import { intervieweeSearchData } from "@/lib/data/intervieweeSearchData";
+import { Typography, Box, IconButton, Button } from "@mui/material";
+import { jobData } from "@/lib/data/testData";
+import { questionsSearchData } from "@/lib/data/questionsSearchData";
 import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
-import { AccountCircle, Add, MoreHoriz } from "@mui/icons-material";
+import {
+  Add,
+  Delete,
+  Edit,
+  MoreHoriz,
+  Work,
+} from "@mui/icons-material";
 import { useRouter } from "next/router";
+import JobDetailDialog from "@/components/common/manage/JobDetailDialog";
 
-export default function Interviewee() {
+export default function Opening() {
   const router = useRouter();
   const formProps = useForm();
   const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     console.log(searchParams);
   });
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "已完成":
-        return "success";
-      case "未到場":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
   const columns = [
     { id: "id", label: "ID" },
-    { id: "name", label: "姓名", textAlign: "center" },
-    { id: "type", label: "應徵職位", textAlign: "center" },
-    {
-      id: "difficulty",
-      label: "面試時間",
-      render: (value: string) => (
-        <Chip label={value} color={getDifficultyColor(value)} size="small" />
-      ),
-      textAlign: "center",
-    },
-    { id: "createDate", label: "建立日期", textAlign: "center" },
+    { id: "position", label: "職位" },
+    { id: "location", label: "地點" },
+    { id: "experience", label: "經驗" },
+    { id: "skills", label: "技能" },
+    { id: "createDate", label: "建立日期" },
     {
       id: "actions",
       label: "操作",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (_: any, row: any) => (
-        <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <IconButton
+            onClick={() => router.push(`/manage/questions/${row.id}`)}
+            size="small"
+          >
+            <Edit fontSize="small" />
+          </IconButton>
+          <IconButton
+            onClick={() => handleDelete(row.id)}
+            size="small"
+            color="error"
+          >
+            <Delete fontSize="small" />
+          </IconButton>
           <IconButton onClick={() => handleShow(row.id)} size="small">
             <MoreHoriz fontSize="small" />
           </IconButton>
         </Box>
       ),
-      textAlign: "center",
     },
   ];
 
-  const handleShow = (id: string) => {
-    console.log("Edit item:", id);
-    router.push(`/manage/interviewee/${id}`);
-    // Implement edit logic
+  const handleShow = (id: number) => {
+    const found = jobData.find((item) => item.id === id);
+    setSelectedJob(found);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    console.log("Delete item:", id);
+    // Implement delete logic
   };
 
   return (
@@ -91,24 +101,24 @@ export default function Interviewee() {
               gap: 1,
             }}
           >
-            <AccountCircle color="primary" sx={{ fontSize: "35px" }} />
-            面試者管理
+            <Work color="primary" sx={{ fontSize: "35px" }} />
+            職位管理
           </Typography>
 
           <Button
             variant="contained"
             color="primary"
             startIcon={<Add />}
-            onClick={() => router.push("/manage/interviewee/create")}
+            onClick={() => router.push("/manage/questions/create")}
             sx={{ height: 40 }}
           >
-            新增面試者
+            新增職位
           </Button>
         </Box>
 
         <Box sx={{ mb: 3 }}>
           <SearchBar
-            items={intervieweeSearchData}
+            items={questionsSearchData}
             formProps={formProps}
             handleParams={(params: QuestionsSearchType) =>
               setSearchParams(params)
@@ -124,9 +134,14 @@ export default function Interviewee() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={intervieweeData} />
+          <DataTable columns={columns} data={jobData} />
         </Box>
       </Box>
+      <JobDetailDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        data={selectedJob}
+      />
     </Layout>
   );
 }
