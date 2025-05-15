@@ -34,10 +34,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <section>
           <Toolbar
             sx={{
+              position: 'sticky',
+              top: 0,
               display: "flex",
               alignItems: "center",
               borderBottom: "1px solid #ccc",
               height: "64px",
+              background: '#fff',
+              zIndex: 999
             }}
           >
             <IconButton

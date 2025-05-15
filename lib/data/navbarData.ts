@@ -1,16 +1,16 @@
-import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { Work } from "@mui/icons-material";
+import { Business, LockOpen, Work } from "@mui/icons-material";
 
 const BASE_PATH = "/manage";
 
 export const NavbarData = [
-  { name: "公司資訊", path: `${BASE_PATH}`, icon: InfoOutlineIcon },
-  { name: "問題列表", path: `${BASE_PATH}/questions`, icon: HelpOutlineIcon },
-  { name: "職缺資訊", path: `${BASE_PATH}/opening`, icon: Work },
+  { name: "公司資訊", path: `${BASE_PATH}`, icon: Business },
+  { name: "問題管理", path: `${BASE_PATH}/questions`, icon: HelpOutlineIcon },
+  { name: "職位管理", path: `${BASE_PATH}/jobs`, icon: Work },
+  { name: "職缺管理", path: `${BASE_PATH}/opening`, icon: LockOpen },
   {
-    name: "面試者列表",
+    name: "面試者管理",
     path: `${BASE_PATH}/interviewee`,
     icon: AccountCircleIcon,
   },
