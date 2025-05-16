@@ -7,7 +7,7 @@ import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
-import { AccountCircle, Add, MoreHoriz } from "@mui/icons-material";
+import { AccountCircle, Add, Edit, MoreHoriz } from "@mui/icons-material";
 import { useRouter } from "next/router";
 
 export default function Interviewee() {
@@ -49,7 +49,16 @@ export default function Interviewee() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (_: any, row: any) => (
         <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-          <IconButton onClick={() => handleShow(row.id)} size="small">
+          <IconButton
+            onClick={() => router.push(`/manage/interviewee/${row.id}`)}
+            size="small"
+          >
+            <Edit fontSize="small" />
+          </IconButton>
+          <IconButton
+            onClick={() => router.push(`/manage/interviewee/report/${row.id}`)}
+            size="small"
+          >
             <MoreHoriz fontSize="small" />
           </IconButton>
         </Box>
@@ -57,12 +66,6 @@ export default function Interviewee() {
       textAlign: "center",
     },
   ];
-
-  const handleShow = (id: string) => {
-    console.log("Edit item:", id);
-    router.push(`/manage/interviewee/${id}`);
-    // Implement edit logic
-  };
 
   return (
     <Layout>
