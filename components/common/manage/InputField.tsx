@@ -42,7 +42,7 @@ export default function InputField({
             <TextField
               fullWidth
               required
-              placeholder={label}
+              placeholder={placeholder ? placeholder : label}
               type={type}
               sx={{
                 borderRadius: "5px",
@@ -63,7 +63,7 @@ export default function InputField({
             <TextField
               fullWidth
               required
-              placeholder={placeholder}
+              placeholder={placeholder ? placeholder : label}
               type={type}
               defaultValue={today}
               sx={{
@@ -148,7 +148,7 @@ export default function InputField({
               fullWidth
               minRows={3}
               {...register(name)}
-              placeholder={label}
+              placeholder={placeholder ? placeholder : label}
             />
           </Box>
         );

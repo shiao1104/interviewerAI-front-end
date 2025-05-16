@@ -1,6 +1,13 @@
 import Layout from "@/components/Layout/ManageLayout";
 import { useEffect, useState } from "react";
-import { Typography, Box, Chip, IconButton, Button } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Chip,
+  IconButton,
+  Button,
+  Switch,
+} from "@mui/material";
 import { questionsData } from "@/lib/data/testData";
 import { questionsSearchData } from "@/lib/data/questionsSearchData";
 import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
@@ -14,10 +21,19 @@ export default function Questions() {
   const router = useRouter();
   const formProps = useForm();
   const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
+  const [localOpeningData, setLocalOpeningData] = useState(questionsData);
 
   useEffect(() => {
     console.log(searchParams);
   });
+
+  const handleToggleValidity = (id: number) => {
+    setLocalOpeningData((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, vaild: !item.vaild } : item
+      )
+    );
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -45,6 +61,19 @@ export default function Questions() {
       ),
     },
     { id: "createDate", label: "建立日期" },
+    {
+      id: "vaild",
+      label: "啟用狀態",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render: (_: any, row: any) => (
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Switch
+            checked={row.vaild}
+            onChange={() => handleToggleValidity(row.id)}
+          />
+        </Box>
+      ),
+    },
     {
       id: "actions",
       label: "操作",
@@ -134,7 +163,7 @@ export default function Questions() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={questionsData} />
+          <DataTable columns={columns} data={localOpeningData} />
         </Box>
       </Box>
     </Layout>

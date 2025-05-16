@@ -1,40 +1,72 @@
 import InputField from "@/components/common/manage/InputField";
 import Layout from "@/components/Layout/ManageLayout";
-import { createQuestionData } from "@/lib/data/createQuestionsData";
-import { CreateNewFolder, KeyboardBackspace, Save, Add, Delete } from "@mui/icons-material";
-import { Box, Button, Grid, Typography, IconButton, Paper, Divider } from "@mui/material";
+import { CreateNewFolder, KeyboardBackspace, Save } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Chip,
+  Divider,
+  Grid,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useRouter } from "next/router";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import { useState } from "react";
+import { createOpeningData } from "@/lib/data/createOpeningData";
+import { OpeningTypes } from "@/lib/types/openingTypes";
+import { companyType } from "@/lib/data/testData";
 
 export default function Create() {
   const router = useRouter();
-  const formProps = useForm({
+  const [newSkill, setNewSkill] = useState("");
+
+  const formProps = useForm<OpeningTypes>({
     defaultValues: {
-      questions: [{}] // 預設一個空問題
-    }
-  });
-  
-  // 使用 useFieldArray 來管理動態表單陣列
-  const { fields, append, remove } = useFieldArray({
-    control: formProps.control,
-    name: "questions"
+      openingTitle: "",
+      headCount: 0,
+      status: "",
+      salaryRange: "",
+      workLocation: "",
+      jobType: "",
+      educationRequirement: "",
+      departmentRequirement: "",
+      experienceRequirement: "",
+      languageRequirement: "",
+      workNature: "",
+      workHours: [],
+      skills: [],
+      leavePolicy: "",
+      jobDescription: "",
+      contactInfo: "",
+      createDate: new Date().toISOString().split("T")[0].replace(/-/g, "/"),
+    },
   });
 
   const handleSubmit = formProps.handleSubmit((data) => {
-    console.log("準備提交的數據:", data.questions);
-    
-    // 可以在這裡發送數據到 API
-    // 例如: saveQuestions(data.questions)
-    
-    alert(`成功新增 ${data.questions.length} 筆問題！`);
-    
-    // 提交後可以選擇返回列表頁面
-    // router.push("/manage/interviewee");
+    console.log("準備提交的職缺數據:", data);
+
+    alert("成功新增職缺！");
+    router.push("/manage/opening");
   });
-  
-  // 新增一個空白問題
-  const addNewQuestion = () => {
-    append({});
+
+  const handleAddSkill = () => {
+    if (newSkill.trim() === "") return;
+
+    const currentSkills = formProps.getValues("skills") || [];
+    if (!currentSkills.includes(newSkill.trim())) {
+      formProps.setValue("skills", [...currentSkills, newSkill.trim()]);
+    }
+    setNewSkill("");
+  };
+
+  const handleDeleteSkill = (skillToDelete: string) => {
+    const currentSkills = formProps.getValues("skills") || [];
+    formProps.setValue(
+      "skills",
+      currentSkills.filter((skill) => skill !== skillToDelete)
+    );
   };
 
   return (
@@ -49,7 +81,7 @@ export default function Create() {
       >
         <Button
           startIcon={<KeyboardBackspace />}
-          onClick={() => router.push("/manage/questions")}
+          onClick={() => router.push("/manage/opening")}
         >
           返回列表
         </Button>
@@ -65,7 +97,7 @@ export default function Create() {
             }}
           >
             <CreateNewFolder color="primary" sx={{ fontSize: "35px" }} />
-            新增問題
+            新增職缺
           </Typography>
 
           <Button
@@ -78,63 +110,43 @@ export default function Create() {
           </Button>
         </Box>
 
-        {fields.map((field, questionIndex) => (
-          <Paper
-            key={field.id}
-            component="form"
-            elevation={2}
+        <Paper
+          elevation={2}
+          sx={{
+            mt: "2rem",
+            p: 3,
+            borderRadius: 2,
+            backgroundColor: "#fff",
+          }}
+        >
+          <Box sx={{mb: '2rem'}}>
+            <InputField
+              name={"opsition"}
+              label={"職位名稱"}
+              type={"dropdown"}
+              placeholder={"請選擇職位名稱"}
+              dropdownData={companyType}
+              formProps={formProps}
+            />
+          </Box>
+
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+            基本資訊
+          </Typography>
+
+          <Grid
+            container
             sx={{
-              mt: "2rem",
-              p: 3,
-              borderRadius: 2,
-              backgroundColor: "#fff",
-              position: "relative",
+              mb: "1rem",
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+              gap: "1rem",
             }}
           >
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-              <Typography variant="h6">問題 #{questionIndex + 1}</Typography>
-              {fields.length > 1 && (
-                <IconButton 
-                  color="error" 
-                  onClick={() => remove(questionIndex)}
-                >
-                  <Delete />
-                </IconButton>
-              )}
-            </Box>
-            
-            {/* 基本信息區塊 */}
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-              問題基本資訊
-            </Typography>
-
-            <Grid
-              container
-              sx={{
-                mb: '1rem',
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "1rem",
-              }}
-            >
-              {createQuestionData.slice(0, 2).map((item, index) => (
-                <Grid key={index}>
-                  <InputField
-                    name={`questions[${questionIndex}].${item.name}`}
-                    label={item.label}
-                    type={item.type}
-                    placeholder={item.placeholder}
-                    dropdownData={item.dropdownData}
-                    formProps={formProps}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-
-            {createQuestionData.slice(2, 3).map((item, index) => (
+            {createOpeningData.slice(0, 6).map((item, index) => (
               <Grid key={index}>
                 <InputField
-                  name={`questions[${questionIndex}].${item.name}`}
+                  name={item.name}
                   label={item.label}
                   type={item.type}
                   placeholder={item.placeholder}
@@ -143,64 +155,141 @@ export default function Create() {
                 />
               </Grid>
             ))}
+          </Grid>
 
-            <Divider sx={{ my: 3 }} />
+          <Divider sx={{ my: 3 }} />
 
-            {/* 問題內容區塊 */}
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-              問題內容設定
-            </Typography>
+          {/* 工作條件區塊 */}
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+            應徵條件
+          </Typography>
 
-            <Grid
-              container
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: "1rem",
-              }}
-            >
-              {/* 問題內容佔滿一行 */}
-              <Grid>
-                {createQuestionData.slice(3, 4).map((item, index) => (
-                  <InputField
-                    key={index}
-                    name={`questions[${questionIndex}].${item.name}`}
-                    label={item.label}
-                    type={item.type}
-                    placeholder={item.placeholder}
-                    dropdownData={item.dropdownData}
-                    formProps={formProps}
-                  />
-                ))}
-              </Grid>
-
-              {/* 其他設定分兩列 */}
-              {createQuestionData.slice(4).map((item, index) => (
-                <Grid key={index}>
-                  <InputField
-                    name={`questions[${questionIndex}].${item.name}`}
-                    label={item.label}
-                    type={item.type}
-                    placeholder={item.placeholder}
-                    dropdownData={item.dropdownData}
-                    formProps={formProps}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Paper>
-        ))}
-        
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-          <Button 
-            variant="outlined" 
-            startIcon={<Add />} 
-            onClick={addNewQuestion}
-            sx={{ borderRadius: "8px" }}
+          <Grid
+            container
+            sx={{
+              mb: "1rem",
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+              gap: "1rem",
+            }}
           >
-            新增另一個問題
-          </Button>
-        </Box>
+            {createOpeningData.slice(6, 10).map((item, index) => (
+              <Grid key={index}>
+                <InputField
+                  name={item.name}
+                  label={item.label}
+                  type={item.type}
+                  placeholder={item.placeholder}
+                  dropdownData={item.dropdownData}
+                  formProps={formProps}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* 技能標籤區塊 */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              擅長工具 / 技能條件
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <TextField
+                size="small"
+                placeholder="新增技能（例如：React）"
+                value={newSkill}
+                onChange={(e) => setNewSkill(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddSkill();
+                  }
+                }}
+              />
+              <Button variant="outlined" size="small" onClick={handleAddSkill}>
+                新增
+              </Button>
+            </Box>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+              <Controller
+                name="skills"
+                control={formProps.control}
+                render={({ field }) => (
+                  <>
+                    {field.value &&
+                      field.value.map((skill, i) => (
+                        <Chip
+                          key={i}
+                          label={skill}
+                          onDelete={() => handleDeleteSkill(skill)}
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                        />
+                      ))}
+                  </>
+                )}
+              />
+            </Box>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+            工作條件
+          </Typography>
+
+          <Grid
+            container
+            sx={{
+              mb: "1rem",
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
+              gap: "1rem",
+            }}
+          >
+            {createOpeningData.slice(10, 13).map((item, index) => (
+              <Grid key={index}>
+                <InputField
+                  name={item.name}
+                  label={item.label}
+                  type={item.type}
+                  placeholder={item.placeholder}
+                  dropdownData={item.dropdownData}
+                  formProps={formProps}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* 職務描述與其他資訊 */}
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+            詳細說明與聯絡資訊
+          </Typography>
+
+          <Grid
+            container
+            sx={{
+              mb: "1rem",
+              display: "grid",
+              gap: "1rem",
+            }}
+          >
+            {createOpeningData.slice(13).map((item, index) => (
+              <Grid key={index}>
+                <InputField
+                  name={item.name}
+                  label={item.label}
+                  type={item.type}
+                  placeholder={item.placeholder}
+                  dropdownData={item.dropdownData}
+                  formProps={formProps}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
       </Box>
     </Layout>
   );

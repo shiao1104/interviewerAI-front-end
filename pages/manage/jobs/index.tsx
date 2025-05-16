@@ -16,13 +16,14 @@ import {
 } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import JobDetailDialog from "@/components/common/manage/JobDetailDialog";
+import { JobsTypes } from "@/lib/types/jobsTypes";
 
 export default function Jobs() {
   const router = useRouter();
   const formProps = useForm();
   const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [selectedJob, setSelectedJob] = useState<JobsTypes>();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -30,38 +31,30 @@ export default function Jobs() {
   });
 
   const columns = [
-    { id: "id", label: "ID" },
-    { id: "position", label: "職位" },
-    { id: "location", label: "地點" },
-    { id: "experience", label: "經驗" },
-    { id: "skills", label: "技能" },
-    { id: "createDate", label: "建立日期" },
-    {
-      id: "actions",
-      label: "操作",
+  { id: "id", label: "代碼" },
+  { id: "position", label: "職位名稱" },
+  { id: "workLocation", label: "工作地點" },
+  { id: "jobType", label: "工作類型" },
+  { id: "createDate", label: "建立日期" },
+  {
+    id: "actions",
+    label: "操作",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (_: any, row: any) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <IconButton
-            onClick={() => router.push(`/manage/questions/${row.id}`)}
-            size="small"
-          >
-            <Edit fontSize="small" />
-          </IconButton>
-          <IconButton
-            onClick={() => handleDelete(row.id)}
-            size="small"
-            color="error"
-          >
-            <Delete fontSize="small" />
-          </IconButton>
-          <IconButton onClick={() => handleShow(row.id)} size="small">
-            <MoreHoriz fontSize="small" />
-          </IconButton>
-        </Box>
-      ),
-    },
-  ];
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <IconButton onClick={() => router.push(`/manage/jobs/${row.id}`)} size="small">
+          <Edit fontSize="small" />
+        </IconButton>
+        <IconButton onClick={() => handleDelete(row.id)} size="small" color="error">
+          <Delete fontSize="small" />
+        </IconButton>
+        <IconButton onClick={() => handleShow(row.id)} size="small">
+          <MoreHoriz fontSize="small" />
+        </IconButton>
+      </Box>
+    ),
+  },
+];
 
   const handleShow = (id: number) => {
     const found = jobData.find((item) => item.id === id);
@@ -71,7 +64,6 @@ export default function Jobs() {
 
   const handleDelete = (id: string) => {
     console.log("Delete item:", id);
-    // Implement delete logic
   };
 
   return (
@@ -84,7 +76,6 @@ export default function Jobs() {
           borderRadius: "16px",
         }}
       >
-        {/* 改進的標題與按鈕排版 */}
         <Box
           sx={{
             display: "flex",
@@ -109,7 +100,7 @@ export default function Jobs() {
             variant="contained"
             color="primary"
             startIcon={<Add />}
-            onClick={() => router.push("/manage/questions/create")}
+            onClick={() => router.push("/manage/jobs/create")}
             sx={{ height: 40 }}
           >
             新增職位
