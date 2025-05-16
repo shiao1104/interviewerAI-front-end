@@ -17,6 +17,7 @@ import {
   Box,
   List,
   ListItem,
+  Toolbar,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import styles from "@/styles/components/layout/Navbar.module.scss";
@@ -28,7 +29,8 @@ export default function Navbar() {
     {
       id: 1,
       title: "面試提醒",
-      message: "明天下午 2:00 您有一場與 ABC 公司的面試明天下午 2:00 您有一場與 ABC 公司的面試",
+      message:
+        "明天下午 2:00 您有一場與 ABC 公司的面試明天下午 2:00 您有一場與 ABC 公司的面試",
       time: "1 小時前",
     },
     {
@@ -83,12 +85,24 @@ export default function Navbar() {
   };
 
   return (
-    <section className={styles.header}>
-      <div className={styles.welcomeSection}>
-        <Typography variant="h4" className={styles.welcomeText}>
+    <Toolbar
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        position: "sticky",
+        top: 0,
+        alignItems: "center",
+        borderBottom: "1px solid #ccc",
+        height: "90px",
+        background: "#fff",
+        zIndex: 999,
+      }}
+    >
+      <div>
+        <Typography variant="h4">
           您好，{name}
         </Typography>
-        <Typography variant="subtitle1" className={styles.welcomeSubtext}>
+        <Typography variant="subtitle1">
           今天是準備面試的好日子！您有 2 個即將到來的面試。
         </Typography>
       </div>
@@ -195,6 +209,6 @@ export default function Navbar() {
           </MenuItem>
         </Menu>
       </div>
-    </section>
+    </Toolbar>
   );
 }
