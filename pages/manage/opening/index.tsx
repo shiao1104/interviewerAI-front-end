@@ -1,21 +1,23 @@
 import Layout from "@/components/Layout/ManageLayout";
 import { useEffect, useState } from "react";
-import { Typography, Box, IconButton, Button } from "@mui/material";
-import { jobData } from "@/lib/data/testData";
+import {
+  Typography,
+  Box,
+  IconButton,
+  Button,
+  Chip,
+  Switch,
+} from "@mui/material";
 import { questionsSearchData } from "@/lib/data/questionsSearchData";
 import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
+import { openingData } from "@/lib/data/testData";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
-import {
-  Add,
-  Delete,
-  Edit,
-  MoreHoriz,
-  Work,
-} from "@mui/icons-material";
+import { Add, Delete, Edit, MoreHoriz, Work } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import JobDetailDialog from "@/components/common/manage/JobDetailDialog";
+import { getStatueColor } from "@/lib/hook/getStatueColor";
 
 export default function Opening() {
   const router = useRouter();
@@ -24,18 +26,46 @@ export default function Opening() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [localOpeningData, setLocalOpeningData] = useState(openingData);
 
   useEffect(() => {
     console.log(searchParams);
   });
 
+  const handleToggleValidity = (id: number) => {
+    setLocalOpeningData(prev => 
+      prev.map(item => 
+        item.id === id ? { ...item, vaild: !item.vaild } : item
+      )
+    );
+  };
+
   const columns = [
-    { id: "id", label: "ID" },
-    { id: "position", label: "職位" },
-    { id: "location", label: "地點" },
-    { id: "experience", label: "經驗" },
-    { id: "skills", label: "技能" },
+    { id: "id", label: "代碼" },
+    { id: "openingTitle", label: "職缺名稱" },
+    { id: "workLocation", label: "工作地點" },
+    { id: "headCount", label: "需求人數" },
+    {
+      id: "status",
+      label: "職缺狀態",
+      render: (value: string) => (
+        <Chip label={value} color={getStatueColor(value)} size="small" />
+      ),
+    },
     { id: "createDate", label: "建立日期" },
+    {
+      id: "vaild",
+      label: "啟用狀態",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render: (_: any, row: any) => (
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Switch 
+            checked={row.vaild} 
+            onChange={() => handleToggleValidity(row.id)}
+          />
+        </Box>
+      ),
+    },
     {
       id: "actions",
       label: "操作",
@@ -43,7 +73,7 @@ export default function Opening() {
       render: (_: any, row: any) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <IconButton
-            onClick={() => router.push(`/manage/questions/${row.id}`)}
+            onClick={() => router.push(`/manage/opening/${row.id}`)}
             size="small"
           >
             <Edit fontSize="small" />
@@ -64,14 +94,13 @@ export default function Opening() {
   ];
 
   const handleShow = (id: number) => {
-    const found = jobData.find((item) => item.id === id);
+    const found = localOpeningData.find((item) => item.id === id);
     setSelectedJob(found);
     setDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
     console.log("Delete item:", id);
-    // Implement delete logic
   };
 
   return (
@@ -84,7 +113,6 @@ export default function Opening() {
           borderRadius: "16px",
         }}
       >
-        {/* 改進的標題與按鈕排版 */}
         <Box
           sx={{
             display: "flex",
@@ -102,17 +130,17 @@ export default function Opening() {
             }}
           >
             <Work color="primary" sx={{ fontSize: "35px" }} />
-            職位管理
+            職缺管理
           </Typography>
 
           <Button
             variant="contained"
             color="primary"
             startIcon={<Add />}
-            onClick={() => router.push("/manage/questions/create")}
+            onClick={() => router.push("/manage/opening/create")}
             sx={{ height: 40 }}
           >
-            新增職位
+            新增職缺
           </Button>
         </Box>
 
@@ -134,13 +162,14 @@ export default function Opening() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={jobData} />
+          <DataTable columns={columns} data={localOpeningData} />
         </Box>
       </Box>
       <JobDetailDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         data={selectedJob}
+        type="opening"
       />
     </Layout>
   );
