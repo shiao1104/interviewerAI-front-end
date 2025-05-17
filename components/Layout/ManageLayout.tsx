@@ -1,6 +1,4 @@
 import Head from "next/head";
-
-import styles from "@/styles/components/layout/Layout.module.scss";
 import { Menu, MenuOpen } from "@mui/icons-material";
 import {
   Box,
@@ -30,18 +28,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/logo.png" />
       </Head>
-      <main className={styles.layout}>
+      <main>
         <section>
           <Toolbar
             sx={{
-              position: 'sticky',
+              position: "sticky",
               top: 0,
               display: "flex",
               alignItems: "center",
               borderBottom: "1px solid #ccc",
               height: "64px",
-              background: '#fff',
-              zIndex: 999
+              background: "#fff",
+              zIndex: 999,
             }}
           >
             <IconButton
@@ -116,7 +114,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </Drawer>
 
             <article
-              className={styles.chill}
               style={{
                 marginLeft: open ? 240 : 0, // 當 Drawer 展開時，右側內容往右推
                 transition: "margin 0.3s ease",
