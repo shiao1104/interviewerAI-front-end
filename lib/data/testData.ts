@@ -19,38 +19,6 @@ export const upcomingInterviews = [
     time: "10:00-11:00",
     logo: "/company-logo-2.png",
   },
-  {
-    id: 1,
-    company: "科技未來有限公司",
-    position: "資深前端工程師",
-    date: "2025/04/10",
-    time: "14:30-15:30",
-    logo: "/company-logo-1.png",
-  },
-  {
-    id: 2,
-    company: "數位創新科技",
-    position: "UI/UX 設計師",
-    date: "2025/04/15",
-    time: "10:00-11:00",
-    logo: "/company-logo-2.png",
-  },
-  {
-    id: 1,
-    company: "科技未來有限公司",
-    position: "資深前端工程師",
-    date: "2025/04/10",
-    time: "14:30-15:30",
-    logo: "/company-logo-1.png",
-  },
-  {
-    id: 2,
-    company: "數位創新科技",
-    position: "UI/UX 設計師",
-    date: "2025/04/15",
-    time: "10:00-11:00",
-    logo: "/company-logo-2.png",
-  },
 ];
 
 export const completedInterviews = [
@@ -59,6 +27,13 @@ export const completedInterviews = [
     company: "網路應用服務",
     position: "全端工程師",
     date: "2025/03/28",
+    feedback: true,
+  },
+  {
+    id: 4,
+    company: "雲端系統開發",
+    position: "系統架構師",
+    date: "2025/03/20",
     feedback: true,
   },
   {

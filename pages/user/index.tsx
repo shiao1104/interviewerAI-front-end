@@ -1,11 +1,10 @@
-import styles from "@/styles/pages/user/Home.module.scss";
 import { useRouter } from "next/router";
+import React, { useState, useEffect } from "react";
+import styles from "@/styles/pages/user/Home.module.scss";
 import {
-  Card,
   Typography,
   Button,
   Avatar,
-  Divider,
   List,
   ListItem,
   ListItemText,
@@ -13,7 +12,6 @@ import {
   Grid,
 } from "@mui/material";
 import {
-  NotificationsActive,
   EventNote,
   AssignmentTurnedIn,
   Videocam,
@@ -27,12 +25,7 @@ import {
   Visibility,
 } from "@mui/icons-material";
 import Layout from "@/components/Layout/Layout";
-import React, { useState } from "react";
-import {
-  completedInterviews,
-  notificationItems,
-  upcomingInterviews,
-} from "@/lib/data/testData";
+import { completedInterviews, upcomingInterviews } from "@/lib/data/testData";
 import ConfirmPopup from "@/components/common/user/ConfirmPupup";
 import CompanyIntroPopup from "@/components/common/user/CompanyIntroPopup";
 
@@ -49,7 +42,13 @@ export default function InterviewerDashboard() {
   const [selectedInterview, setSelectedInterview] =
     useState<interviewData | null>(null);
   const [openDetail, setOpenDetail] = useState(false);
-  const [showAllInterviews, setShowAllInterviews] = useState<boolean>(false);
+  const [animateIn, setAnimateIn] = useState(false);
+  const [showAllCompleted, setShowAllCompleted] = useState(false);
+
+  useEffect(() => {
+    // 頁面載入後的動畫效果
+    setAnimateIn(true);
+  }, []);
 
   const handleOpenDialog = (interview: interviewData) => {
     setSelectedInterview(interview);
@@ -75,30 +74,30 @@ export default function InterviewerDashboard() {
 
   return (
     <Layout>
-      <div className={styles.mainContent}>
+      <div
+        className={`${styles.mainContent} ${animateIn ? styles.animateIn : ""}`}
+      >
         {/* 面試排程概覽 */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <Typography variant="h5" className={styles.sectionTitle}>
-              <EventNote className={styles.sectionIcon} />
-              面試排程概覽
-            </Typography>
-            <Button
-              variant="outlined"
-              size="small"
-              className={styles.viewAllButton}
-              onClick={() => setShowAllInterviews(!showAllInterviews)}
-            >
-              查看全部
-            </Button>
+            <div className={styles.sectionTitleWrapper}>
+              <div className={styles.iconBackground}>
+                <EventNote className={styles.sectionIcon} />
+              </div>
+              <Typography variant="h5" className={styles.sectionTitle}>
+                面試排程概覽
+              </Typography>
+            </div>
           </div>
 
           <div className={styles.interviewCards}>
-            {(showAllInterviews
-              ? upcomingInterviews
-              : upcomingInterviews.slice(0, 4)
-            ).map((interview) => (
-              <Card key={interview.id} className={styles.interviewCard}>
+            {upcomingInterviews.map((interview, index) => (
+              <div
+                key={interview.id}
+                className={styles.interviewCard}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className={styles.cardGlow}></div>
                 <div className={styles.cardHeader}>
                   <Avatar src={interview.logo} className={styles.companyLogo}>
                     {interview.company.charAt(0)}
@@ -137,21 +136,29 @@ export default function InterviewerDashboard() {
                     查看詳情
                   </Button>
                 </div>
-              </Card>
+              </div>
             ))}
 
-            <Card className={styles.completedInterviewsCard}>
+            <div className={styles.completedInterviewsCard}>
+              <div className={styles.cardGlow}></div>
               <div className={styles.completedHeader}>
-                <Typography variant="h6">
+                <div className={styles.completedTitleWrapper}>
                   <AssignmentTurnedIn className={styles.completedIcon} />
-                  已完成面試報告
-                </Typography>
-                <Button variant="text" className={styles.viewAllButton}>
-                  查看全部
+                  <Typography variant="h6">已完成面試報告</Typography>
+                </div>
+                <Button
+                  variant="text"
+                  className={styles.viewAllTextButton}
+                  onClick={() => setShowAllCompleted(!showAllCompleted)}
+                >
+                  {showAllCompleted ? "收起" : "查看全部"}
                 </Button>
               </div>
               <List className={styles.completedList}>
-                {completedInterviews.map((item) => (
+                {(showAllCompleted
+                  ? completedInterviews
+                  : completedInterviews.slice(0, 2)
+                ).map((item) => (
                   <ListItem key={item.id} className={styles.completedItem}>
                     <ListItemIcon>
                       <BusinessCenter className={styles.listIcon} />
@@ -166,29 +173,36 @@ export default function InterviewerDashboard() {
                       }
                       variant="text"
                       className={styles.feedbackButton}
+                      onClick={() => router.push('/user/report/1')}
                     >
                       {item.feedback ? "查看回饋" : "等待回饋"}
                     </Button>
                   </ListItem>
                 ))}
               </List>
-            </Card>
+            </div>
           </div>
         </section>
 
         <Grid container spacing={3} className={styles.dashboardGrid}>
           {/* 面試準備工具 */}
-          <Grid>
+          <Grid className={styles.gridItem}>
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
-                <Typography variant="h5" className={styles.sectionTitle}>
-                  <Person className={styles.sectionIcon} />
-                  面試準備工具
-                </Typography>
+                <div className={styles.sectionTitleWrapper}>
+                  <div className={styles.iconBackground}>
+                    <Person className={styles.sectionIcon} />
+                  </div>
+                  <Typography variant="h5" className={styles.sectionTitle}>
+                    面試準備工具
+                  </Typography>
+                </div>
               </div>
               <div className={styles.toolsGrid}>
-                <Card className={styles.toolCard}>
-                  <Videocam className={styles.toolIcon} />
+                <div className={styles.toolCard}>
+                  <div className={styles.toolIconContainer}>
+                    <Videocam className={styles.toolIcon} />
+                  </div>
                   <Typography variant="h6">模擬面試練習</Typography>
                   <Typography variant="body2">
                     透過AI模擬真實面試，獲得實時反饋
@@ -196,9 +210,11 @@ export default function InterviewerDashboard() {
                   <Button variant="outlined" className={styles.toolButton}>
                     開始練習
                   </Button>
-                </Card>
-                <Card className={styles.toolCard}>
-                  <Description className={styles.toolIcon} />
+                </div>
+                <div className={styles.toolCard}>
+                  <div className={styles.toolIconContainer}>
+                    <Description className={styles.toolIcon} />
+                  </div>
                   <Typography variant="h6">履歷上傳與管理</Typography>
                   <Typography variant="body2">
                     管理您的多個履歷版本，根據職位量身定制
@@ -206,9 +222,11 @@ export default function InterviewerDashboard() {
                   <Button variant="outlined" className={styles.toolButton}>
                     管理履歷
                   </Button>
-                </Card>
-                <Card className={styles.toolCard}>
-                  <Lightbulb className={styles.toolIcon} />
+                </div>
+                <div className={styles.toolCard}>
+                  <div className={styles.toolIconContainer}>
+                    <Lightbulb className={styles.toolIcon} />
+                  </div>
                   <Typography variant="h6">面試建議閱讀</Typography>
                   <Typography variant="body2">
                     閱讀行業專家提供的面試技巧與建議
@@ -216,62 +234,8 @@ export default function InterviewerDashboard() {
                   <Button variant="outlined" className={styles.toolButton}>
                     查看建議
                   </Button>
-                </Card>
+                </div>
               </div>
-            </section>
-          </Grid>
-
-          {/* 通知與提醒 */}
-          <Grid>
-            <section className={styles.section}>
-              <div className={styles.sectionHeader}>
-                <Typography variant="h5" className={styles.sectionTitle}>
-                  <NotificationsActive className={styles.sectionIcon} />
-                  通知與提醒
-                </Typography>
-                <Button
-                  variant="text"
-                  size="small"
-                  className={styles.viewAllButton}
-                >
-                  標記全部為已讀
-                </Button>
-              </div>
-              <Card className={styles.notificationsCard}>
-                <List className={styles.notificationsList}>
-                  {notificationItems.map((item) => (
-                    <React.Fragment key={item.id}>
-                      <ListItem
-                        className={`${styles.notificationItem} ${
-                          !item.read ? styles.unread : ""
-                        }`}
-                      >
-                        <div className={styles.notificationContent}>
-                          <Typography
-                            variant="subtitle1"
-                            className={styles.notificationTitle}
-                          >
-                            {item.title}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            className={styles.notificationDescription}
-                          >
-                            {item.description}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            className={styles.notificationTime}
-                          >
-                            {item.time}
-                          </Typography>
-                        </div>
-                      </ListItem>
-                      <Divider component="li" />
-                    </React.Fragment>
-                  ))}
-                </List>
-              </Card>
             </section>
           </Grid>
         </Grid>
