@@ -1,6 +1,6 @@
 export type Response<T> = {
   result: boolean;
-  errorCode: string;
+  errorCode?: string;
   message?: string;
   data?: T;
 };
