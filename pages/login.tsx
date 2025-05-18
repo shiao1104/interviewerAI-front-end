@@ -21,6 +21,8 @@ import { GoogleUser } from "@/lib/types/googleUser";
 import ForgotPassword from "@/components/common/ForgotPassword";
 import { jwtDecode } from "jwt-decode";
 import styles from "@/styles/pages/Login.module.scss";
+import UserAPI from "@/lib/api/UserAPI";
+import { toast } from "react-toastify";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -86,15 +88,54 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    if (emailError || passwordError) {
-      event.preventDefault();
+    event.preventDefault();
+
+    if (!validateInputs()) {
       return;
     }
+
     const data = new FormData(event.currentTarget);
     console.log({
       email: data.get("email"),
       password: data.get("password"),
     });
+
+    const dataList = {
+      username: data.get("email"),
+      password: data.get("password"),
+    };
+
+    const fetchData = async () => {
+      try {
+        const response = await UserAPI.access(dataList);
+        console.log(response);
+        sessionStorage.setItem("token", response.data.access);
+        toast.success("登入成功", {
+          position: "top-center",
+          autoClose: 1500,
+          hideProgressBar: true,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+        router.push("/");
+      } catch {
+        toast.error("登入失敗", {
+          position: "top-center",
+          autoClose: 1500,
+          hideProgressBar: true,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
+    };
+
+    fetchData();
   };
 
   const validateInputs = () => {
@@ -103,7 +144,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
     let isValid = true;
 
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+    if (!email.value) {
       setEmailError(true);
       setEmailErrorMessage("請輸入您的Email");
       isValid = false;
@@ -135,6 +176,19 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     }
   };
 
+  const button = () => {
+    const fetchData = async () => {
+      try {
+        const response = await UserAPI.test();
+        console.log(response);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
+
+    fetchData();
+  };
+
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
@@ -143,6 +197,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
           <Box className={styles.iconWrap} sx={{ textAlign: "center" }}>
             <Image src={Logo} alt="" width={150} />
           </Box>
+          <Button onClick={() => button()}>sss</Button>
           <Typography
             component="h1"
             variant="h4"
