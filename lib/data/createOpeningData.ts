@@ -98,4 +98,16 @@ export const createOpeningData: InputFieldTypes[] = [
     type: "text",
     placeholder: "請輸入聯絡方式，例如：hr@innotech.com.tw",
   },
+  {
+    name: "questionType",
+    label: "題目類型",
+    type: "dropdown",
+    placeholder: "請選擇題目類型",
+  },
+  {
+    name: "questionNumber",
+    label: "題數",
+    type: "number",
+    placeholder: "請選擇預出題目數量",
+  },
 ];

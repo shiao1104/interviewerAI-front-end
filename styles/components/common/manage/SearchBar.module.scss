@@ -1,8 +1,7 @@
 @import "../../../base/mixin";
 
 .searchBarWrap {
-    display: grid;
-    grid-template-columns: repeat(7, auto);
+    display: flex;
     justify-content: end;
     align-items: end;
     margin-bottom: 1rem;
@@ -10,7 +9,6 @@
     gap: 1rem;
     
     @include Medium {
-        grid-template-columns: repeat(3, 1fr);
         gap: .5rem;
     }
 

@@ -2,8 +2,7 @@ import Layout from "@/components/Layout/ManageLayout";
 import { useEffect, useState } from "react";
 import { Typography, Box, IconButton, Button } from "@mui/material";
 import { jobData } from "@/lib/data/testData";
-import { questionsSearchData } from "@/lib/data/questionsSearchData";
-import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
+import { SearchType } from "@/lib/types/searchTypes";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
@@ -17,11 +16,12 @@ import {
 import { useRouter } from "next/router";
 import JobDetailDialog from "@/components/common/manage/JobDetailDialog";
 import { JobsTypes } from "@/lib/types/jobsTypes";
+import { jobsSearchData } from "@/lib/data/jobsSearchData";
 
 export default function Jobs() {
   const router = useRouter();
   const formProps = useForm();
-  const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
+  const [searchParams, setSearchParams] = useState<SearchType>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedJob, setSelectedJob] = useState<JobsTypes>();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -31,11 +31,11 @@ export default function Jobs() {
   });
 
   const columns = [
-  { id: "id", label: "代碼" },
-  { id: "position", label: "職位名稱" },
-  { id: "workLocation", label: "工作地點" },
-  { id: "jobType", label: "工作類型" },
-  { id: "createDate", label: "建立日期" },
+  { id: "id", label: "代碼", sortable: true },
+  { id: "position", label: "職位名稱", sortable: true },
+  { id: "workLocation", label: "工作地點", sortable: true },
+  { id: "jobType", label: "工作類型", sortable: true },
+  { id: "createDate", label: "建立日期", sortable: true },
   {
     id: "actions",
     label: "操作",
@@ -109,9 +109,9 @@ export default function Jobs() {
 
         <Box sx={{ mb: 3 }}>
           <SearchBar
-            items={questionsSearchData}
+            items={jobsSearchData}
             formProps={formProps}
-            handleParams={(params: QuestionsSearchType) =>
+            handleParams={(params: SearchType) =>
               setSearchParams(params)
             }
           />
