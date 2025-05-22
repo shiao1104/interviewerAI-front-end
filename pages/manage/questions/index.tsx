@@ -8,27 +8,44 @@ import {
   Button,
   Switch,
 } from "@mui/material";
-import { questionsData } from "@/lib/data/testData";
 import { questionsSearchData } from "@/lib/data/questionsSearchData";
-import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
+import { SearchType } from "@/lib/types/searchTypes";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
 import { Add, Delete, Edit, HelpOutline } from "@mui/icons-material";
 import { useRouter } from "next/router";
+import QuestionAPI from "@/lib/api/QuestionAPI";
+import { QuestionsTypes } from "@/lib/types/questionsTypes";
+import axios from "axios";
 
 export default function Questions() {
   const router = useRouter();
   const formProps = useForm();
-  const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
-  const [localOpeningData, setLocalOpeningData] = useState(questionsData);
+  const [searchParams, setSearchParams] = useState<SearchType>();
+  const [dataList, setDataList] = useState<QuestionsTypes[]>(
+    []
+  );
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.all([
+        QuestionAPI.getData(),
+        QuestionAPI.getQuestionType(),
+      ]);
+      setDataList(response[0].data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
     console.log(searchParams);
-  });
+    fetchData();
+  }, []);
 
   const handleToggleValidity = (id: number) => {
-    setLocalOpeningData((prev) =>
+    setDataList((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, vaild: !item.vaild } : item
       )
@@ -49,18 +66,19 @@ export default function Questions() {
   };
 
   const columns = [
-    { id: "position", label: "職位" },
-    { id: "type", label: "類型" },
+    { id: "position", label: "職位", sortable: true },
+    { id: "question_type", label: "類型", sortable: true },
     { id: "question", label: "問題" },
-    { id: "timeAllowed", label: "時間" },
+    { id: "time_allowed", label: "時間", sortable: true },
     {
       id: "difficulty",
       label: "難度",
-      render: (value: string) => (
+      render: (value: string) =>  (
         <Chip label={value} color={getDifficultyColor(value)} size="small" />
       ),
+      sortable: true,
     },
-    { id: "createDate", label: "建立日期" },
+    { id: "created_time", label: "建立日期", sortable: true },
     {
       id: "vaild",
       label: "啟用狀態",
@@ -69,10 +87,11 @@ export default function Questions() {
         <Box sx={{ display: "flex", gap: 1 }}>
           <Switch
             checked={row.vaild}
-            onChange={() => handleToggleValidity(row.id)}
+            onChange={() => handleToggleValidity(row.question_id)}
           />
         </Box>
       ),
+      sortable: true,
     },
     {
       id: "actions",
@@ -81,7 +100,7 @@ export default function Questions() {
       render: (_: any, row: any) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <IconButton
-            onClick={() => router.push(`/manage/questions/${row.id}`)}
+            onClick={() => router.push(`/manage/questions/${row.question_id}`)}
             size="small"
           >
             <Edit fontSize="small" />
@@ -149,9 +168,7 @@ export default function Questions() {
           <SearchBar
             items={questionsSearchData}
             formProps={formProps}
-            handleParams={(params: QuestionsSearchType) =>
-              setSearchParams(params)
-            }
+            handleParams={(params: SearchType) => setSearchParams(params)}
           />
         </Box>
 
@@ -163,7 +180,7 @@ export default function Questions() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={localOpeningData} />
+          <DataTable columns={columns} data={dataList} />
         </Box>
       </Box>
     </Layout>

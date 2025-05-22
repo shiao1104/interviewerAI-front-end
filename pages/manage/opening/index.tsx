@@ -8,8 +8,7 @@ import {
   Chip,
   Switch,
 } from "@mui/material";
-import { questionsSearchData } from "@/lib/data/questionsSearchData";
-import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
+import { SearchType } from "@/lib/types/searchTypes";
 import { openingData } from "@/lib/data/testData";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
@@ -18,11 +17,12 @@ import { Add, Delete, Edit, MoreHoriz, Work } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import JobDetailDialog from "@/components/common/manage/JobDetailDialog";
 import { getStatueColor } from "@/lib/hook/getStatueColor";
+import { openingSearchData } from "@/lib/data/openingSearchData";
 
 export default function Opening() {
   const router = useRouter();
   const formProps = useForm();
-  const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
+  const [searchParams, setSearchParams] = useState<SearchType>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -33,18 +33,18 @@ export default function Opening() {
   });
 
   const handleToggleValidity = (id: number) => {
-    setLocalOpeningData(prev => 
-      prev.map(item => 
+    setLocalOpeningData((prev) =>
+      prev.map((item) =>
         item.id === id ? { ...item, vaild: !item.vaild } : item
       )
     );
   };
 
   const columns = [
-    { id: "id", label: "代碼" },
-    { id: "openingTitle", label: "職缺名稱" },
-    { id: "workLocation", label: "工作地點" },
-    { id: "headCount", label: "需求人數" },
+    { id: "id", label: "代碼", sortable: true },
+    { id: "openingTitle", label: "職缺名稱", sortable: true },
+    { id: "workLocation", label: "工作地點", sortable: true },
+    { id: "headCount", label: "需求人數", sortable: true },
     {
       id: "status",
       label: "職缺狀態",
@@ -52,15 +52,15 @@ export default function Opening() {
         <Chip label={value} color={getStatueColor(value)} size="small" />
       ),
     },
-    { id: "createDate", label: "建立日期" },
+    { id: "createDate", label: "建立日期", sortable: true },
     {
       id: "vaild",
       label: "啟用狀態",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (_: any, row: any) => (
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Switch 
-            checked={row.vaild} 
+          <Switch
+            checked={row.vaild}
             onChange={() => handleToggleValidity(row.id)}
           />
         </Box>
@@ -146,9 +146,9 @@ export default function Opening() {
 
         <Box sx={{ mb: 3 }}>
           <SearchBar
-            items={questionsSearchData}
+            items={openingSearchData}
             formProps={formProps}
-            handleParams={(params: QuestionsSearchType) =>
+            handleParams={(params: SearchType) =>
               setSearchParams(params)
             }
           />

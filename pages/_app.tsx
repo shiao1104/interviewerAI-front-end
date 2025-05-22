@@ -13,7 +13,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     if (
-      (!sessionStorage.getItem("google_token") ||
+      (!sessionStorage.getItem("google_token") &&
         !sessionStorage.getItem("token")) &&
       pathname !== "/login"
     ) {
