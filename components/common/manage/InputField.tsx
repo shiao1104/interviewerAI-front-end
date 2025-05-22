@@ -118,7 +118,7 @@ export default function InputField({
                 <em>{placeholder || label}</em>
               </MenuItem>
               {dropdownData?.map((option) => (
-                <MenuItem key={option.key} value={option.value}>
+                <MenuItem key={option.key} value={option.key}>
                   {option.value}
                 </MenuItem>
               ))}

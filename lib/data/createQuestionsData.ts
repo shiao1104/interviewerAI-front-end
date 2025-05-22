@@ -1,5 +1,5 @@
 import { InputFieldTypes } from "../types/inputFieldTypes";
-import { companyType } from "./testData";
+import { questionLevelData } from "./questionLevelData";
 
 export const createQuestionData: InputFieldTypes[] = [
   {
@@ -7,14 +7,12 @@ export const createQuestionData: InputFieldTypes[] = [
     name: "applicablePositions",
     type: "multiselect",
     placeholder: "請選擇適用職位",
-    dropdownData: companyType,
   },
   {
     label: "問題類型",
     name: "questionType",
     type: "dropdown",
     placeholder: "請選擇問題類型",
-    dropdownData: companyType,
   },
   {
     label: "問題內容",
@@ -30,17 +28,10 @@ export const createQuestionData: InputFieldTypes[] = [
   },
   {
     label: "問題難易度",
-    name: "timeLimit",
+    name: "questionlevel",
     type: "dropdown",
     placeholder: "請選擇問題難易度",
-    dropdownData: companyType,
-  },
-  {
-    label: "使用語言",
-    name: "language",
-    type: "dropdown",
-    placeholder: "請選擇使用語言",
-    dropdownData: companyType,
+    dropdownData: questionLevelData,
   },
   {
     label: "啟用狀態",

@@ -16,6 +16,8 @@ const UserAPI = {
     API.post(`/api/token/`, data),
 
   test: (): Promise<Response<unknown>> => API.post(`/test/fetch/`),
+
+  test2: (): Promise<Response<unknown>> => API.post(`/gpt/evaluate/`),
 };
 
 export default UserAPI;

@@ -193,6 +193,16 @@ export const questionsData = [
     createDate: "2025/1/1",
     vaild: false,
   },
+  {
+    id: 5,
+    position: "通用問題",
+    type: "問題解決能力",
+    question: "分享一個你在工作中面臨的挑戰以及你如何解決它",
+    timeAllowed: "6分鐘",
+    difficulty: "困難",
+    createDate: "2025/1/1",
+    vaild: false,
+  },
 ];
 
 export const intervieweeData = [

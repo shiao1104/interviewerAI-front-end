@@ -47,12 +47,12 @@ export default function SearchBar({
       {items.map((item, index) => (
         <Grid key={index}>
           <InputField
-            textClassName={styles.searchLabel}
             name={item.name}
             label={item.label}
             type={item.type}
-            formProps={formProps}
+            placeholder={item.placeholder}
             dropdownData={item.dropdownData}
+            formProps={formProps}
           />
         </Grid>
       ))}

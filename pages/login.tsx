@@ -23,6 +23,12 @@ import { jwtDecode } from "jwt-decode";
 import styles from "@/styles/pages/Login.module.scss";
 import UserAPI from "@/lib/api/UserAPI";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+
+interface LoginFormInputs {
+  email: string;
+  password: string;
+}
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -67,13 +73,15 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignIn(props: { disableCustomTheme?: boolean }) {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
   const [isClient, setIsClient] = React.useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormInputs>();
 
   useEffect(() => {
     setIsClient(true);
@@ -87,82 +95,38 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     setOpen(false);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!validateInputs()) {
-      return;
-    }
-
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-
+  const onSubmit = async (data: LoginFormInputs) => {
     const dataList = {
-      username: data.get("email"),
-      password: data.get("password"),
+      username: data.email,
+      password: data.password,
     };
 
-    const fetchData = async () => {
-      try {
-        const response = await UserAPI.access(dataList);
-        console.log(response);
-        sessionStorage.setItem("token", response.data.access);
-        toast.success("登入成功", {
-          position: "top-center",
-          autoClose: 1500,
-          hideProgressBar: true,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-        router.push("/");
-      } catch {
-        toast.error("登入失敗", {
-          position: "top-center",
-          autoClose: 1500,
-          hideProgressBar: true,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      }
-    };
-
-    fetchData();
-  };
-
-  const validateInputs = () => {
-    const email = document.getElementById("email") as HTMLInputElement;
-    const password = document.getElementById("password") as HTMLInputElement;
-
-    let isValid = true;
-
-    if (!email.value) {
-      setEmailError(true);
-      setEmailErrorMessage("請輸入您的Email");
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage("");
+    try {
+      const response = await UserAPI.access(dataList);
+      sessionStorage.setItem("token", response.data.access);
+      toast.success("登入成功", {
+        position: "top-center",
+        autoClose: 1500,
+        hideProgressBar: true,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      router.push("/");
+    } catch {
+      toast.error("登入失敗", {
+        position: "top-center",
+        autoClose: 1500,
+        hideProgressBar: true,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
-
-    if (!password.value || password.value.length < 6) {
-      setPasswordError(true);
-      setPasswordErrorMessage("密碼至少6位數以上且包含英文大小寫及符號");
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage("");
-    }
-
-    return isValid;
   };
 
   const googleLogin = (credentialResponse: CredentialResponse) => {
@@ -176,19 +140,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     }
   };
 
-  const button = () => {
-    const fetchData = async () => {
-      try {
-        const response = await UserAPI.test();
-        console.log(response);
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-      }
-    };
-
-    fetchData();
-  };
-
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
@@ -197,7 +148,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
           <Box className={styles.iconWrap} sx={{ textAlign: "center" }}>
             <Image src={Logo} alt="" width={150} />
           </Box>
-          <Button onClick={() => button()}>sss</Button>
           <Typography
             component="h1"
             variant="h4"
@@ -211,7 +161,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
           </Typography>
           <Box
             component="form"
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             noValidate
             sx={{
               display: "flex",
@@ -223,46 +173,58 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <FormControl>
               <FormLabel htmlFor="email">帳號</FormLabel>
               <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
                 id="email"
                 type="email"
-                name="email"
                 placeholder="your@email.com"
                 autoComplete="email"
                 autoFocus
                 required
                 fullWidth
                 variant="outlined"
-                color={emailError ? "error" : "primary"}
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                {...register("email", {
+                  required: "請輸入您的Email",
+                  pattern: {
+                    // value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Email 格式錯誤",
+                  },
+                })}
               />
             </FormControl>
+
             <FormControl>
               <FormLabel htmlFor="password">密碼</FormLabel>
               <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
                 id="password"
+                type="password"
+                placeholder="••••••"
                 autoComplete="current-password"
-                autoFocus
                 required
                 fullWidth
                 variant="outlined"
-                color={passwordError ? "error" : "primary"}
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                {...register("password", {
+                  // required: "請輸入密碼",
+                  // minLength: {
+                  //   value: 6,
+                  //   message: "密碼至少6位數以上",
+                  // },
+                  // pattern: {
+                  //   value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).+$/,
+                  //   message: "密碼需包含大小寫字母與符號",
+                  // },
+                })}
               />
             </FormControl>
+
             <ForgotPassword open={open} handleClose={handleClose} />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick={validateInputs}
-            >
+
+            <Button type="submit" fullWidth variant="contained">
               登入
             </Button>
+
             <Link
               component="button"
               type="button"
