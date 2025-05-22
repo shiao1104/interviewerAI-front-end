@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Typography, Box, Chip, IconButton, Button } from "@mui/material";
 import { intervieweeData } from "@/lib/data/testData";
 import { intervieweeSearchData } from "@/lib/data/intervieweeSearchData";
-import { QuestionsSearchType } from "@/lib/types/questionsSearchTypes";
+import { SearchType } from "@/lib/types/searchTypes";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 export default function Interviewee() {
   const router = useRouter();
   const formProps = useForm();
-  const [searchParams, setSearchParams] = useState<QuestionsSearchType>();
+  const [searchParams, setSearchParams] = useState<SearchType>();
 
   useEffect(() => {
     console.log(searchParams);
@@ -31,9 +31,9 @@ export default function Interviewee() {
   };
 
   const columns = [
-    { id: "id", label: "ID" },
+    { id: "id", label: "ID", sortable: true },
     { id: "name", label: "姓名", textAlign: "center" },
-    { id: "type", label: "應徵職位", textAlign: "center" },
+    { id: "type", label: "應徵職位", textAlign: "center", sortable: true },
     {
       id: "difficulty",
       label: "面試時間",
@@ -41,8 +41,14 @@ export default function Interviewee() {
         <Chip label={value} color={getDifficultyColor(value)} size="small" />
       ),
       textAlign: "center",
+      sortable: true,
     },
-    { id: "createDate", label: "建立日期", textAlign: "center" },
+    {
+      id: "createDate",
+      label: "建立日期",
+      textAlign: "center",
+      sortable: true,
+    },
     {
       id: "actions",
       label: "操作",
@@ -113,9 +119,7 @@ export default function Interviewee() {
           <SearchBar
             items={intervieweeSearchData}
             formProps={formProps}
-            handleParams={(params: QuestionsSearchType) =>
-              setSearchParams(params)
-            }
+            handleParams={(params: SearchType) => setSearchParams(params)}
           />
         </Box>
 

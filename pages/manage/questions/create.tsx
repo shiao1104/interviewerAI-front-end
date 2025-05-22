@@ -1,37 +1,92 @@
 import InputField from "@/components/common/manage/InputField";
 import Layout from "@/components/Layout/ManageLayout";
+import QuestionAPI from "@/lib/api/QuestionAPI";
 import { createQuestionData } from "@/lib/data/createQuestionsData";
-import { CreateNewFolder, KeyboardBackspace, Save, Add, Delete } from "@mui/icons-material";
-import { Box, Button, Grid, Typography, IconButton, Paper, Divider } from "@mui/material";
+import { DropdownTypes } from "@/lib/types/dropdownTypes";
+import { QuestionsTypes } from "@/lib/types/questionsTypes";
+import {
+  CreateNewFolder,
+  KeyboardBackspace,
+  Save,
+  Add,
+  Delete,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Grid,
+  Typography,
+  IconButton,
+  Paper,
+  Divider,
+} from "@mui/material";
+import axios from "axios";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 
 export default function Create() {
   const router = useRouter();
-  const formProps = useForm({
-    defaultValues: {
-      questions: [{}] // 預設一個空問題
-    }
+  const [dropdownOptions, setDropdownOptions] = useState<{
+    applicablePositions: DropdownTypes[];
+    questionType: DropdownTypes[];
+  }>({
+    applicablePositions: [],
+    questionType: [],
   });
-  
-  // 使用 useFieldArray 來管理動態表單陣列
-  const { fields, append, remove } = useFieldArray({
-    control: formProps.control,
-    name: "questions"
+  const formProps = useForm<{ questions: QuestionsTypes[] }>({
+    defaultValues: {
+      questions: [{}],
+    },
   });
 
-  const handleSubmit = formProps.handleSubmit((data) => {
-    console.log("準備提交的數據:", data.questions);
-    
-    // 可以在這裡發送數據到 API
-    // 例如: saveQuestions(data.questions)
-    
-    alert(`成功新增 ${data.questions.length} 筆問題！`);
-    
-    // 提交後可以選擇返回列表頁面
+  const { fields, append, remove } = useFieldArray({
+    control: formProps.control,
+    name: "questions",
+  });
+
+  useEffect(() => {
+    const fetch = async () => {
+      const response = await axios.all([
+        QuestionAPI.getQuestionType(),
+        QuestionAPI.getOpeningJobs(),
+      ]);
+      setDropdownOptions({
+        applicablePositions: response[1].data,
+        questionType: response[0].data,
+      });
+    };
+    fetch();
+  }, []);
+
+  const handleSubmit = formProps.handleSubmit((data: { questions: QuestionsTypes[] }) => {
+    const dataList = data.questions.map((q) => ({
+      question_type_id: q.questionType,
+      question: q.questionContent,
+      company_id: 1,
+      position: q.applicablePositions,
+      time_allowed: q.timeLimit,
+      difficulty: q.questionlevel,
+      valid: q.status,
+    }));
+
+    console.log(dataList);
+
+    const fetch = async () => {
+      try {
+        const response = await QuestionAPI.create(dataList);
+        console.log(response);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetch();
+
+    // alert(`成功新增 ${data.questions.length} 筆問題！`);
     // router.push("/manage/interviewee");
   });
-  
+
   // 新增一個空白問題
   const addNewQuestion = () => {
     append({});
@@ -91,18 +146,22 @@ export default function Create() {
               position: "relative",
             }}
           >
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
               <Typography variant="h6">問題 #{questionIndex + 1}</Typography>
               {fields.length > 1 && (
-                <IconButton 
-                  color="error" 
-                  onClick={() => remove(questionIndex)}
-                >
+                <IconButton color="error" onClick={() => remove(questionIndex)}>
                   <Delete />
                 </IconButton>
               )}
             </Box>
-            
+
             {/* 基本信息區塊 */}
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
               問題基本資訊
@@ -111,7 +170,7 @@ export default function Create() {
             <Grid
               container
               sx={{
-                mb: '1rem',
+                mb: "1rem",
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
                 gap: "1rem",
@@ -124,7 +183,11 @@ export default function Create() {
                     label={item.label}
                     type={item.type}
                     placeholder={item.placeholder}
-                    dropdownData={item.dropdownData}
+                    dropdownData={
+                      dropdownOptions[
+                        item.name as keyof typeof dropdownOptions
+                      ] || []
+                    }
                     formProps={formProps}
                   />
                 </Grid>
@@ -190,11 +253,11 @@ export default function Create() {
             </Grid>
           </Paper>
         ))}
-        
+
         <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-          <Button 
-            variant="outlined" 
-            startIcon={<Add />} 
+          <Button
+            variant="outlined"
+            startIcon={<Add />}
             onClick={addNewQuestion}
             sx={{ borderRadius: "8px" }}
           >
