@@ -2,11 +2,11 @@ import { FetchQuestionTypes } from "../types/questionsTypes";
 import API from "./api";
 import { Response } from "@/lib/types/requestType";
 
-const BASE_URL = "/question";
+const BASE_URL = "/company";
 
-const QuestionAPI = {
-  getData: (question_id?: number): Promise<Response<never>> =>
-    API.post(`${BASE_URL}/read/`, question_id ? { question_id } : {}),
+const CompanyAPI = {
+  getData: (company_id?: number): Promise<Response<never>> =>
+    API.post(`${BASE_URL}/read/`, company_id ? { company_id } : {}),
 
   create: (data: FetchQuestionTypes[]): Promise<Response<never>> =>
     API.post(`${BASE_URL}/create/`, data),
@@ -18,4 +18,4 @@ const QuestionAPI = {
     API.get(`${BASE_URL}/opening-jobs/`),
 };
 
-export default QuestionAPI;
+export default CompanyAPI;

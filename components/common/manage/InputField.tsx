@@ -82,47 +82,53 @@ export default function InputField({
             <Typography className={textClassName} variant="subtitle1">
               {label}
             </Typography>
-            <TextField
-              select
-              fullWidth
-              required
-              displayEmpty
+            <Controller
+              name={name}
+              control={control}
               defaultValue=""
-              SelectProps={{
-                displayEmpty: true,
-                renderValue: (selected) => {
-                  if (selected === "") {
-                    return (
-                      <em style={{ color: "#757575" }}>
-                        {placeholder || label}
-                      </em>
-                    );
-                  }
-                  return selected;
-                },
-              }}
-              sx={{
-                minWidth: "150px",
-                borderRadius: "5px",
-                "& .MuiOutlinedInput-input": {
-                  padding: "10px 14px",
-                },
-                "& .MuiSelect-select.MuiSelect-select": {
-                  color: (selected: string) =>
-                    selected === "" ? "#757575" : "inherit",
-                },
-              }}
-              {...register(name)}
-            >
-              <MenuItem disabled value="">
-                <em>{placeholder || label}</em>
-              </MenuItem>
-              {dropdownData?.map((option) => (
-                <MenuItem key={option.key} value={option.key}>
-                  {option.value}
-                </MenuItem>
-              ))}
-            </TextField>
+              render={({ field }) => (
+                <TextField
+                  select
+                  fullWidth
+                  required
+                  value={field.value}
+                  onChange={field.onChange}
+                  SelectProps={{
+                    displayEmpty: true,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    renderValue: (selected: any) => {
+                      if (selected === "") {
+                        return (
+                          <em style={{ color: "#757575" }}>
+                            {placeholder || label}
+                          </em>
+                        );
+                      }
+                      const matched = dropdownData?.find(
+                        (item) => item.key === selected
+                      );
+                      return matched ? matched.value : selected;
+                    },
+                  }}
+                  sx={{
+                    minWidth: "150px",
+                    borderRadius: "5px",
+                    "& .MuiOutlinedInput-input": {
+                      padding: "10px 14px",
+                    },
+                  }}
+                >
+                  <MenuItem disabled value="">
+                    <em>{placeholder || label}</em>
+                  </MenuItem>
+                  {dropdownData?.map((option) => (
+                    <MenuItem key={option.key} value={option.key}>
+                      {option.value}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
           </Box>
         );
       case "file":

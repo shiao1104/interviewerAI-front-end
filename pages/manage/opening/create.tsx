@@ -186,123 +186,8 @@ export default function Create() {
             backgroundColor: "#fff",
           }}
         >
-          <Box sx={{ mb: "2rem" }}>
-            <InputField
-              name={"opsition"}
-              label={"職位名稱"}
-              type={"dropdown"}
-              placeholder={"請選擇職位名稱"}
-              dropdownData={companyType}
-              formProps={formProps}
-            />
-          </Box>
-
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
             基本資訊
-          </Typography>
-
-          <Grid
-            container
-            sx={{
-              mb: "1rem",
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-              gap: "1rem",
-            }}
-          >
-            {createOpeningData.slice(0, 6).map((item, index) => (
-              <Grid key={index}>
-                <InputField
-                  name={item.name}
-                  label={item.label}
-                  type={item.type}
-                  placeholder={item.placeholder}
-                  dropdownData={item.dropdownData}
-                  formProps={formProps}
-                />
-              </Grid>
-            ))}
-          </Grid>
-
-          <Divider sx={{ my: 3 }} />
-
-          {/* 工作條件區塊 */}
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            應徵條件
-          </Typography>
-
-          <Grid
-            container
-            sx={{
-              mb: "1rem",
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-              gap: "1rem",
-            }}
-          >
-            {createOpeningData.slice(6, 10).map((item, index) => (
-              <Grid key={index}>
-                <InputField
-                  name={item.name}
-                  label={item.label}
-                  type={item.type}
-                  placeholder={item.placeholder}
-                  dropdownData={item.dropdownData}
-                  formProps={formProps}
-                />
-              </Grid>
-            ))}
-          </Grid>
-
-          {/* 技能標籤區塊 */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              擅長工具 / 技能條件
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-              <TextField
-                size="small"
-                placeholder="新增技能（例如：React）"
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddSkill();
-                  }
-                }}
-              />
-              <Button variant="outlined" size="small" onClick={handleAddSkill}>
-                新增
-              </Button>
-            </Box>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              <Controller
-                name="skills"
-                control={formProps.control}
-                render={({ field }) => (
-                  <>
-                    {field.value &&
-                      field.value.map((skill, i) => (
-                        <Chip
-                          key={i}
-                          label={skill}
-                          onDelete={() => handleDeleteSkill(skill)}
-                          color="primary"
-                          variant="outlined"
-                          size="small"
-                        />
-                      ))}
-                  </>
-                )}
-              />
-            </Box>
-          </Box>
-
-          <Divider sx={{ my: 3 }} />
-
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            工作條件
           </Typography>
 
           <Grid
@@ -314,7 +199,7 @@ export default function Create() {
               gap: "1rem",
             }}
           >
-            {createOpeningData.slice(10, 13).map((item, index) => (
+            {createOpeningData.slice(0, 3).map((item, index) => (
               <Grid key={index}>
                 <InputField
                   name={item.name}
@@ -328,13 +213,6 @@ export default function Create() {
             ))}
           </Grid>
 
-          <Divider sx={{ my: 3 }} />
-
-          {/* 職務描述與其他資訊 */}
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            詳細說明與聯絡資訊
-          </Typography>
-
           <Grid
             container
             sx={{
@@ -343,7 +221,7 @@ export default function Create() {
               gap: "1rem",
             }}
           >
-            {createOpeningData.slice(13, 15).map((item, index) => (
+            {createOpeningData.slice(3, 4).map((item, index) => (
               <Grid key={index}>
                 <InputField
                   name={item.name}
@@ -447,24 +325,12 @@ export default function Create() {
                   )}
                 </Grid>
                 <Grid>
-                  <Typography variant="body2" sx={{ mb: 0.5, color: "#555" }}>
-                    {questionCountData?.label || "出題數目"}
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    type="number"
-                    placeholder={questionCountData?.placeholder || "請輸入數目"}
-                    value={config.questionCount}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value) || 0;
-                      handleUpdateQuestionConfig(
-                        config.id,
-                        "questionCount",
-                        value
-                      );
-                    }}
-                    inputProps={{ min: 0 }}
+                  <InputField
+                    name={"questionCount"}
+                    label={"請輸入數目"}
+                    type={"number"}
+                    placeholder={"請輸入數目"}
+                    formProps={formProps}
                   />
                 </Grid>
               </Grid>

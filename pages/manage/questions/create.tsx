@@ -24,6 +24,7 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
+import { toast } from "react-toastify";
 
 export default function Create() {
   const router = useRouter();
@@ -52,44 +53,70 @@ export default function Create() {
         QuestionAPI.getOpeningJobs(),
       ]);
       setDropdownOptions({
-        applicablePositions: response[1].data,
-        questionType: response[0].data,
+        applicablePositions: response[1].data || [],
+        questionType: response[0].data || [],
       });
     };
     fetch();
   }, []);
 
-  const handleSubmit = formProps.handleSubmit((data: { questions: QuestionsTypes[] }) => {
-    const dataList = data.questions.map((q) => ({
-      question_type_id: q.questionType,
-      question: q.questionContent,
-      company_id: 1,
-      position: q.applicablePositions,
-      time_allowed: q.timeLimit,
-      difficulty: q.questionlevel,
-      valid: q.status,
-    }));
+  const handleSubmit = formProps.handleSubmit(
+    (data: { questions: QuestionsTypes[] }) => {
+      const dataList = data.questions.map((q) => ({
+        question_type_id: q.questionType,
+        question: String(q.questionContent),
+        company_id: 1,
+        position: q.applicablePositions,
+        time_allowed: q.timeLimit,
+        difficulty: q.questionlevel,
+        valid: q.status,
+      }));
 
-    console.log(dataList);
+      console.log(dataList);
 
-    const fetch = async () => {
-      try {
-        const response = await QuestionAPI.create(dataList);
-        console.log(response);
-      } catch (err) {
-        console.log(err);
-      }
-    };
+      const fetch = async () => {
+        try {
+          const response = await QuestionAPI.create(dataList);
+          toast.success(response.message, {
+            position: "top-center",
+            autoClose: 1500,
+            hideProgressBar: true,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+          router.push("/manage/questions");
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+          toast.error(err.message, {
+            position: "top-center",
+            autoClose: 1500,
+            hideProgressBar: true,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+        }
+      };
 
-    fetch();
+      fetch();
+    }
+  );
 
-    // alert(`成功新增 ${data.questions.length} 筆問題！`);
-    // router.push("/manage/interviewee");
-  });
-
-  // 新增一個空白問題
   const addNewQuestion = () => {
-    append({});
+    append({
+      id: 0,
+      questionType: 0,
+      questionContent: "",
+      applicablePositions: "",
+      timeLimit: 0,
+      questionlevel: "",
+      status: "",
+    });
   };
 
   return (

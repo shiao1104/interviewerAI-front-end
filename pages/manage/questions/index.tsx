@@ -33,7 +33,7 @@ export default function Questions() {
         QuestionAPI.getData(),
         QuestionAPI.getQuestionType(),
       ]);
-      setDataList(response[0].data);
+      setDataList(response[0].data || []);
     } catch (err) {
       console.log(err);
     }
@@ -47,14 +47,14 @@ export default function Questions() {
   const handleToggleValidity = (id: number) => {
     setDataList((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, vaild: !item.vaild } : item
+        item.id === id ? { ...item, vaild: !item.status } : item
       )
     );
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case "簡單":
+      case "容易":
         return "success";
       case "中等":
         return "warning";
@@ -66,13 +66,13 @@ export default function Questions() {
   };
 
   const columns = [
-    { id: "position", label: "職位", sortable: true },
-    { id: "question_type", label: "類型", sortable: true },
-    { id: "question", label: "問題" },
-    { id: "time_allowed", label: "時間", sortable: true },
+    { id: "position", label: "適用職位", sortable: true },
+    { id: "question_type", label: "問題類型", sortable: true },
+    { id: "question", label: "問題內容" },
+    { id: "time_allowed", label: "時間限制", sortable: true },
     {
       id: "difficulty",
-      label: "難度",
+      label: "難度等級",
       render: (value: string) =>  (
         <Chip label={value} color={getDifficultyColor(value)} size="small" />
       ),

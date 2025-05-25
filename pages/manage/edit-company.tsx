@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Save } from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
+import { Add, Save } from "@mui/icons-material";
 import Layout from "@/components/Layout/ManageLayout";
 import InputField from "@/components/common/manage/InputField";
 import { companyInfo } from "@/lib/data/testData";
@@ -11,39 +11,70 @@ import {
   Typography,
   Grid,
   Divider,
+  IconButton,
 } from "@mui/material";
 import KeyboardBackspace from "@mui/icons-material/KeyboardBackspace";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import EditIcon from "@mui/icons-material/Edit";
 import { useRouter } from "next/router";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import {
   editCompanyInput,
-  editInsertOptions,
 } from "@/lib/data/editCompanyInput";
 import InsertOptions from "@/components/common/InsertOptions";
+import CompanyAPI from "@/lib/api/CompanyAPI";
+import { CompanyTypes } from "@/lib/types/companyTypes";
 
 export default function EditCompanyInfo() {
   const formProps = useForm();
   const router = useRouter();
-  const [formData] = useState({
-    name: companyInfo.name,
-    industry: companyInfo.industry,
-    location: companyInfo.location,
-    size: companyInfo.size,
-    founded: companyInfo.founded,
-    website: companyInfo.website,
-    logo: companyInfo.logo,
+  const [formData] = useState<CompanyTypes>();
+  const [companyBenefits, setCompanyBenefits] = useState<string[]>([]);
+
+  const { fields, append, remove } = useFieldArray({
+    control: formProps.control,
+    name: "addresses"
   });
 
+  useEffect(() => {
+    const fetch = async () => {
+      const response = await CompanyAPI.getData(1);
+      const data = response.data as unknown as CompanyTypes;
+
+      // 處理員工福利數據
+      const benefits = data.company_benefits ? data.company_benefits.split('、') : [];
+      setCompanyBenefits(benefits);
+
+      formProps.reset({
+        company_name: data.company_name,
+        telephone: data.telephone,
+        company_website: data.company_website,
+        company_description: data.company_description,
+        addresses: data.addresses,
+        company_benefits: benefits // 設置為數組格式
+      });
+    }
+
+    fetch();
+  }, []);
+
+  // 處理員工福利變更
+  const handleBenefitsChange = (newBenefits: string[]) => {
+    setCompanyBenefits(newBenefits);
+    formProps.setValue('company_benefits', newBenefits);
+  };
+
   const handleSubmit = formProps.handleSubmit((data) => {
-    console.log("準備更新的數據:", data);
-    
+    console.log("準備更新的數據:", {
+      ...data,
+      company_benefits: companyBenefits.join('、')
+    });
+
     // 可以在這裡發送數據到 API
-    // 例如: updateCompany(data);
-    
+    // 例如: updateCompany({...data, company_benefits: companyBenefits.join('、')});
+
     alert("公司資訊更新成功！");
-    
+
     // 更新後返回列表頁面
     router.push("/manage");
   });
@@ -111,13 +142,13 @@ export default function EditCompanyInfo() {
           {/* 公司標誌區塊 */}
           <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
             <Box sx={{ position: "relative", mr: 3 }}>
-              <Avatar
+              {/* <Avatar
                 src={formData.logo}
                 alt={formData.name}
                 sx={{ width: 100, height: 100 }}
               >
                 {formData.name && formData.name[0]}
-              </Avatar>
+              </Avatar> */}
               <Box
                 sx={{
                   position: "absolute",
@@ -152,11 +183,14 @@ export default function EditCompanyInfo() {
             sx={{
               mb: '1rem',
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "1fr 1fr"
+              },
               gap: "1rem",
             }}
           >
-            {editCompanyInput.slice(0, 6).map((item, index) => (
+            {editCompanyInput.slice(0, 4).map((item, index) => (
               <Grid key={index}>
                 <InputField
                   name={item.name}
@@ -170,23 +204,63 @@ export default function EditCompanyInfo() {
             ))}
           </Grid>
 
-          <Divider sx={{ my: 3 }} />
+          <Grid
+            container
+            sx={{
+              mb: '1rem',
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: ".5rem",
+            }}>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography>
+                公司地點（可新增多筆）
+              </Typography>
 
-          {/* 公司詳細資訊區塊 */}
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            公司詳細資訊
-          </Typography>
+              <IconButton onClick={() => append({ value: "" })}>
+                <Add />
+              </IconButton>
+            </Grid>
+
+            <Grid sx={{
+              display: "grid", columnGap: '1rem',
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "1fr 1fr"
+              },
+            }}>
+              {fields.map((field, index) => (
+                <Box key={field.id} sx={{
+                  display: 'grid',
+                  columnGap: '5px',
+                  mb: 2,
+                  gridTemplateColumns: "1fr auto",
+                }}>
+                  <InputField
+                    name={`addresses.${index}`}
+                    label={''}
+                    type="text"
+                    placeholder="輸入公司地址"
+                    formProps={formProps}
+                  />
+                  <Button variant="outlined" color="error" onClick={() => remove(index)}>
+                    移除
+                  </Button>
+                </Box>
+              ))}
+            </Grid>
+          </Grid>
 
           <Grid
             container
             sx={{
+              mb: '1rem',
               display: "grid",
               gridTemplateColumns: "1fr",
               gap: "1rem",
-              mb: 2,
             }}
           >
-            {editCompanyInput.slice(6).map((item, index) => (
+            {editCompanyInput.slice(4).map((item, index) => (
               <Grid key={index}>
                 <InputField
                   name={item.name}
@@ -200,32 +274,18 @@ export default function EditCompanyInfo() {
             ))}
           </Grid>
 
-          <Divider sx={{ my: 3 }} />
-
-          {/* 公司選項設定區塊 */}
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            公司選項設定
-          </Typography>
-
-          <Grid
-            container
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr",
-              gap: "1rem",
-            }}
-          >
-            {editInsertOptions.map((item, index) => (
-              <Grid key={index}>
-                <InsertOptions
-                  name={item.name}
-                  label={item.label}
-                  type={item.type}
-                  placeholder={item.placeholder}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          {/* 員工福利區塊 - 修復後的部分 */}
+          {/* 員工福利區塊 - 直接渲染單個組件 */}
+          <Box sx={{ mb: 2 }}>
+            <InsertOptions
+              name="company_benefits"
+              label="員工福利"
+              type="text"
+              placeholder="請輸入員工福利"
+              initialOptions={companyBenefits}
+              onChange={handleBenefitsChange}
+            />
+          </Box>
         </Paper>
       </Box>
     </Layout>
