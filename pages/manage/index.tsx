@@ -1,6 +1,8 @@
 import Layout from "@/components/Layout/ManageLayout";
+import CompanyAPI from "@/lib/api/CompanyAPI";
 import { companyInfo } from "@/lib/data/testData";
-import { Business, Language, LocationOn, People, Edit } from "@mui/icons-material";
+import { CompanyTypes } from "@/lib/types/companyTypes";
+import { Business, Language, LocationOn, Edit, LocalPhone } from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -10,11 +12,26 @@ import {
   Divider,
   Grid,
   Typography,
+  Link,
 } from "@mui/material";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const router = useRouter();
+  const [dataList, setDataList] = useState<CompanyTypes>();
+  const [benefitList, setBenefitList] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const response = await CompanyAPI.getData(1);
+      const data = response.data as unknown as CompanyTypes;
+      setDataList(data);
+      setBenefitList(data.company_benefits?.split('、'));
+    }
+
+    fetch();
+  }, []);
 
   return (
     <Layout>
@@ -67,121 +84,91 @@ export default function Home() {
               alt={companyInfo.name}
               sx={{ width: 80, height: 80, mr: 3 }}
             >
-              {companyInfo.name[0]}
+              {/* {dataList.company_name[0]} */}
             </Avatar>
             <Box>
               <Typography variant="h5" component="div">
-                {companyInfo.name}
+                {dataList?.company_name}
               </Typography>
               <Typography variant="subtitle1" color="text.secondary">
-                {companyInfo.industry}
+                {dataList?.industry_name}
               </Typography>
             </Box>
           </Box>
-          
+
           <Divider sx={{ my: 3 }} />
-          
+
           {/* 聯絡資訊區塊 */}
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
             基本聯絡資訊
           </Typography>
-          
-          <Grid 
-            container 
-            sx={{ 
+
+          <Grid
+            container
+            sx={{
               mb: 3,
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "1rem",
+              gridTemplateColumns: {
+                xs: "1fr", 
+                sm: "1fr 1fr",
+                md: "1fr 1fr 1fr"
+              },
+              gap: "5px",
             }}
           >
             <Grid>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <LocationOn color="primary" sx={{ mr: 1 }} />
-                <Typography variant="body1">{companyInfo.location}</Typography>
-              </Box>
+              {dataList?.addresses?.map((item: string) =>
+                <Box sx={{ display: "flex", alignItems: "center", mb: '5px' }}>
+                  <LocationOn color="primary" sx={{ mr: 1 }} />
+                  <Typography variant="body1">
+                    {item}
+                  </Typography>
+                </Box>)}
             </Grid>
             <Grid>
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <People color="primary" sx={{ mr: 1 }} />
-                <Typography variant="body1">{companyInfo.size}</Typography>
-              </Box>
-            </Grid>
-            <Grid>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Business color="primary" sx={{ mr: 1 }} />
-                <Typography variant="body1">
-                  成立於 {companyInfo.founded}
-                </Typography>
+                <LocalPhone color="primary" sx={{ mr: 1 }} />
+                <Typography variant="body1">{dataList?.telephone}</Typography>
               </Box>
             </Grid>
             <Grid>
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <Language color="primary" sx={{ mr: 1 }} />
-                <Typography variant="body1">{companyInfo.website}</Typography>
+                <Link href={dataList?.company_website} target="_blank" variant="body1">{dataList?.company_website}</Link>
               </Box>
             </Grid>
           </Grid>
-          
+
           <Divider sx={{ my: 3 }} />
-          
+
           {/* 公司簡介區塊 */}
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
             公司簡介
           </Typography>
           <Typography variant="body1" paragraph>
-            {companyInfo.description}
+            {dataList?.company_description}
           </Typography>
-          
+
           <Divider sx={{ my: 3 }} />
-          
-          {/* 公司文化區塊 */}
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            公司文化
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {companyInfo.culture}
-          </Typography>
-          
-          <Divider sx={{ my: 3 }} />
-          
+
           {/* 員工福利區塊 */}
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
             員工福利
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
-            {companyInfo.benefits.map((benefit, index) => (
-              <Chip 
-                key={index} 
-                label={benefit} 
-                sx={{ 
-                  borderRadius: "8px",
-                  padding: "0 8px",
-                }}
-              />
-            ))}
-          </Box>
-          
-          <Divider sx={{ my: 3 }} />
-          
-          {/* 主要專案區塊 */}
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            主要專案
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
-            {companyInfo.keyProjects.map((project, index) => (
+            {benefitList.map((benefit, index) => (
               <Chip
                 key={index}
-                label={project}
-                color="primary"
-                variant="outlined"
-                sx={{ 
+                label={benefit}
+                sx={{
                   borderRadius: "8px",
                   padding: "0 8px",
                 }}
               />
             ))}
           </Box>
+
+          <Divider sx={{ my: 3 }} />
         </Paper>
       </Box>
     </Layout>

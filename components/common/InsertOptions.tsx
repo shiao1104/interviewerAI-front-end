@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useReducer } from "react";
+import { useReducer, useEffect } from "react";
 
 export type OptionsProps = {
   name: string;
@@ -60,9 +60,10 @@ const componentReducer = (
     case "ADD_OPTION":
       if (!state.optionInput.trim()) return state;
 
+      const newOptions = [...state.options, state.optionInput.trim()];
       return {
         ...state,
-        options: [...state.options, state.optionInput.trim()],
+        options: newOptions,
         optionInput: "",
         dialogOpen: false,
       };
@@ -91,7 +92,7 @@ export default function InsertOptions({
   onChange,
 }: OptionsProps) {
   const initialState: ComponentState = {
-    options: initialOptions,
+    options: initialOptions || [],
     optionInput: "",
     dialogOpen: false,
   };
@@ -100,22 +101,28 @@ export default function InsertOptions({
 
   const { options, optionInput, dialogOpen } = state;
 
-  const handleAddOption = () => {
-    dispatch({ type: "ADD_OPTION" });
+  // 監聽 initialOptions 的變化，同步更新 state
+  useEffect(() => {
+    if (initialOptions && initialOptions.length > 0) {
+      dispatch({ type: "SET_OPTIONS", payload: initialOptions });
+    }
+  }, [initialOptions]);
 
-    if (optionInput.trim() && onChange) {
-      onChange([...options, optionInput.trim()]);
+  // 當 options 變化時，通知父組件
+  useEffect(() => {
+    if (onChange) {
+      onChange(options);
+    }
+  }, [options, onChange]);
+
+  const handleAddOption = () => {
+    if (optionInput.trim()) {
+      dispatch({ type: "ADD_OPTION" });
     }
   };
 
   const handleDeleteOption = (index: number) => {
     dispatch({ type: "DELETE_OPTION", payload: index });
-
-    if (onChange) {
-      const updatedOptions = [...options];
-      updatedOptions.splice(index, 1);
-      onChange(updatedOptions);
-    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -124,7 +131,7 @@ export default function InsertOptions({
       handleAddOption();
     }
   };
-
+  
   return (
     <>
       <Box

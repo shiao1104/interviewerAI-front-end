@@ -44,28 +44,7 @@ export default function Opening() {
     { id: "id", label: "代碼", sortable: true },
     { id: "openingTitle", label: "職缺名稱", sortable: true },
     { id: "workLocation", label: "工作地點", sortable: true },
-    { id: "headCount", label: "需求人數", sortable: true },
-    {
-      id: "status",
-      label: "職缺狀態",
-      render: (value: string) => (
-        <Chip label={value} color={getStatueColor(value)} size="small" />
-      ),
-    },
     { id: "createDate", label: "建立日期", sortable: true },
-    {
-      id: "vaild",
-      label: "啟用狀態",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (_: any, row: any) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Switch
-            checked={row.vaild}
-            onChange={() => handleToggleValidity(row.id)}
-          />
-        </Box>
-      ),
-    },
     {
       id: "actions",
       label: "操作",

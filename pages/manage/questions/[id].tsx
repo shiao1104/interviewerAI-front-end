@@ -1,23 +1,53 @@
 import InputField from "@/components/common/manage/InputField";
 import Layout from "@/components/Layout/ManageLayout";
+import QuestionAPI from "@/lib/api/QuestionAPI";
 import { createQuestionData } from "@/lib/data/createQuestionsData";
+import { DropdownTypes } from "@/lib/types/dropdownTypes";
 import { Edit as EditIcon, KeyboardBackspace, Save } from "@mui/icons-material";
 import { Box, Button, Grid, Typography, Paper, Divider } from "@mui/material";
+import axios from "axios";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function Edit() {
   const router = useRouter();
   const { id } = router.query;
+  const [dropdownOptions, setDropdownOptions] = useState<{
+    company_id: DropdownTypes[];
+    question_type_id: DropdownTypes[];
+  }>({
+    company_id: [],
+    question_type_id: [],
+  });
   const formProps = useForm();
 
-  // 模擬獲取資料
   useEffect(() => {
     if (id) {
-      console.log("正在獲取問題ID:", id);
-      // 這裡可以添加獲取資料的邏輯
-      // 例如: fetchQuestionData(id).then(data => formProps.reset(data));
+      const fetch = async () => {
+        const response = await axios.all([
+          QuestionAPI.getData(id as unknown as number),
+          QuestionAPI.getOpeningJobs(),
+          QuestionAPI.getQuestionType(),
+        ]);
+
+        const questionData = response[0].data;
+        formProps.reset({
+          company_id: questionData.company_id,
+          question_type_id: questionData.question_type_id,
+          question: questionData.question,
+          time_allowed: questionData.time_allowed,
+          difficulty: questionData.difficulty,
+          valid: questionData.valid,
+        });
+
+        setDropdownOptions({
+          company_id: response[1].data || [],
+          question_type_id: response[2].data || [],
+        });
+      };
+
+      fetch();
     }
   }, [id, formProps]);
 
@@ -93,7 +123,7 @@ export default function Edit() {
           <Grid
             container
             sx={{
-              mb: '1rem',
+              mb: "1rem",
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               gap: "1rem",
@@ -106,7 +136,11 @@ export default function Edit() {
                   label={item.label}
                   type={item.type}
                   placeholder={item.placeholder}
-                  dropdownData={item.dropdownData}
+                  dropdownData={
+                    dropdownOptions[
+                      item.name as keyof typeof dropdownOptions
+                    ] || []
+                  }
                   formProps={formProps}
                 />
               </Grid>
