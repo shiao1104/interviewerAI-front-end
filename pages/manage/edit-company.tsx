@@ -24,12 +24,19 @@ import {
 import InsertOptions from "@/components/common/InsertOptions";
 import CompanyAPI from "@/lib/api/CompanyAPI";
 import { CompanyTypes } from "@/lib/types/companyTypes";
+import axios from "axios";
+import { DropdownTypes } from "@/lib/types/dropdownTypes";
+import { toast } from "react-toastify";
 
 export default function EditCompanyInfo() {
   const formProps = useForm();
   const router = useRouter();
-  const [formData] = useState<CompanyTypes>();
   const [companyBenefits, setCompanyBenefits] = useState<string[]>([]);
+  const [dropdownOptions, setDropdownOptions] = useState<{
+    industry_id: DropdownTypes[];
+  }>({
+    industry_id: [],
+  });
 
   const { fields, append, remove } = useFieldArray({
     control: formProps.control,
@@ -38,46 +45,75 @@ export default function EditCompanyInfo() {
 
   useEffect(() => {
     const fetch = async () => {
-      const response = await CompanyAPI.getData(1);
-      const data = response.data as unknown as CompanyTypes;
+      const response = await axios.all([
+        CompanyAPI.getData(1),
+        CompanyAPI.getIndustryList()
+      ]);
+      const data = response[0].data as unknown as CompanyTypes;
 
-      // 處理員工福利數據
       const benefits = data.company_benefits ? data.company_benefits.split('、') : [];
       setCompanyBenefits(benefits);
 
       formProps.reset({
+        company_id: data.company_id,
         company_name: data.company_name,
         telephone: data.telephone,
         company_website: data.company_website,
         company_description: data.company_description,
+        industry_id: data.industry_id,
         addresses: data.addresses,
-        company_benefits: benefits // 設置為數組格式
+        company_benefits: benefits
+      });
+
+      setDropdownOptions({
+        industry_id: response[1].data || []
       });
     }
 
     fetch();
   }, []);
 
-  // 處理員工福利變更
   const handleBenefitsChange = (newBenefits: string[]) => {
     setCompanyBenefits(newBenefits);
     formProps.setValue('company_benefits', newBenefits);
   };
 
   const handleSubmit = formProps.handleSubmit((data) => {
-    console.log("準備更新的數據:", {
+    const dataList = {
       ...data,
       company_benefits: companyBenefits.join('、')
-    });
+    } as any;
 
-    // 可以在這裡發送數據到 API
-    // 例如: updateCompany({...data, company_benefits: companyBenefits.join('、')});
-
-    alert("公司資訊更新成功！");
-
-    // 更新後返回列表頁面
-    router.push("/manage");
+    const fetch = async () => {
+      try {
+        const response = await CompanyAPI.update(dataList);
+        toast.success(response.message, {
+          position: "top-center",
+          autoClose: 1500,
+          hideProgressBar: true,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      } catch (err: any) {
+        toast.error(err.message, {
+          position: "top-center",
+          autoClose: 1500,
+          hideProgressBar: true,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
+    };
+    fetch();
+    router.push('/manage')
   });
+
 
   return (
     <Layout>
@@ -140,15 +176,15 @@ export default function EditCompanyInfo() {
           </Typography>
 
           {/* 公司標誌區塊 */}
-          <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
+          {/* <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
             <Box sx={{ position: "relative", mr: 3 }}>
-              {/* <Avatar
+              <Avatar
                 src={formData.logo}
                 alt={formData.name}
                 sx={{ width: 100, height: 100 }}
               >
                 {formData.name && formData.name[0]}
-              </Avatar> */}
+              </Avatar>
               <Box
                 sx={{
                   position: "absolute",
@@ -175,7 +211,7 @@ export default function EditCompanyInfo() {
                 建議上傳尺寸為 400x400 像素的圖片
               </Typography>
             </Box>
-          </Box>
+          </Box> */}
 
           {/* 公司基本信息表單 */}
           <Grid
@@ -197,7 +233,11 @@ export default function EditCompanyInfo() {
                   label={item.label}
                   type={item.type}
                   placeholder={item.placeholder}
-                  dropdownData={item.dropdownData}
+                  dropdownData={
+                    dropdownOptions[
+                    item.name as keyof typeof dropdownOptions
+                    ] || []
+                  }
                   formProps={formProps}
                 />
               </Grid>

@@ -6,5 +6,6 @@ export interface CompanyTypes {
     company_name: string;
     company_website: string;
     industry_name: string;
+    industry_id: number;
     telephone: string;
 }
