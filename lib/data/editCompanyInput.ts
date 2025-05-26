@@ -11,7 +11,7 @@ export const editCompanyInput: InputFieldTypes[] = [
   },
   {
     label: "行業別",
-    name: "industry_name",
+    name: "industry_id",
     type: "dropdown",
     placeholder: "請選擇行業別",
     dropdownData: companyType,
