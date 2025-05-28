@@ -101,6 +101,21 @@ export default function IntervieweeDetail() {
     },
   });
 
+  const interviewAnalysis = [
+    {
+      question: "請描述您過去的專案經驗",
+      answer: "我曾負責一個React專案，協助建構UI元件與狀態管理...",
+      tags: ["React", "前端開發", "團隊合作"],
+      aiComment: "展現了良好的技術理解與解決問題能力。",
+    },
+    {
+      question: "請說明您如何處理團隊內的溝通問題",
+      answer: "我會主動開啟溝通會議，確保彼此理解一致。",
+      tags: ["溝通能力", "主動協調"],
+      aiComment: "展現了成熟的溝通技巧與主動處理問題的態度。",
+    },
+  ];
+
   useEffect(() => {
     if (id) {
       console.log(`Loading data for interviewee ${id}`);
@@ -411,7 +426,7 @@ export default function IntervieweeDetail() {
                   "尚未接受面試"
                 )}
               </Box>
-              <Box sx={{ mt: "2rem" }}>
+              {/* <Box sx={{ mt: "2rem" }}>
                 <Typography variant="h6" fontWeight="medium" sx={{ mb: 2 }}>
                   是否通過面試
                 </Typography>
@@ -455,7 +470,7 @@ export default function IntervieweeDetail() {
                     否
                   </Button>
                 </Grid>
-              </Box>
+              </Box> */}
             </Paper>
           </Grid>
           {data.confirmStatus == "已面試" ? (
@@ -560,7 +575,7 @@ export default function IntervieweeDetail() {
                                   >
                                     {
                                       data.scores[
-                                        item.key as keyof typeof data.scores
+                                      item.key as keyof typeof data.scores
                                       ]
                                     }
                                     /100
@@ -570,7 +585,7 @@ export default function IntervieweeDetail() {
                                   variant="determinate"
                                   value={
                                     data.scores[
-                                      item.key as keyof typeof data.scores
+                                    item.key as keyof typeof data.scores
                                     ]
                                   }
                                   sx={{
@@ -592,7 +607,7 @@ export default function IntervieweeDetail() {
                               >
                                 {
                                   data.comments[
-                                    item.key as keyof typeof data.comments
+                                  item.key as keyof typeof data.comments
                                   ]
                                 }
                               </Typography>
@@ -618,45 +633,43 @@ export default function IntervieweeDetail() {
                     <Typography variant="h6" fontWeight="medium">
                       問題分析
                     </Typography>
-                    <Card
-                      sx={{
-                        marginTop: "1rem",
-                        p: 2,
-                        borderRadius: 2,
-                        border: `1px solid ${theme.palette.divider}`,
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        fontWeight="medium"
-                        sx={{ marginBottom: "1rem" }}
+
+                    {interviewAnalysis.map((item, index) => (
+                      <Card
+                        key={index}
+                        sx={{
+                          mt: 2,
+                          p: 2,
+                          borderRadius: 2,
+                          border: `1px solid ${theme.palette.divider}`,
+                        }}
                       >
-                        問題 1: 請描述您過去的專案經驗
-                      </Typography>
-                      <Typography>
-                        應徵者詳細描述了React專案經驗，展示了良好的技術理解和解決問題能力。
-                      </Typography>
-                    </Card>
-                    <Card
-                      sx={{
-                        marginTop: "1rem",
-                        p: 2,
-                        borderRadius: 2,
-                        border: `1px solid ${theme.palette.divider}`,
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        fontWeight="medium"
-                        sx={{ marginBottom: "1rem" }}
-                      >
-                        問題 2: 請描述您過去的專案經驗
-                      </Typography>
-                      <Typography>
-                        應徵者詳細描述了React專案經驗，展示了良好的技術理解和解決問題能力。
-                      </Typography>
-                    </Card>
-                    <IconButton sx={{ marginTop: "1rem" }}>
+                        <Typography variant="h6" fontWeight="medium" sx={{ mb: 1 }}>
+                          問題 {index + 1}: {item.question}
+                        </Typography>
+
+                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                          面試者回答：
+                        </Typography>
+                        <Typography sx={{ mb: 1 }}>{item.answer}</Typography>
+
+                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          重點標籤：
+                        </Typography>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                          {item.tags.map((tag, i) => (
+                            <Chip key={i} label={tag} color="primary" variant="outlined" />
+                          ))}
+                        </Box>
+
+                        <Typography variant="subtitle2" color="text.secondary">
+                          AI評論：
+                        </Typography>
+                        <Typography>{item.aiComment}</Typography>
+                      </Card>
+                    ))}
+
+                    <IconButton sx={{ mt: 2 }}>
                       <ExpandMore />
                     </IconButton>
                   </Box>
