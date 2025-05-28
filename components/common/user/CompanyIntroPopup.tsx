@@ -11,12 +11,13 @@ import {
   Avatar,
   Grid,
 } from "@mui/material";
-import { 
-  Business, 
-  LocationOn, 
-  People, 
-  Language, 
-  Work 
+import {
+  Business,
+  LocationOn,
+  People,
+  Language,
+  Work,
+  LocalPhone
 } from "@mui/icons-material";
 import { interviewData } from "@/pages/user";
 
@@ -37,7 +38,7 @@ export default function CompanyIntroPopup({
     position: interview.position,
     industry: "資訊科技",
     location: "台北市信義區",
-    size: "500-1000人",
+    telephone: "0912-456-789",
     founded: "2010年",
     website: "www.example.com",
     description: "科技未來有限公司是一家專注於人工智能、雲端運算和大數據分析的科技公司。我們致力於開發創新解決方案，協助企業優化營運流程、提升效率並創造價值。通過前沿技術與行業專業知識的結合，我們為客戶提供定制化的服務，滿足其獨特需求。",
@@ -50,11 +51,6 @@ export default function CompanyIntroPopup({
       "免費健身房",
       "股票選擇權"
     ],
-    keyProjects: [
-      "雲端數據分析平台",
-      "智能客戶服務系統",
-      "企業資源規劃解決方案"
-    ],
     positionDesc: "作為資深前端工程師，您將負責開發高效能、直覺的用戶界面，並與設計和後端團隊緊密合作，打造卓越的用戶體驗。您將參與產品從概念到實現的整個過程，並推動前端技術的創新和最佳實踐。"
   } : null;
 
@@ -64,8 +60,8 @@ export default function CompanyIntroPopup({
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogContent dividers>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar 
-            src={companyInfo.logo} 
+          <Avatar
+            src={companyInfo.logo}
             alt={companyInfo.name}
             sx={{ width: 60, height: 60, mr: 2 }}
           >
@@ -92,14 +88,8 @@ export default function CompanyIntroPopup({
           </Grid>
           <Grid>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <People color="primary" sx={{ mr: 1 }} />
-              <Typography variant="body2">{companyInfo.size}</Typography>
-            </Box>
-          </Grid>
-          <Grid>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Business color="primary" sx={{ mr: 1 }} />
-              <Typography variant="body2">成立於 {companyInfo.founded}</Typography>
+              <LocalPhone color="primary" sx={{ mr: 1 }} />
+              <Typography variant="body1">{companyInfo.telephone}</Typography>
             </Box>
           </Grid>
           <Grid>
@@ -118,32 +108,11 @@ export default function CompanyIntroPopup({
         </Typography>
 
         <Typography variant="h6" gutterBottom>
-          公司文化
-        </Typography>
-        <Typography variant="body1" paragraph>
-          {companyInfo.culture}
-        </Typography>
-
-        <Typography variant="h6" gutterBottom>
           員工福利
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
           {companyInfo.benefits.map((benefit, index) => (
             <Chip key={index} label={benefit} />
-          ))}
-        </Box>
-
-        <Typography variant="h6" gutterBottom>
-          主要專案
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-          {companyInfo.keyProjects.map((project, index) => (
-            <Chip 
-              key={index} 
-              label={project} 
-              color="primary" 
-              variant="outlined" 
-            />
           ))}
         </Box>
 
