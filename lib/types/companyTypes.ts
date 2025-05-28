@@ -1,5 +1,5 @@
 export interface CompanyTypes {
-    addresses: string[];
+    addresses: AddressList[];
     company_benefits: string;
     company_description: string;
     company_id: string;
@@ -8,4 +8,9 @@ export interface CompanyTypes {
     industry_name: string;
     industry_id: number;
     telephone: string;
+}
+
+export type AddressList = {
+    address_id?: number;
+    address: string;
 }

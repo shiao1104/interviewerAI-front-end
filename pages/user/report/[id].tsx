@@ -197,9 +197,6 @@ export default function Report() {
                   <Typography variant="body2" color={customColors.textSecondary} sx={{ ml: 4, mb: 1 }}>
                     時間：{data.interviewTime}
                   </Typography>
-                  <Typography variant="body2" color={customColors.textSecondary} sx={{ ml: 4 }}>
-                    面試官：{data.interviewerName}
-                  </Typography>
                 </Grid>
               </Grid>
             </Box>
