@@ -27,7 +27,7 @@ export default function Home() {
       const response = await CompanyAPI.getData(1);
       const data = response.data as unknown as CompanyTypes;
       setDataList(data);
-      setBenefitList(data.company_benefits?.split('、'));
+      setBenefitList(data.company_benefits?.split('、') || []);
     }
 
     fetch();
@@ -84,7 +84,7 @@ export default function Home() {
               alt={companyInfo.name}
               sx={{ width: 80, height: 80, mr: 3 }}
             >
-              {/* {dataList.company_name[0]} */}
+              {dataList?.company_name?.[0]}
             </Avatar>
             <Box>
               <Typography variant="h5" component="div">
@@ -117,13 +117,14 @@ export default function Home() {
             }}
           >
             <Grid>
-              {dataList?.addresses?.map((item: string) =>
-                <Box sx={{ display: "flex", alignItems: "center", mb: '5px' }}>
+              {dataList?.addresses?.map((item, index) => (
+                <Box key={item.address_id || index} sx={{ display: "flex", alignItems: "center", mb: '5px' }}>
                   <LocationOn color="primary" sx={{ mr: 1 }} />
                   <Typography variant="body1">
-                    {item}
+                    {item.address}
                   </Typography>
-                </Box>)}
+                </Box>
+              ))}
             </Grid>
             <Grid>
               <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -134,7 +135,9 @@ export default function Home() {
             <Grid>
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <Language color="primary" sx={{ mr: 1 }} />
-                <Link href={dataList?.company_website} target="_blank" variant="body1">{dataList?.company_website}</Link>
+                <Link href={dataList?.company_website} target="_blank" variant="body1">
+                  {dataList?.company_website}
+                </Link>
               </Box>
             </Grid>
           </Grid>
