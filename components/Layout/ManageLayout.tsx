@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { Menu, MenuOpen } from "@mui/icons-material";
+import { Menu, MenuOpen, ExitToApp } from "@mui/icons-material";
 import {
   Box,
   Drawer,
@@ -8,6 +8,7 @@ import {
   ListItem,
   ListItemButton,
   Toolbar,
+  Button,
 } from "@mui/material";
 import Logo from "@/public/image/logo (1).png";
 import Image from "next/image";
@@ -18,6 +19,13 @@ import { useRouter } from "next/router";
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+
+  const handleLogout = () => {
+    if (confirm('確定要登出嗎？')) {
+      sessionStorage.clear();
+      router.push('/login');
+    }
+  };
 
   return (
     <>
@@ -36,23 +44,41 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               top: 0,
               display: "flex",
               alignItems: "center",
+              justifyContent: "space-between", // 讓左右兩邊對齊
               borderBottom: "1px solid #ccc",
               height: "64px",
               background: "#fff",
               zIndex: 999,
             }}
           >
+            {/* 左側：選單按鈕和 Logo */}
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <IconButton
+                onClick={() => setOpen(!open)}
+                sx={{
+                  borderRadius: "50%",
+                  padding: 1,
+                  marginRight: 1,
+                }}
+              >
+                {open ? <MenuOpen /> : <Menu />}
+              </IconButton>
+              <Image src={Logo} alt="interview AI" width={140} />
+            </Box>
+
+            {/* 右側：登出按鈕 */}
             <IconButton
-              onClick={() => setOpen(!open)}
+              onClick={handleLogout}
+              color="error"
               sx={{
-                borderRadius: "50%",
-                padding: 1,
-                marginRight: 1,
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 500,
+                px: 2,
               }}
             >
-              {open ? <MenuOpen /> : <Menu />}
+              <ExitToApp />
             </IconButton>
-            <Image src={Logo} alt="interview AI" width={140} />
           </Toolbar>
 
           <Box>

@@ -103,18 +103,31 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
     try {
       const response = await UserAPI.access(dataList);
-      sessionStorage.setItem("token", response.data.access);
-      toast.success("登入成功", {
-        position: "top-center",
-        autoClose: 1500,
-        hideProgressBar: true,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-      router.push("/");
+      if (response.data && response.data.access) {
+        sessionStorage.setItem("token", response.data.access);
+        toast.success("登入成功", {
+          position: "top-center",
+          autoClose: 1500,
+          hideProgressBar: true,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+        router.push("/");
+      } else {
+        toast.error("登入失敗：無法取得存取權杖", {
+          position: "top-center",
+          autoClose: 1500,
+          hideProgressBar: true,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
     } catch {
       toast.error("登入失敗", {
         position: "top-center",
@@ -250,7 +263,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <Typography sx={{ textAlign: "center" }}>
               還沒有註冊嗎?{" "}
               <Link
-                href="/material-ui/getting-started/templates/sign-in/"
+                href="/sign-up"
                 variant="body2"
                 sx={{ alignSelf: "center" }}
               >
