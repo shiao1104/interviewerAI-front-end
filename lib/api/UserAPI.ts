@@ -18,6 +18,10 @@ const UserAPI = {
   test: (): Promise<Response<unknown>> => API.post(`/test/fetch/`),
 
   test2: (): Promise<Response<unknown>> => API.post(`/gpt/evaluate/`),
+
+  sendVerificationCode: (data: { to_email: string, subject: string, message: string }): Promise<Response<unknown>> =>
+    API.post(`/api/send-email/`, data)
+
 };
 
 export default UserAPI;

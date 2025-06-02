@@ -1,251 +1,435 @@
+import * as React from "react";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import CssBaseline from "@mui/material/CssBaseline";
 import FormLabel from "@mui/material/FormLabel";
+import FormControl from "@mui/material/FormControl";
 import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
-import Divider from "@mui/material/Divider";
-import { FaGoogle } from "react-icons/fa";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { formFields, IFormInputs } from "@/lib/data/signUpdata";
-import { Card, Checkbox, FormControlLabel } from "@mui/material";
+import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
+import MuiCard from "@mui/material/Card";
+import Grid from "@mui/material/Grid";
+import { styled } from "@mui/material/styles";
+import AppTheme from "@/styles/theme/AppTheme";
+import Image from "next/image";
+import Logo from "@/public/image/logo (1).png";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import styles from "@/styles/pages/Login.module.scss";
-import { useEffect, useRef, useState } from "react";
+import UserAPI from "@/lib/api/UserAPI";
+import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
 
-// 驗證碼組件
-const Captcha = ({ onChange }: { onChange: (value: string) => void }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const captchaValue = useRef<string>("");
-  const [, setRefresh] = useState<number>(0);
-
-  // 生成隨機驗證碼
-  const generateCaptcha = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    
-    // 清除畫布
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // 設置背景色
-    ctx.fillStyle = "#f0f0f0";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // 生成隨機字符
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-    let captcha = "";
-    
-    for (let i = 0; i < 4; i++) {
-      const index = Math.floor(Math.random() * chars.length);
-      captcha += chars[index];
-    }
-    
-    captchaValue.current = captcha;
-    onChange(captcha);
-    
-    // 繪製驗證碼
-    for (let i = 0; i < captcha.length; i++) {
-      ctx.font = `${18 + Math.random() * 10}px Arial`;
-      ctx.fillStyle = `rgb(${Math.random() * 100}, ${Math.random() * 100}, ${Math.random() * 100})`;
-      ctx.textBaseline = "middle";
-      
-      // 隨機旋轉角度
-      const x = 15 + i * 25;
-      const y = 20 + Math.random() * 8;
-      const deg = (Math.random() - 0.5) * 30 * Math.PI / 180;
-      
-      ctx.translate(x, y);
-      ctx.rotate(deg);
-      ctx.fillText(captcha[i], 0, 0);
-      ctx.rotate(-deg);
-      ctx.translate(-x, -y);
-    }
-    
-    // 添加干擾線
-    for (let i = 0; i < 5; i++) {
-      ctx.strokeStyle = `rgb(${Math.random() * 200}, ${Math.random() * 200}, ${Math.random() * 200})`;
-      ctx.beginPath();
-      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-      ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-      ctx.stroke();
-    }
-    
-    // 添加干擾點
-    for (let i = 0; i < 50; i++) {
-      ctx.fillStyle = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
-      ctx.beginPath();
-      ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-    
-    setRefresh(prev => prev + 1);
-  };
-
-  useEffect(() => {
-    generateCaptcha();
-  }, []);
-
-  return (
-    <div className={styles.captchaContainer}>
-      <canvas
-        ref={canvasRef}
-        width={120}
-        height={40}
-        className={styles.captchaCanvas}
-      />
-      <Button
-        variant="text"
-        size="small"
-        className={styles.refreshButton}
-        onClick={generateCaptcha}
-      >
-        重新整理
-      </Button>
-    </div>
-  );
-};
-
-// 更新表單輸入類型
-interface IFormInputsWithCaptcha extends IFormInputs {
-  captcha: string;
+interface SignUpFormInputs {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  verificationCode: string;
 }
 
-export default function SignUp() {
-  const [captchaValue, setCaptchaValue] = useState<string>("");
-  
+const Card = styled(MuiCard)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  alignSelf: "center",
+  width: "100%",
+  padding: theme.spacing(4),
+  gap: theme.spacing(2),
+  margin: "auto",
+  [theme.breakpoints.up("sm")]: {
+    maxWidth: "450px",
+  },
+  boxShadow:
+    "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
+  ...theme.applyStyles("dark", {
+    boxShadow:
+      "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
+  }),
+}));
+
+const SignUpContainer = styled(Stack)(({ theme }) => ({
+  // height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
+  minHeight: "100%",
+  padding: theme.spacing(2),
+  [theme.breakpoints.up("sm")]: {
+    padding: theme.spacing(4),
+  },
+  "&::before": {
+    content: '""',
+    display: "block",
+    position: "absolute",
+    zIndex: -1,
+    inset: 0,
+    backgroundImage:
+      "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
+    backgroundRepeat: "no-repeat",
+    ...theme.applyStyles("dark", {
+      backgroundImage:
+        "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
+    }),
+  },
+}));
+
+export default function SignUp(props: { disableCustomTheme?: boolean }) {
+  const router = useRouter();
+  const [isClient, setIsClient] = React.useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<IFormInputsWithCaptcha>({
-    mode: "onBlur",
-    reValidateMode: "onChange",
-  });
+    watch,
+    getValues,
+  } = useForm<SignUpFormInputs>();
 
-  const handleCaptchaChange = (value: string) => {
-    setCaptchaValue(value);
-  };
+  const password = watch("password");
 
-  const onSubmit: SubmitHandler<IFormInputsWithCaptcha> = (data) => {
-    if (data.captcha.toLowerCase() !== captchaValue.toLowerCase()) {
-      alert("驗證碼錯誤，請重新輸入");
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // 倒數計時器
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [countdown]);
+
+  // 發送email驗證碼
+  const sendVerificationCode = async () => {
+    const email = getValues("email");
+    if (!email) {
+      toast.error("請先輸入Email", {
+        position: "top-center",
+        autoClose: 1500,
+      });
       return;
     }
-    console.log(data);
-    alert("註冊資料已提交！");
+
+    try {
+      // 調用後端API發送驗證碼
+      await UserAPI.sendVerificationCode({ to_email: email, subject: '123', message: '這是一封測試信件' });
+      setVerificationSent(true);
+      setCountdown(60); // 60秒倒數
+      toast.success("驗證碼已發送至您的Email", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+    } catch (error) {
+      toast.error("發送驗證碼失敗，請稍後再試", {
+        position: "top-center",
+        autoClose: 1500,
+      });
+    }
+  };
+
+  // 驗證email驗證碼
+  const verifyEmail = async () => {
+    const email = getValues("email");
+    const code = getValues("verificationCode");
+    
+    if (!email || !code) {
+      toast.error("請輸入Email和驗證碼", {
+        position: "top-center",
+        autoClose: 1500,
+      });
+      return;
+    }
+
+    try {
+      // 調用後端API驗證驗證碼
+      await UserAPI.verifyEmail({ email, code });
+      setIsEmailVerified(true);
+      toast.success("Email驗證成功", {
+        position: "top-center",
+        autoClose: 1500,
+      });
+    } catch (error) {
+      toast.error("驗證碼錯誤或已過期", {
+        position: "top-center",
+        autoClose: 1500,
+      });
+    }
+  };
+
+  const onSubmit = async (data: SignUpFormInputs) => {
+    if (!isEmailVerified) {
+      toast.error("請先完成Email驗證", {
+        position: "top-center",
+        autoClose: 1500,
+      });
+      return;
+    }
+
+    const registrationData = {
+      first_name: data.firstName,
+      last_name: data.lastName,
+      email: data.email,
+      password: data.password,
+      verification_code: data.verificationCode,
+    };
+
+    try {
+      const response = await UserAPI.register(registrationData);
+      toast.success("註冊成功！請登入", {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      router.push("/login");
+    } catch (error) {
+      toast.error("註冊失敗，請檢查資料後重試", {
+        position: "top-center",
+        autoClose: 1500,
+        hideProgressBar: true,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
   };
 
   return (
-    <section className={styles.container}>
-      <Card className={styles.content}>
-        <h1>註冊</h1>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className={styles.fields}>
-            <div className={styles.fieldsGrid}>
-              {formFields.map((item, index) => (
-                <div key={index} className={styles.fieldWrap}>
-                  <FormLabel htmlFor={item.name} className={styles.label}>
-                    {item.label}{" "}
-                    {errors[item.name as keyof IFormInputsWithCaptcha] && (
-                      <span className={styles.errorMessage}>
-                        *
-                        {errors[
-                          item.name as keyof IFormInputsWithCaptcha
-                        ]?.message?.toString()}
-                      </span>
-                    )}
-                  </FormLabel>
+    <AppTheme {...props}>
+      <CssBaseline enableColorScheme />
+      <SignUpContainer direction="column" justifyContent="space-between">
+        <Card variant="outlined">
+          <Box className={styles.iconWrap} sx={{ textAlign: "center" }}>
+            <Image src={Logo} alt="" width={150} />
+          </Box>
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{
+              width: "100%",
+              fontSize: "clamp(2rem, 10vw, 2.15rem)",
+              textAlign: "center",
+            }}
+          >
+            註冊
+          </Typography>
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100%",
+              gap: 2,
+            }}
+          >
+            {/* 姓名欄位 */}
+            <Grid container spacing={2} sx={{display: 'grid', gridTemplateColumns: '1fr 1fr'}}>
+              <Grid>
+                <FormControl fullWidth>
+                  <FormLabel htmlFor="lastName">姓氏</FormLabel>
                   <TextField
-                    type={item.type}
-                    className={styles.textField}
-                    id={item.name}
+                    id="lastName"
+                    placeholder="王"
+                    autoComplete="family-name"
+                    required
+                    fullWidth
                     variant="outlined"
-                    autoFocus={item.autoFocus}
-                    error={!!errors[item.name as keyof IFormInputsWithCaptcha]}
-                    {...register(
-                      item.name as keyof IFormInputsWithCaptcha,
-                      item.validation
-                    )}
-                  />
-                </div>
-              ))}
-            </div>
-            
-            <div className={styles.fieldWrap}>
-              <FormLabel htmlFor="captcha" className={styles.label}>
-                驗證碼 {errors.captcha && (
-                  <span className={styles.errorMessage}>
-                    *{errors.captcha?.message?.toString()}
-                  </span>
-                )}
-              </FormLabel>
-              <div className={styles.captchaField}>
-                <TextField
-                  type="text"
-                  className={styles.captchaInput}
-                  id="captcha"
-                  variant="outlined"
-                  error={!!errors.captcha}
-                  {...register("captcha", {
-                    required: "請輸入驗證碼",
-                  })}
-                />
-                <Captcha onChange={handleCaptchaChange} />
-              </div>
-            </div>
-            
-            <div className={styles.checkboxWrap}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    id="termsAgreed"
-                    {...register("termsAgreed", {
-                      required: "您必須同意服務條款和隱私政策才能繼續",
+                    error={!!errors.lastName}
+                    helperText={errors.lastName?.message}
+                    {...register("lastName", {
+                      required: "請輸入您的姓氏",
+                      minLength: {
+                        value: 1,
+                        message: "姓氏不能為空",
+                      },
                     })}
                   />
-                }
-                label={
-                  <span>
-                    我已閱讀並同意<Link href="#">服務條款</Link>和
-                    <Link href="#">隱私政策</Link>
-                    {errors.termsAgreed && (
-                      <span className={styles.errorMessage}>
-                        *{errors.termsAgreed?.message?.toString()}
-                      </span>
-                    )}
-                  </span>
-                }
+                </FormControl>
+              </Grid>
+              <Grid>
+                <FormControl fullWidth>
+                  <FormLabel htmlFor="firstName">名字</FormLabel>
+                  <TextField
+                    id="firstName"
+                    placeholder="小明"
+                    autoComplete="given-name"
+                    required
+                    fullWidth
+                    variant="outlined"
+                    error={!!errors.firstName}
+                    helperText={errors.firstName?.message}
+                    {...register("firstName", {
+                      required: "請輸入您的名字",
+                      minLength: {
+                        value: 1,
+                        message: "名字不能為空",
+                      },
+                    })}
+                  />
+                </FormControl>
+              </Grid>
+            </Grid>
+
+            {/* Email欄位 */}
+            <FormControl>
+              <FormLabel htmlFor="email">Email (帳號)</FormLabel>
+              <TextField
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                autoComplete="email"
+                required
+                fullWidth
+                variant="outlined"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                disabled={isEmailVerified}
+                {...register("email", {
+                  required: "請輸入您的Email",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Email 格式錯誤",
+                  },
+                })}
               />
-            </div>
-          </div>
+            </FormControl>
 
-          <Button type="submit" className={styles.submitButton}>
-            註冊
-          </Button>
-        </form>
+            {/* 驗證碼欄位 */}
+            <FormControl>
+              <FormLabel htmlFor="verificationCode">驗證碼</FormLabel>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <TextField
+                  id="verificationCode"
+                  placeholder="請輸入6位數驗證碼"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  error={!!errors.verificationCode}
+                  helperText={errors.verificationCode?.message}
+                  disabled={isEmailVerified}
+                  {...register("verificationCode", {
+                    required: "請輸入驗證碼",
+                    pattern: {
+                      value: /^\d{6}$/,
+                      message: "驗證碼為6位數字",
+                    },
+                  })}
+                />
+                {!isEmailVerified && (
+                  <Button
+                    variant="outlined"
+                    onClick={sendVerificationCode}
+                    disabled={countdown > 0}
+                    sx={{ minWidth: "120px", whiteSpace: "nowrap" }}
+                  >
+                    {countdown > 0 ? `${countdown}s` : "發送驗證碼"}
+                  </Button>
+                )}
+              </Box>
+            </FormControl>
 
-        <Divider sx={{ margin: "1.5rem 0" }}>或</Divider>
+            {/* 驗證按鈕 */}
+            {verificationSent && !isEmailVerified && (
+              <Button
+                variant="outlined"
+                onClick={verifyEmail}
+                sx={{ alignSelf: "flex-start" }}
+              >
+                驗證Email
+              </Button>
+            )}
 
-        <Button
-          fullWidth
-          variant="outlined"
-          onClick={() => alert("Sign in with Google")}
-          startIcon={<FaGoogle />}
-          sx={{
-            borderRadius: "4px",
-            textTransform: "none",
-          }}
-        >
-          使用 Google 登入
-        </Button>
+            {isEmailVerified && (
+              <Typography color="success.main" variant="body2">
+                ✓ Email已驗證
+              </Typography>
+            )}
 
-        <p style={{ marginTop: "1.5rem", textAlign: "center" }}>
-          已經有帳號了嗎?{" "}
-          <Link href="/login" variant="body2" sx={{ alignSelf: "center" }}>
-            登入
-          </Link>
-        </p>
-      </Card>
-    </section>
+            {/* 密碼欄位 */}
+            <FormControl>
+              <FormLabel htmlFor="password">密碼</FormLabel>
+              <TextField
+                id="password"
+                type="password"
+                placeholder="••••••"
+                autoComplete="new-password"
+                required
+                fullWidth
+                variant="outlined"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                {...register("password", {
+                  required: "請輸入密碼",
+                  minLength: {
+                    value: 6,
+                    message: "密碼至少6位數以上",
+                  },
+                  pattern: {
+                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).+$/,
+                    message: "密碼需包含大小寫字母與符號",
+                  },
+                })}
+              />
+            </FormControl>
+
+            {/* 確認密碼欄位 */}
+            <FormControl>
+              <FormLabel htmlFor="confirmPassword">確認密碼</FormLabel>
+              <TextField
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••"
+                autoComplete="new-password"
+                required
+                fullWidth
+                variant="outlined"
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+                {...register("confirmPassword", {
+                  required: "請再次輸入密碼",
+                  validate: (value) =>
+                    value === password || "密碼不一致",
+                })}
+              />
+            </FormControl>
+
+            <Button 
+              type="submit" 
+              fullWidth 
+              variant="contained"
+            >
+              註冊
+            </Button>
+          </Box>
+          
+          
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Typography sx={{ textAlign: "center" }}>
+              已經有帳號了嗎?{" "}
+              <Link
+                href="/login"
+                variant="body2"
+                sx={{ alignSelf: "center" }}
+              >
+                登入
+              </Link>
+            </Typography>
+          </Box>
+        </Card>
+      </SignUpContainer>
+    </AppTheme>
   );
 }

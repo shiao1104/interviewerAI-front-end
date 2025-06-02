@@ -13,6 +13,8 @@ import { useEffect, useState } from "react";
 import { NotificationsActive, Settings } from "@mui/icons-material";
 import NotificationPopover from "../common/user/NotificationPopover";
 import { useRouter } from "next/router";
+import Image from "next/image";
+import logo from "@/public/image/logo (1).png";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -66,14 +68,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       >
         <Box className={styles.headerLeft}>
           <div className={styles.logoWrapper}>
-            <div className={styles.logoEffect}></div>
-            <Typography variant="h5" className={styles.logo}>
-              AI面試官
+            <Typography variant="h5">
+              <Image src={logo} alt="Logo" width={200} />
             </Typography>
           </div>
-          <Typography variant="h4" className={styles.greeting}>
-            您好，{name}
-          </Typography>
           <Typography variant="subtitle1" className={styles.subtitle}>
             今天是準備面試的好日子！您有{" "}
             <span className={styles.highlight}>2</span> 個即將到來的面試。
@@ -115,7 +113,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             <MenuItem disabled>👤 {name}</MenuItem>
             <Divider />
-            <MenuItem onClick={() => alert("查看個人檔案")}>
+            <MenuItem onClick={() => router.push('/user/profile')}>
               查看個人檔案
             </MenuItem>
             <MenuItem onClick={() => router.push('/login')}>登出</MenuItem>

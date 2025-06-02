@@ -48,7 +48,7 @@ const theme = createTheme({
 
 const ProfileContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
-  margin: "2rem auto",
+  margin: "auto",
   maxWidth: "1000px",
   borderRadius: "16px",
 }));
