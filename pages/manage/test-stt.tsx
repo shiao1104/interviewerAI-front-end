@@ -21,8 +21,9 @@ export default function TestSTT() {
 
     try {
       const res = await transcribeAudio(audio); // 回傳 { transcript, summary }
-      setResult(res.transcript);
-      setSummary(res.summary);
+      console.log("✅ 音檔轉換成功：", res);
+      // setResult(res.transcript);
+      // setSummary(res.summary);
     } catch (err: any) {
       console.error("❌ 錯誤發生：", err);
       setError("發生錯誤，請查看 console 或後端 log");
@@ -41,13 +42,13 @@ export default function TestSTT() {
         上傳轉換
       </button>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {/* {error && <p style={{ color: "red" }}>{error}</p>} */}
 
-      <h3>逐字稿：</h3>
+      {/* <h3>逐字稿：</h3>
       <pre>{result}</pre>
 
       <h3>重點摘要：</h3>
-      <pre>{summary}</pre>
+      <pre>{summary}</pre> */}
     </div>
   );
 }

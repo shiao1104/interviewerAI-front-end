@@ -52,7 +52,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="UTF-8" />
         <meta name="description" content="NTUB IMD BIRC CMS" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/logo.ico" />
+        <link rel="icon" href="/logo_2.png" />
       </Head>
 
       {/* 頁首 */}
@@ -68,8 +68,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       >
         <Box className={styles.headerLeft}>
           <div className={styles.logoWrapper}>
-            <Typography variant="h5">
-              <Image src={logo} alt="Logo" width={200} />
+            <Typography variant="h5" sx={{ cursor: 'pointer' }}>
+              <Image src={logo} alt="Logo" width={200} onClick={() => router.push('/user')} />
             </Typography>
           </div>
           <Typography variant="subtitle1" className={styles.subtitle}>

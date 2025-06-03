@@ -34,7 +34,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="UTF-8" />
         <meta name="description" content="NTUB IMD BIRC CMS" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/logo.png" />
+        <link rel="icon" href="/logo_2.png" />
       </Head>
       <main>
         <section>

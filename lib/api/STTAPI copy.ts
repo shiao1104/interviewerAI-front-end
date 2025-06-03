@@ -3,16 +3,12 @@ import API from "./api";
 export const transcribeAudio = async (audioFile: File) => {
   const formData = new FormData();
   formData.append("audio", audioFile);
-  const token = sessionStorage.getItem("token");
-  console.log("👉 使用的 token:", token);
 
   const res = await API.post("/STT/transcribe/", formData, {
     headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "multipart/form-data",
-      "Accept": "application/json",
+      "Content-Type": "multipart/form-data"
     }
   });
 
-  return res.data;
+  return res;
 };
