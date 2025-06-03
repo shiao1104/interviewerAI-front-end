@@ -1,18 +1,18 @@
-import API from "./api";
-
 export const transcribeAudio = async (audioFile: File) => {
   const formData = new FormData();
   formData.append("audio", audioFile);
   const token = sessionStorage.getItem("token");
   console.log("👉 使用的 token:", token);
 
-  const res = await API.post("/STT/transcribe/", formData, {
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "multipart/form-data",
-      "Accept": "application/json",
-    }
+  const response = await fetch("http://127.0.0.1:8000/STT/transcribe/", {
+    method: "POST",
+    body: formData,
+    credentials: "include",
   });
 
-  return res.data;
+  if (!response.ok) {
+    throw new Error("上傳失敗");
+  }
+
+  return await response.json();  // ✅ 正確寫法
 };
