@@ -30,6 +30,7 @@ import { NonRecordingUI } from "@/components/common/user/NonRecordingUI";
 import VideoRecorder, {
   VideoRecorderRef,
 } from "@/components/common/user/VideoRecorder";
+import QuestionAPI from "@/lib/api/QuestionAPI";
 
 export default function Interview() {
   const [isClient, setIsClient] = useState(false);
@@ -65,6 +66,15 @@ export default function Interview() {
   // 錄影相關
   const recorderRef = useRef<VideoRecorderRef>(null);
   const [isRecording, setIsRecording] = useState(false);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const response = await QuestionAPI.getRandom(1);
+      console.log(response);
+    }
+
+    fetch();
+  }, []);
 
   // 初始化客戶端渲染
   useEffect(() => {
