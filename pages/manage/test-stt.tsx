@@ -14,19 +14,18 @@ export default function TestSTT() {
     setSummary("");
 
     if (!audio) {
-      console.warn("⚠️ 請先選擇音檔");
       setError("請先選擇音檔！");
       return;
     }
 
     try {
-      const res = await transcribeAudio(audio); // 回傳 { transcript, summary }
-      console.log("✅ 音檔轉換成功：", res);
-      // setResult(res.transcript);
-      // setSummary(res.summary);
-    } catch (err: any) {
-      console.error("❌ 錯誤發生：", err);
-      setError("發生錯誤，請查看 console 或後端 log");
+      const res = await transcribeAudio(audio);
+      console.log("🔥 API 回傳內容：", res);
+      setResult(res.transcript);
+      setSummary(res.summary);
+    } catch (err) {
+      console.error("❌ 發生錯誤：", err);
+      setError("上傳失敗，請查看 console");
     }
   };
 
@@ -38,17 +37,18 @@ export default function TestSTT() {
         accept="audio/*"
         onChange={e => setAudio(e.target.files?.[0] || null)}
       />
-      <button onClick={handleUpload} style={{ display: "block", marginTop: "10px" }}>
+      <button onClick={handleUpload} style={{ marginTop: "10px" }}>
         上傳轉換
       </button>
 
-      {/* {error && <p style={{ color: "red" }}>{error}</p>} */}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* <h3>逐字稿：</h3>
+      <h3>逐字稿：</h3>
       <pre>{result}</pre>
 
       <h3>重點摘要：</h3>
-      <pre>{summary}</pre> */}
+      <pre>{summary}</pre>
+
     </div>
   );
 }
