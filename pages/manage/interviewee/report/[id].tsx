@@ -17,6 +17,15 @@ import {
   Tabs,
   Paper,
   IconButton,
+  Radio,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
 } from "@mui/material";
 import {
   Analytics,
@@ -37,12 +46,22 @@ import CircleProgress from "@/components/common/manage/CircleProgress";
 import Layout from "@/components/Layout/ManageLayout";
 import Image from "next/image";
 import pic from "@/public/image/pic.jpg";
+import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { useRef } from "react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function IntervieweeDetail() {
   const router = useRouter();
   const { id } = router.query;
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
+  const [passed, setPassed] = useState('');
+  const [interviewTime, setInterviewTime] = useState<Dayjs | null>(null);
+  const [interviewType, setInterviewType] = useState('');
+  const aiReportRef = useRef<HTMLDivElement>(null);
 
   const scoreItems = [
     {
@@ -125,6 +144,23 @@ export default function IntervieweeDetail() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleTabChange = (event: any, newValue: any) => {
     setTabValue(newValue);
+  };
+
+  const handleExportAIReport = async () => {
+    if (!aiReportRef.current) return;
+
+    const canvas = await html2canvas(aiReportRef.current, {
+      scale: 2,
+      useCORS: true,
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("AI-面試分析報告.pdf");
   };
 
   return (
@@ -409,7 +445,7 @@ export default function IntervieweeDetail() {
                         variant="outlined"
                         startIcon={<Analytics />}
                         fullWidth
-                        href={data.emotionAnalysisUrl}
+                        onClick={() => window.open("/manage/interviewee/report/export", "_blank")}
                         sx={{
                           p: 1,
                           borderRadius: 2,
@@ -426,252 +462,398 @@ export default function IntervieweeDetail() {
                   "尚未接受面試"
                 )}
               </Box>
-              {/* <Box sx={{ mt: "2rem" }}>
-                <Typography variant="h6" fontWeight="medium" sx={{ mb: 2 }}>
-                  是否通過面試
-                </Typography>
-                <Grid
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "1rem",
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    startIcon={<Check />}
-                    fullWidth
-                    sx={{
-                      p: 1,
-                      borderRadius: 2,
-                      height: "100%",
-                      textTransform: "none",
-                      justifyContent: "flex-start",
-                      borderColor: "green",
-                      color: "green",
-                    }}
-                  >
-                    是
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<Cancel />}
-                    fullWidth
-                    sx={{
-                      p: 1,
-                      borderRadius: 2,
-                      height: "100%",
-                      textTransform: "none",
-                      justifyContent: "flex-start",
-                      borderColor: "red",
-                      color: "red",
-                    }}
-                  >
-                    否
-                  </Button>
-                </Grid>
-              </Box> */}
             </Paper>
           </Grid>
           {data.confirmStatus == "已面試" ? (
             <>
               {/* AI 面試分析報告 */}
-              <Grid>
-                {/* AI Analysis Tabs */}
-                <Paper
-                  elevation={0}
-                  sx={{
-                    borderRadius: 2,
-                    border: `1px solid ${theme.palette.divider}`,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Box sx={{ p: 2, bgcolor: theme.palette.background.paper }}>
-                    <Typography variant="h6" fontWeight="medium">
-                      AI 面試分析報告
-                    </Typography>
-                  </Box>
-
-                  <Tabs
-                    value={tabValue}
-                    onChange={handleTabChange}
+              <div ref={aiReportRef}>
+                <Grid>
+                  {/* AI Analysis Tabs */}
+                  <Paper
+                    elevation={0}
                     sx={{
-                      px: 2,
-                      borderBottom: `1px solid ${theme.palette.divider}`,
-                      "& .MuiTab-root": {
-                        textTransform: "none",
-                        minWidth: "auto",
-                        px: 2,
-                      },
+                      borderRadius: 2,
+                      border: `1px solid ${theme.palette.divider}`,
+                      overflow: "hidden",
                     }}
                   >
-                    <Tab label="總評" />
-                    <Tab label="詳細分析" />
-                  </Tabs>
+                    <Box sx={{ p: 2, bgcolor: theme.palette.background.paper }}>
+                      <Typography variant="h6" fontWeight="medium">
+                        AI 面試分析報告
+                      </Typography>
+                    </Box>
 
-                  <Box sx={{ p: 3 }}>
-                    {tabValue === 0 && (
-                      <Box sx={{ display: "flex" }}>
-                        <Box
+                    <Tabs
+                      value={tabValue}
+                      onChange={handleTabChange}
+                      sx={{
+                        px: 2,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                        "& .MuiTab-root": {
+                          textTransform: "none",
+                          minWidth: "auto",
+                          px: 2,
+                        },
+                      }}
+                    >
+                      <Tab label="總評" />
+                      <Tab label="詳細分析" />
+                    </Tabs>
+
+                    <Box sx={{ p: 3 }}>
+                      {tabValue === 0 && (
+                        <Box sx={{ display: "flex" }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              mr: 3,
+                            }}
+                          >
+                            <CircleProgress
+                              score={data.scores.overall}
+                              label="總體評分"
+                              color={theme.palette.primary.main}
+                              size={160}
+                            />
+                          </Box>
+                          <Typography
+                            variant="body1"
+                            sx={{ px: 2, margin: "2rem 0" }}
+                          >
+                            {data.comments.overall}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {tabValue === 1 && (
+                        <Grid
+                          container
                           sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            mr: 3,
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "1rem",
                           }}
                         >
-                          <CircleProgress
-                            score={data.scores.overall}
-                            label="總體評分"
-                            color={theme.palette.primary.main}
-                            size={160}
-                          />
-                        </Box>
-                        <Typography
-                          variant="body1"
-                          sx={{ px: 2, margin: "2rem 0" }}
-                        >
-                          {data.comments.overall}
-                        </Typography>
-                      </Box>
-                    )}
-
-                    {tabValue === 1 && (
-                      <Grid
-                        container
-                        sx={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: "1rem",
-                        }}
-                      >
-                        {scoreItems.map((item) => (
-                          <Grid key={item.key}>
-                            <Card
-                              sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                border: `1px solid ${theme.palette.divider}`,
-                              }}
-                            >
-                              <Typography variant="subtitle2" gutterBottom>
-                                {item.title}
-                              </Typography>
-                              <Box sx={{ mb: 1 }}>
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                  }}
-                                >
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
+                          {scoreItems.map((item) => (
+                            <Grid key={item.key}>
+                              <Card
+                                sx={{
+                                  p: 2,
+                                  borderRadius: 2,
+                                  border: `1px solid ${theme.palette.divider}`,
+                                }}
+                              >
+                                <Typography variant="subtitle2" gutterBottom>
+                                  {item.title}
+                                </Typography>
+                                <Box sx={{ mb: 1 }}>
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                    }}
                                   >
-                                    {item.label}
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    fontWeight="medium"
-                                  >
-                                    {
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      {item.label}
+                                    </Typography>
+                                    <Typography
+                                      variant="body2"
+                                      fontWeight="medium"
+                                    >
+                                      {
+                                        data.scores[
+                                        item.key as keyof typeof data.scores
+                                        ]
+                                      }
+                                      /100
+                                    </Typography>
+                                  </Box>
+                                  <LinearProgress
+                                    variant="determinate"
+                                    value={
                                       data.scores[
                                       item.key as keyof typeof data.scores
                                       ]
                                     }
-                                    /100
-                                  </Typography>
+                                    sx={{
+                                      mt: 0.5,
+                                      height: 6,
+                                      borderRadius: 3,
+                                      bgcolor: theme.palette.grey[100],
+                                      "& .MuiLinearProgress-bar": {
+                                        bgcolor: item.color,
+                                        borderRadius: 3,
+                                      },
+                                    }}
+                                  />
                                 </Box>
-                                <LinearProgress
-                                  variant="determinate"
-                                  value={
-                                    data.scores[
-                                    item.key as keyof typeof data.scores
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ mt: 2 }}
+                                >
+                                  {
+                                    data.comments[
+                                    item.key as keyof typeof data.comments
                                     ]
                                   }
-                                  sx={{
-                                    mt: 0.5,
-                                    height: 6,
-                                    borderRadius: 3,
-                                    bgcolor: theme.palette.grey[100],
-                                    "& .MuiLinearProgress-bar": {
-                                      bgcolor: item.color,
-                                      borderRadius: 3,
-                                    },
-                                  }}
-                                />
-                              </Box>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ mt: 2 }}
-                              >
-                                {
-                                  data.comments[
-                                  item.key as keyof typeof data.comments
-                                  ]
-                                }
-                              </Typography>
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    )}
-                  </Box>
-                </Paper>
-              </Grid>
+                                </Typography>
+                              </Card>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      )}
+                    </Box>
+                  </Paper>
+                </Grid>
 
-              {/* 問題分析 */}
+                {/* 問題分析 */}
+                <Grid>
+                  <Paper
+                    sx={{
+                      borderRadius: 2,
+                      border: `1px solid ${theme.palette.divider}`,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Box sx={{ p: 2, bgcolor: theme.palette.background.paper }}>
+                      <Typography variant="h6" fontWeight="medium">
+                        問題分析
+                      </Typography>
+
+                      {interviewAnalysis.map((item, index) => (
+                        <Card
+                          key={index}
+                          sx={{
+                            mt: 2,
+                            p: 2,
+                            borderRadius: 2,
+                            border: `1px solid ${theme.palette.divider}`,
+                          }}
+                        >
+                          <Typography variant="h6" fontWeight="medium" sx={{ mb: 1 }}>
+                            問題 {index + 1}: {item.question}
+                          </Typography>
+
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                            面試者回答：
+                          </Typography>
+                          <Typography sx={{ mb: 1 }}>{item.answer}</Typography>
+
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            重點標籤：
+                          </Typography>
+                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                            {item.tags.map((tag, i) => (
+                              <Chip key={i} label={tag} color="primary" variant="outlined" />
+                            ))}
+                          </Box>
+
+                          <Typography variant="subtitle2" color="text.secondary">
+                            AI評論：
+                          </Typography>
+                          <Typography>{item.aiComment}</Typography>
+                        </Card>
+                      ))}
+
+                      <IconButton sx={{ mt: 2 }}>
+                        <ExpandMore />
+                      </IconButton>
+                    </Box>
+                  </Paper>
+                </Grid>
+              </div>
               <Grid>
                 <Paper
+                  elevation={0}
                   sx={{
-                    borderRadius: 2,
-                    border: `1px solid ${theme.palette.divider}`,
-                    overflow: "hidden",
+                    borderRadius: 3,
+                    border: '1px solid #e1e8ed',
+                    overflow: 'hidden',
+                    bgcolor: 'white',
+                    p: 3
                   }}
                 >
-                  <Box sx={{ p: 2, bgcolor: theme.palette.background.paper }}>
-                    <Typography variant="h6" fontWeight="medium">
-                      問題分析
+                  {/* Header */}
+                  <Box sx={{
+                    bgcolor: 'white',
+                  }}>
+                    <Typography
+                      variant="h6"
+                      fontWeight={600}
+                      sx={{
+                        color: '#1a1f36',
+                        fontSize: '18px',
+                        mb: 1
+                      }}
+                    >
+                      是否通過此次初步面試？
                     </Typography>
+                  </Box>
 
-                    {interviewAnalysis.map((item, index) => (
-                      <Card
-                        key={index}
-                        sx={{
-                          mt: 2,
-                          p: 2,
-                          borderRadius: 2,
-                          border: `1px solid ${theme.palette.divider}`,
-                        }}
+                  {/* Content */}
+                  <Box>
+                    {/* Radio Selection */}
+                    <FormControl component="fieldset" sx={{ mb: 2 }}>
+                      <RadioGroup
+                        value={passed}
+                        onChange={(e) => setPassed(e.target.value)}
+                        row
+                        sx={{ gap: 3 }}
                       >
-                        <Typography variant="h6" fontWeight="medium" sx={{ mb: 1 }}>
-                          問題 {index + 1}: {item.question}
-                        </Typography>
+                        <FormControlLabel
+                          value="yes"
+                          control={
+                            <Radio
+                              sx={{
+                                color: '#1976d2',
+                                '&.Mui-checked': {
+                                  color: '#1976d2',
+                                }
+                              }}
+                            />
+                          }
+                          label={
+                            <Typography sx={{ fontWeight: 500, color: '#1a1f36' }}>
+                              是
+                            </Typography>
+                          }
+                        />
+                        <FormControlLabel
+                          value="no"
+                          control={
+                            <Radio
+                              sx={{
+                                color: '#1976d2',
+                                '&.Mui-checked': {
+                                  color: '#1976d2',
+                                }
+                              }}
+                            />
+                          }
+                          label={
+                            <Typography sx={{ fontWeight: 500, color: '#1a1f36' }}>
+                              否
+                            </Typography>
+                          }
+                        />
+                      </RadioGroup>
+                    </FormControl>
 
-                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                          面試者回答：
-                        </Typography>
-                        <Typography sx={{ mb: 1 }}>{item.answer}</Typography>
+                    {/* Conditional Fields for "Yes" */}
+                    {passed === "yes" && (
+                      <Box sx={{
+                        bgcolor: '#f8fbff',
+                        border: '1px solid #e3f2fd',
+                        borderRadius: 2,
+                        p: 2,
+                        mb: 1
+                      }}>
+                        <Grid container spacing={3}>
+                          <Grid>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DateTimePicker
+                                label="請選擇下次面試時間"
+                                value={interviewTime}
+                                onChange={(newValue) => setInterviewTime(newValue)}
+                                slotProps={{
+                                  textField: {
+                                    fullWidth: true,
+                                    sx: {
+                                      '& .MuiOutlinedInput-root': {
+                                        borderRadius: 2,
+                                        bgcolor: 'white'
+                                      }
+                                    }
+                                  }
+                                }}
+                              />
+                            </LocalizationProvider>
+                          </Grid>
 
-                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
-                          重點標籤：
-                        </Typography>
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-                          {item.tags.map((tag, i) => (
-                            <Chip key={i} label={tag} color="primary" variant="outlined" />
-                          ))}
-                        </Box>
+                          <Grid>
+                            <FormControl fullWidth>
+                              <InputLabel
+                                id="interview-type-label"
+                                sx={{ color: '#6b7280' }}
+                              >
+                                面試方式
+                              </InputLabel>
+                              <Select
+                                labelId="interview-type-label"
+                                value={interviewType}
+                                label="面試方式"
+                                onChange={(e) => setInterviewType(e.target.value)}
+                                sx={{
+                                  minWidth: 200,
+                                  borderRadius: 2,
+                                  bgcolor: 'white',
+                                  '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#d1d5db'
+                                  }
+                                }}
+                              >
+                                <MenuItem value="online">線上面試</MenuItem>
+                                <MenuItem value="onsite">實體面試</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    )}
 
-                        <Typography variant="subtitle2" color="text.secondary">
-                          AI評論：
-                        </Typography>
-                        <Typography>{item.aiComment}</Typography>
-                      </Card>
-                    ))}
+                    {/* Rejection Reason for "No" */}
+                    {passed === "no" && (
+                      <Box sx={{
+                        bgcolor: '#fef7f7',
+                        border: '1px solid #fed7d7',
+                        borderRadius: 2,
+                        p: 3,
+                        mb: 3
+                      }}>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={4}
+                          label="未通過原因 (選填)"
+                          placeholder="請簡述未通過面試的主要原因..."
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 2,
+                              bgcolor: 'white'
+                            }
+                          }}
+                        />
+                      </Box>
+                    )}
 
-                    <IconButton sx={{ mt: 2 }}>
-                      <ExpandMore />
-                    </IconButton>
+                    {/* Action Buttons */}
+                    <Box sx={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      gap: 2,
+                      pt: 2
+                    }}>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        sx={{ height: 40 }}
+                      >
+                        取消
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ height: 40 }}
+                      >
+                        確認送出
+                      </Button>
+                    </Box>
                   </Box>
                 </Paper>
               </Grid>
