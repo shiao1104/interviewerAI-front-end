@@ -1,4 +1,5 @@
 export interface CompanyTypes {
+    address?: string;
     addresses: AddressList[];
     company_benefits: string;
     company_description: string;

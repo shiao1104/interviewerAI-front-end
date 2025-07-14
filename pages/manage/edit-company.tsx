@@ -49,7 +49,7 @@ export default function EditCompanyInfo() {
   useEffect(() => {
     const fetch = async () => {
       const response = await axios.all([
-        CompanyAPI.getData(1),
+        CompanyAPI.getData(11),
         CompanyAPI.getIndustryList()
       ]);
       const data = response[0].data as unknown as CompanyTypes;
