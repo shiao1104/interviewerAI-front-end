@@ -380,7 +380,8 @@ export default function IntervieweeDetail() {
                 <Typography variant="h6" fontWeight="medium" sx={{ mb: 2 }}>
                   面試資料
                 </Typography>
-                {data.confirmStatus == "已面試" ? (
+                {/* {data.confirmStatus == "已面試" ? ( */}
+                {id == "A002" ? (
                   <Grid
                     container
                     sx={{
@@ -464,7 +465,9 @@ export default function IntervieweeDetail() {
               </Box>
             </Paper>
           </Grid>
-          {data.confirmStatus == "已面試" ? (
+          {/* {data.confirmStatus == "已面試" ? ( */}
+          {id == "A002" ? (
+
             <>
               {/* AI 面試分析報告 */}
               <div ref={aiReportRef}>
@@ -859,16 +862,7 @@ export default function IntervieweeDetail() {
               </Grid>
             </>
           ) : (
-            <Paper
-              sx={{
-                borderRadius: 2,
-                border: `1px solid ${theme.palette.divider}`,
-                padding: "2rem",
-                textAlign: "center",
-              }}
-            >
-              尚未接受面試
-            </Paper>
+            ""
           )}
         </Grid>
       </Box>
