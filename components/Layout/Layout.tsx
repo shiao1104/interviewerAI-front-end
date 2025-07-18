@@ -80,10 +80,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* 右側按鈕群 */}
         <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <IconButton className={styles.iconButton}>
-            <Settings />
-          </IconButton>
-
           <IconButton onClick={handleNotifClick}>
             <NotificationsActive />
           </IconButton>
