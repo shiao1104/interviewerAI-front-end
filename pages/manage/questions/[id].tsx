@@ -26,7 +26,7 @@ export default function Edit() {
     if (id) {
       const fetch = async () => {
         const response = await axios.all([
-          QuestionAPI.getData(id as unknown as number),
+          QuestionAPI.getRecord(id as unknown as number),
           QuestionAPI.getOpeningJobs(),
           QuestionAPI.getQuestionType(),
         ]);
