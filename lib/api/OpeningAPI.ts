@@ -5,8 +5,11 @@ import { Response } from "@/lib/types/requestType";
 const BASE_URL = "/opening";
 
 const OpeningAPI = {
-  getData: (opening_id?: number): Promise<Response<never>> =>
-    API.post(`${BASE_URL}/read/`, opening_id ? { opening_id } : {}),
+  getData: (): Promise<Response<never>> =>
+    API.get(`${BASE_URL}/openings/`),
+
+  getRecord: (id: number): Promise<Response<never>> =>
+    API.get(`${BASE_URL}/openings/${id}/`),
 
   create: (data: FetchQuestionTypes[]): Promise<Response<never>> =>
     API.post(`${BASE_URL}/create/`, data),
