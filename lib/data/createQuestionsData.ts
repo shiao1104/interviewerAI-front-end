@@ -77,10 +77,10 @@ export const createQuestionData: InputFieldTypes[] = [
     placeholder: "請選擇問題難易度",
     dropdownData: questionLevelData,
   },
-  {
-    label: "啟用狀態",
-    name: "valid",
-    type: "switch",
-    placeholder: "請選擇啟用狀態"
-  },
+  // {
+  //   label: "啟用狀態",
+  //   name: "valid",
+  //   type: "switch",
+  //   placeholder: "請選擇啟用狀態"
+  // },
 ];
