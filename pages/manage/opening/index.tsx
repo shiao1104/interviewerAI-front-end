@@ -18,6 +18,7 @@ import { useRouter } from "next/router";
 import JobDetailDialog from "@/components/common/manage/JobDetailDialog";
 import { getStatueColor } from "@/lib/hook/getStatueColor";
 import { openingSearchData } from "@/lib/data/openingSearchData";
+import OpeningAPI from "@/lib/api/OpeningAPI";
 
 export default function Opening() {
   const router = useRouter();
@@ -27,10 +28,22 @@ export default function Opening() {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [localOpeningData, setLocalOpeningData] = useState(openingData);
+  const [dataList, setDataList] = useState(openingData);
+
+  const fetchData = async () => {
+    try {
+      const response = await OpeningAPI.getData();
+      setDataList(response.data || []);
+      console.log(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
     console.log(searchParams);
-  });
+    fetchData();
+  }, []);
 
   const handleToggleValidity = (id: number) => {
     setLocalOpeningData((prev) =>
@@ -141,7 +154,7 @@ export default function Opening() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={localOpeningData} />
+          <DataTable columns={columns} data={dataList} />
         </Box>
       </Box>
       <JobDetailDialog
