@@ -5,14 +5,17 @@ import { Response } from "@/lib/types/requestType";
 const BASE_URL = "/question";
 
 const QuestionAPI = {
-  getData: (question_id?: number): Promise<Response<never>> =>
-    API.post(`${BASE_URL}/read/`, question_id ? { question_id } : {}),
+  getData: (): Promise<Response<never>> =>
+    API.get(`${BASE_URL}/questions/`),
+
+  getRecord: (question_id?: number): Promise<Response<never>> =>
+    API.post(`${BASE_URL}/questions/`, question_id ? question_id : {}),
 
   create: (data: FetchQuestionTypes[]): Promise<Response<never>> =>
     API.post(`${BASE_URL}/create/`, data),
 
   getQuestionType: (): Promise<Response<never>> =>
-    API.get(`${BASE_URL}/question-type/`),
+    API.get(`${BASE_URL}/types/`),
 
   getOpeningJobs: (): Promise<Response<never>> =>
     API.get(`${BASE_URL}/opening-jobs/`),

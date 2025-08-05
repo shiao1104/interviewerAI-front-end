@@ -34,6 +34,10 @@ export default function Questions() {
         QuestionAPI.getQuestionType(),
       ]);
       setDataList(response[0].data || []);
+      console.log(response[0].data);
+
+      // const response = await QuestionAPI.getData();
+      // setDataList(response.data || []);
     } catch (err) {
       console.log(err);
     }
@@ -66,33 +70,33 @@ export default function Questions() {
   };
 
   const columns = [
-    { id: "position", label: "適用職位", sortable: true },
+    // { id: "position", label: "適用職位", sortable: true },
     { id: "question_type", label: "問題類型", sortable: true },
     { id: "question", label: "問題內容" },
     { id: "time_allowed", label: "時間限制", sortable: true },
     {
       id: "difficulty",
       label: "難度等級",
-      render: (value: string) =>  (
+      render: (value: string) => (
         <Chip label={value} color={getDifficultyColor(value)} size="small" />
       ),
       sortable: true,
     },
     { id: "created_time", label: "建立日期", sortable: true },
-    {
-      id: "vaild",
-      label: "啟用狀態",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (_: any, row: any) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Switch
-            checked={row.vaild}
-            onChange={() => handleToggleValidity(row.question_id)}
-          />
-        </Box>
-      ),
-      sortable: true,
-    },
+    // {
+    //   id: "vaild",
+    //   label: "啟用狀態",
+    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //   render: (_: any, row: any) => (
+    //     <Box sx={{ display: "flex", gap: 1 }}>
+    //       <Switch
+    //         checked={row.vaild}
+    //         onChange={() => handleToggleValidity(row.question_id)}
+    //       />
+    //     </Box>
+    //   ),
+    //   sortable: true,
+    // },
     {
       id: "actions",
       label: "操作",
