@@ -24,7 +24,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetch = async () => {
-      const response = await CompanyAPI.getData(1);
+      const response = await CompanyAPI.getData(11);
       const data = response.data as unknown as CompanyTypes;
       setDataList(data);
       setBenefitList(data.company_benefits?.split('、') || []);
@@ -109,7 +109,7 @@ export default function Home() {
               mb: 3,
               display: "grid",
               gridTemplateColumns: {
-                xs: "1fr", 
+                xs: "1fr",
                 sm: "1fr 1fr",
                 md: "1fr 1fr 1fr"
               },
@@ -117,14 +117,20 @@ export default function Home() {
             }}
           >
             <Grid>
-              {dataList?.addresses?.map((item, index) => (
-                <Box key={item.address_id || index} sx={{ display: "flex", alignItems: "center", mb: '5px' }}>
+              {dataList?.addresses == null ? Object.entries(dataList?.addresses || {}).map(([key, address]) => (
+                <Box key={key} sx={{ display: "flex", alignItems: "center", mb: '5px' }}>
                   <LocationOn color="primary" sx={{ mr: 1 }} />
                   <Typography variant="body1">
-                    {item.address}
+                    {typeof address === "string" ? address : ""}
                   </Typography>
                 </Box>
-              ))}
+              )) :
+                <Box sx={{ display: "flex", alignItems: "center", mb: '5px' }}>
+                  <LocationOn color="primary" sx={{ mr: 1 }} />
+                  <Typography variant="body1">
+                    {dataList?.address || "無地址資訊"}
+                  </Typography>
+                </Box>}
             </Grid>
             <Grid>
               <Box sx={{ display: "flex", alignItems: "center" }}>
