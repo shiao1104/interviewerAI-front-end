@@ -28,13 +28,11 @@ export default function Opening() {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [localOpeningData, setLocalOpeningData] = useState(openingData);
-  const [dataList, setDataList] = useState(openingData);
 
   const fetchData = async () => {
     try {
       const response = await OpeningAPI.getData();
-      setDataList(response.data || []);
-      console.log(response.data);
+      setLocalOpeningData(response.data || []);
     } catch (err) {
       console.log(err);
     }
@@ -54,10 +52,10 @@ export default function Opening() {
   };
 
   const columns = [
-    { id: "id", label: "代碼", sortable: true },
-    { id: "openingTitle", label: "職缺名稱", sortable: true },
-    { id: "workLocation", label: "工作地點", sortable: true },
-    { id: "createDate", label: "建立日期", sortable: true },
+    { id: "opening_id", label: "代碼", sortable: true },
+    { id: "opening_name", label: "職缺名稱", sortable: true },
+    { id: "workplace_location", label: "工作地點", sortable: true },
+    { id: "update_time", label: "建立日期", sortable: true },
     {
       id: "actions",
       label: "操作",
@@ -65,7 +63,7 @@ export default function Opening() {
       render: (_: any, row: any) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <IconButton
-            onClick={() => router.push(`/manage/opening/${row.id}`)}
+            onClick={() => router.push(`/manage/opening/${row.opening_id}`)}
             size="small"
           >
             <Edit fontSize="small" />
@@ -77,7 +75,7 @@ export default function Opening() {
           >
             <Delete fontSize="small" />
           </IconButton>
-          <IconButton onClick={() => handleShow(row.id)} size="small">
+          <IconButton onClick={() => handleShow(row.opening_id)} size="small">
             <MoreHoriz fontSize="small" />
           </IconButton>
         </Box>
@@ -86,7 +84,7 @@ export default function Opening() {
   ];
 
   const handleShow = (id: number) => {
-    const found = localOpeningData.find((item) => item.id === id);
+    const found = localOpeningData.find((item) => item.opening_id === id);
     setSelectedJob(found);
     setDialogOpen(true);
   };
@@ -154,7 +152,7 @@ export default function Opening() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={dataList} />
+          <DataTable columns={columns} data={localOpeningData} />
         </Box>
       </Box>
       <JobDetailDialog
