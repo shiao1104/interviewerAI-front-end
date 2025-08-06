@@ -9,7 +9,7 @@ const QuestionAPI = {
     API.get(`${BASE_URL}/questions/`),
 
   getRecord: (question_id?: number): Promise<Response<never>> =>
-    API.post(`${BASE_URL}/questions/`, question_id ? question_id : {}),
+    API.get(`${BASE_URL}/questions/${question_id}/`),
 
   create: (data: FetchQuestionTypes[]): Promise<Response<never>> =>
     API.post(`${BASE_URL}/create/`, data),

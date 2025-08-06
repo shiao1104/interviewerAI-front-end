@@ -3,6 +3,7 @@ import Layout from "@/components/Layout/ManageLayout";
 import QuestionAPI from "@/lib/api/QuestionAPI";
 import { createQuestionData } from "@/lib/data/createQuestionsData";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
+import { QuestionDataType } from "@/lib/types/questionsTypes";
 import { Edit as EditIcon, KeyboardBackspace, Save } from "@mui/icons-material";
 import { Box, Button, Grid, Typography, Paper, Divider } from "@mui/material";
 import axios from "axios";
@@ -31,10 +32,11 @@ export default function Edit() {
           QuestionAPI.getQuestionType(),
         ]);
 
-        const questionData = response[0].data;
+        const questionData = response[0].data as unknown as QuestionDataType;
+
         formProps.reset({
-          company_id: questionData.company_id,
-          question_type_id: questionData.question_type_id,
+          company_id: questionData?.company_id || "",
+          question_type_id: questionData.question_type_detail.question_type_id,
           question: questionData.question,
           time_allowed: questionData.time_allowed,
           difficulty: questionData.difficulty,
@@ -138,7 +140,7 @@ export default function Edit() {
                   placeholder={item.placeholder}
                   dropdownData={
                     dropdownOptions[
-                      item.name as keyof typeof dropdownOptions
+                    item.name as keyof typeof dropdownOptions
                     ] || []
                   }
                   formProps={formProps}

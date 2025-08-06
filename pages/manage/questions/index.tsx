@@ -33,11 +33,17 @@ export default function Questions() {
         QuestionAPI.getData(),
         QuestionAPI.getQuestionType(),
       ]);
-      setDataList(response[0].data || []);
-      console.log(response[0].data);
 
-      // const response = await QuestionAPI.getData();
-      // setDataList(response.data || []);
+      const processedData = (response[0].data || []).map((item: any) =>
+        typeof item === "object" && item !== null
+          ? {
+              ...item,
+              question_type: item.question_type_detail?.question_type || ''
+            }
+          : {}
+      );
+
+      setDataList(processedData || []);
     } catch (err) {
       console.log(err);
     }
