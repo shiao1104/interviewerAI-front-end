@@ -13,7 +13,7 @@ export type TokenData = {
 
 const UserAPI = {
   access: (data: Params): Promise<Response<TokenData>> =>
-    API.post(`/api/token/`, data),
+    API.post(`/user/login/`, data),
 
   test: (): Promise<Response<unknown>> => API.post(`/test/fetch/`),
 
