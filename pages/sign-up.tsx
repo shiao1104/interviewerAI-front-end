@@ -171,6 +171,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     }
 
     const registrationData = {
+      username: data.email,
       first_name: data.firstName,
       last_name: data.lastName,
       email: data.email,
