@@ -35,8 +35,7 @@ export default function JobDetailDialog({
     { label: "職缺名稱", value: data.opening_name },
     { label: "工作地點", value: data.workplace_location },
     { label: "工作類型", value: data.employment_type },
-    { label: "工作內容說明", value: data.opening_info },
-    { label: "工作內容說明", value: data.opening_info },
+    { label: "工作內容說明", value: data.opening_info }
   ];
 
   return (
@@ -85,51 +84,57 @@ export default function JobDetailDialog({
           }}
         >
           {/* 職缺資訊區塊 */}
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
             職缺資訊
           </Typography>
 
+          {/* 基本資訊 - 3欄排列 */}
           <Grid
             container
+            spacing={3}
             sx={{
-              mb: "1rem",
+              mb: 3,
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: "1rem",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 2,
             }}
           >
             {openingInfo.slice(0, 3).map((item) => (
-              <Box key={item.label} sx={{ mb: 1 }}>
+              <Box key={item.label}>
                 <Typography
                   variant="subtitle2"
                   color="textSecondary"
-                  fontWeight={500}
+                  sx={{ fontWeight: 600, mb: 0.5 }}
                 >
                   {item.label}
                 </Typography>
-                <Typography variant="body1">{item.value || "—"}</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {item.value || "—"}
+                </Typography>
               </Box>
             ))}
           </Grid>
-
           <Grid
             container
+            spacing={3}
             sx={{
-              mb: "1rem",
+              mb: 3,
               display: "grid",
-              gap: "1rem",
+              gap: 2,
             }}
           >
             {openingInfo.slice(3).map((item) => (
-              <Box key={item.label} sx={{ mb: 1 }}>
+              <Box key={item.label}>
                 <Typography
                   variant="subtitle2"
                   color="textSecondary"
-                  fontWeight={500}
+                  sx={{ fontWeight: 600, mb: 0.5 }}
                 >
                   {item.label}
                 </Typography>
-                <Typography variant="body1">{item.value || "—"}</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {item.value || "—"}
+                </Typography>
               </Box>
             ))}
           </Grid>
