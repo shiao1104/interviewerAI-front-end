@@ -29,11 +29,11 @@ import { toast } from "react-toastify";
 export default function Create() {
   const router = useRouter();
   const [dropdownOptions, setDropdownOptions] = useState<{
-    applicablePositions: DropdownTypes[];
-    questionType: DropdownTypes[];
+    opening_jobs: DropdownTypes[];
+    question_type: DropdownTypes[];
   }>({
-    applicablePositions: [],
-    questionType: [],
+    opening_jobs: [],
+    question_type: [],
   });
   const formProps = useForm<{ questions: QuestionsTypes[] }>({
     defaultValues: {
@@ -53,70 +53,32 @@ export default function Create() {
         QuestionAPI.getOpeningJobs(),
       ]);
       setDropdownOptions({
-        applicablePositions: response[1].data || [],
-        questionType: response[0].data || [],
+        opening_jobs: response[1].data || [],
+        question_type: response[0].data || [],
       });
     };
     fetch();
   }, []);
 
-  const handleSubmit = formProps.handleSubmit(
-    (data: { questions: QuestionsTypes[] }) => {
-      const dataList = data.questions.map((q) => ({
-        question_type_id: q.questionType,
-        question: String(q.questionContent),
-        company_id: 1,
-        position: q.applicablePositions,
-        time_allowed: q.timeLimit,
-        difficulty: q.questionlevel,
-        valid: q.status,
-      }));
-
-      console.log(dataList);
-
-      const fetch = async () => {
-        try {
-          const response = await QuestionAPI.create(dataList);
-          toast.success(response.message, {
-            position: "top-center",
-            autoClose: 1500,
-            hideProgressBar: true,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          });
-          router.push("/manage/questions");
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-          toast.error(err.message, {
-            position: "top-center",
-            autoClose: 1500,
-            hideProgressBar: true,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          });
-        }
-      };
-
-      fetch();
+  const handleSubmit = async () => {
+    const { questions } = formProps.getValues();
+    if (questions.length === 0) {
+      toast.error("請至少新增一個問題");
+      return;
     }
-  );
+
+    try {
+      await QuestionAPI.create(questions);
+      toast.success("問題新增成功");
+      router.push("/manage/questions");
+    } catch (error) {
+      console.error("Error creating question:", error);
+      toast.error("新增問題失敗，請稍後再試");
+    }
+  };
 
   const addNewQuestion = () => {
-    append({
-      id: 0,
-      questionType: 0,
-      questionContent: "",
-      applicablePositions: "",
-      timeLimit: 0,
-      questionlevel: "",
-      status: "",
-    });
+    append({});
   };
 
   return (
@@ -151,6 +113,7 @@ export default function Create() {
           </Typography>
 
           <Button
+            type="submit"
             variant="contained"
             startIcon={<Save />}
             onClick={handleSubmit}
@@ -189,21 +152,16 @@ export default function Create() {
               )}
             </Box>
 
-            {/* 基本信息區塊 */}
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-              問題基本資訊
-            </Typography>
-
             <Grid
               container
               sx={{
                 mb: "1rem",
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: "1fr 1fr 1fr",
                 gap: "1rem",
               }}
             >
-              {createQuestionData.slice(0, 2).map((item, index) => (
+              {createQuestionData.slice(0, 3).map((item, index) => (
                 <Grid key={index}>
                   <InputField
                     name={`questions[${questionIndex}].${item.name}`}
@@ -212,8 +170,8 @@ export default function Create() {
                     placeholder={item.placeholder}
                     dropdownData={
                       dropdownOptions[
-                        item.name as keyof typeof dropdownOptions
-                      ] || []
+                      item.name as keyof typeof dropdownOptions
+                      ] || item.dropdownData
                     }
                     formProps={formProps}
                   />
@@ -221,7 +179,7 @@ export default function Create() {
               ))}
             </Grid>
 
-            {createQuestionData.slice(2, 3).map((item, index) => (
+            {createQuestionData.slice(3).map((item, index) => (
               <Grid key={index}>
                 <InputField
                   name={`questions[${questionIndex}].${item.name}`}
@@ -233,51 +191,6 @@ export default function Create() {
                 />
               </Grid>
             ))}
-
-            <Divider sx={{ my: 3 }} />
-
-            {/* 問題內容區塊 */}
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-              問題內容設定
-            </Typography>
-
-            <Grid
-              container
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: "1rem",
-              }}
-            >
-              {/* 問題內容佔滿一行 */}
-              <Grid>
-                {createQuestionData.slice(3, 4).map((item, index) => (
-                  <InputField
-                    key={index}
-                    name={`questions[${questionIndex}].${item.name}`}
-                    label={item.label}
-                    type={item.type}
-                    placeholder={item.placeholder}
-                    dropdownData={item.dropdownData}
-                    formProps={formProps}
-                  />
-                ))}
-              </Grid>
-
-              {/* 其他設定分兩列 */}
-              {createQuestionData.slice(4).map((item, index) => (
-                <Grid key={index}>
-                  <InputField
-                    name={`questions[${questionIndex}].${item.name}`}
-                    label={item.label}
-                    type={item.type}
-                    placeholder={item.placeholder}
-                    dropdownData={item.dropdownData}
-                    formProps={formProps}
-                  />
-                </Grid>
-              ))}
-            </Grid>
           </Paper>
         ))}
 
