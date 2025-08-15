@@ -6,7 +6,6 @@ import {
   Chip,
   IconButton,
   Button,
-  Switch,
 } from "@mui/material";
 import { questionsSearchData } from "@/lib/data/questionsSearchData";
 import { SearchType } from "@/lib/types/searchTypes";
@@ -18,6 +17,8 @@ import { useRouter } from "next/router";
 import QuestionAPI from "@/lib/api/QuestionAPI";
 import { QuestionsTypes } from "@/lib/types/questionsTypes";
 import axios from "axios";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 export default function Questions() {
   const router = useRouter();
@@ -37,9 +38,9 @@ export default function Questions() {
       const processedData = (response[0].data || []).map((item: any) =>
         typeof item === "object" && item !== null
           ? {
-              ...item,
-              question_type: item.question_type_detail?.question_type || ''
-            }
+            ...item,
+            question_type: item.question_type_detail?.question_type || ''
+          }
           : {}
       );
 
@@ -53,14 +54,6 @@ export default function Questions() {
     console.log(searchParams);
     fetchData();
   }, []);
-
-  const handleToggleValidity = (id: number) => {
-    setDataList((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, vaild: !item.status } : item
-      )
-    );
-  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -76,7 +69,6 @@ export default function Questions() {
   };
 
   const columns = [
-    // { id: "position", label: "適用職位", sortable: true },
     { id: "question_type", label: "問題類型", sortable: true },
     { id: "question", label: "問題內容" },
     { id: "time_allowed", label: "時間限制", sortable: true },
@@ -89,20 +81,6 @@ export default function Questions() {
       sortable: true,
     },
     { id: "created_time", label: "建立日期", sortable: true },
-    // {
-    //   id: "vaild",
-    //   label: "啟用狀態",
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //   render: (_: any, row: any) => (
-    //     <Box sx={{ display: "flex", gap: 1 }}>
-    //       <Switch
-    //         checked={row.vaild}
-    //         onChange={() => handleToggleValidity(row.question_id)}
-    //       />
-    //     </Box>
-    //   ),
-    //   sortable: true,
-    // },
     {
       id: "actions",
       label: "操作",
@@ -116,7 +94,7 @@ export default function Questions() {
             <Edit fontSize="small" />
           </IconButton>
           <IconButton
-            onClick={() => handleDelete(row.id)}
+            onClick={() => handleDelete(row.question_id)}
             size="small"
             color="error"
           >
@@ -127,9 +105,26 @@ export default function Questions() {
     },
   ];
 
-  const handleDelete = (id: string) => {
-    console.log("Delete item:", id);
-    // Implement delete logic
+  const handleDelete = async (id: string) => {
+    const result = await Swal.fire({
+      title: '確認刪除問題',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: '確認刪除',
+      cancelButtonText: '取消'
+    })
+
+    if (result.isConfirmed) {
+      try {
+        await QuestionAPI.delete(Number(id));
+        router.reload();
+        toast.success("問題刪除成功");
+      } catch (error) {
+        toast.error("新增問題失敗，請稍後再試");
+      }
+    }
   };
 
   return (
