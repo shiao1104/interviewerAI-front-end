@@ -1,7 +1,6 @@
 import Layout from "@/components/Layout/ManageLayout";
-import { useEffect, useState } from "react";
+import { JSXElementConstructor, ReactElement, ReactNode, ReactPortal, useEffect, useState } from "react";
 import { Typography, Box, Chip, IconButton, Button } from "@mui/material";
-import { intervieweeData } from "@/lib/data/testData";
 import { intervieweeSearchData } from "@/lib/data/intervieweeSearchData";
 import { SearchType } from "@/lib/types/searchTypes";
 import { useForm } from "react-hook-form";
@@ -9,61 +8,163 @@ import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
 import { AccountCircle, Add, Edit, MoreHoriz } from "@mui/icons-material";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
+import InterviewAPI from "@/lib/api/InterviewAPI";
 
 export default function Interviewee() {
   const router = useRouter();
   const formProps = useForm();
+  const [intervieweeData, setIntervieweeData] = useState([]);
   const [searchParams, setSearchParams] = useState<SearchType>();
 
-  useEffect(() => {
-    console.log(searchParams);
-  });
+  const fetchData = async () => {
+    try {
+      const response = await InterviewAPI.getData();
+      
+      // 處理並轉換後端數據格式
+      if (response.data && Array.isArray(response.data)) {
+        const transformedData = response.data.map((item: { interview_id: any; candidate_detail: { username: any; }; opening_detail: { opening_name: any; company_name: any; }; interview_status: any; interview_datetime: string | number | Date; interview_result: any; total_score: any; }) => ({
+          id: item.interview_id,
+          name: item.candidate_detail.username,
+          type: item.opening_detail.opening_name,
+          company: item.opening_detail.company_name,
+          difficulty: getInterviewStatus(item.interview_status, item.interview_datetime),
+          createDate: formatDate(item.interview_datetime),
+          interview_result: item.interview_result,
+          total_score: item.total_score,
+          // 保留原始數據以供詳細查看使用
+          originalData: item
+        }));
+        setIntervieweeData(transformedData);
+      }
+    } catch (err) {
+      console.error("獲取面試者資料失敗:", err);
+      toast.error("無法獲取面試者資料，請稍後再試。");
+    }
+  };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "已完成":
-        return "success";
-      case "未到場":
-        return "warning";
+  // 格式化日期
+  const formatDate = (dateString: string | number | Date) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
+  // 根據面試狀態和時間判斷顯示狀態
+  const getInterviewStatus = (status: any, datetime: string | number | Date) => {
+    const now = new Date();
+    const interviewDate = new Date(datetime);
+    
+    switch (status) {
+      case "completed":
+        return "已完成";
+      case "scheduled":
+        if (interviewDate < now) {
+          return "未到場";
+        } else {
+          return `預計 ${formatDate(datetime)}`;
+        }
       default:
-        return "default";
+        return "待安排";
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const getDifficultyColor = (difficulty) => {
+    if (difficulty.includes("已完成")) {
+      return "success";
+    } else if (difficulty.includes("未到場")) {
+      return "error";
+    } else if (difficulty.includes("預計")) {
+      return "primary";
+    } else {
+      return "default";
     }
   };
 
   const columns = [
-    { id: "id", label: "ID", sortable: true },
+    { id: "id", label: "面試ID", sortable: true },
     { id: "name", label: "姓名", textAlign: "center" },
-    { id: "type", label: "應徵職位", textAlign: "center", sortable: true },
+    { 
+      id: "type", 
+      label: "應徵職位", 
+      textAlign: "center", 
+      sortable: true,
+      render: (value: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined, row: { company: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
+        <Box>
+          <div>{value}</div>
+          <Typography variant="caption" color="textSecondary">
+            {row.company}
+          </Typography>
+        </Box>
+      )
+    },
     {
       id: "difficulty",
-      label: "面試時間",
-      render: (value: string) => (
-        <Chip label={value} color={getDifficultyColor(value)} size="small" />
+      label: "面試狀態",
+      render: (value: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined) => (
+        <Chip 
+          label={value} 
+          color={getDifficultyColor(value)} 
+          size="small" 
+          variant="outlined"
+        />
       ),
       textAlign: "center",
       sortable: true,
     },
     {
+      id: "interview_result",
+      label: "面試結果",
+      render: (value: string, row: any) => {
+        if (value === "accepted") {
+          return <Chip label="錄取" color="success" size="small" />;
+        } else if (value === "rejected") {
+          return <Chip label="未錄取" color="error" size="small" />;
+        } else if (value === "pending") {
+          return <Chip label="待結果" color="warning" size="small" />;
+        }
+        return "-";
+      },
+      textAlign: "center",
+      sortable: true,
+    },
+    {
+      id: "total_score",
+      label: "總分",
+      render: (value: any) => value ? `${value}分` : "-",
+      textAlign: "center",
+      sortable: true,
+    },
+    {
       id: "createDate",
-      label: "建立日期",
+      label: "面試時間",
       textAlign: "center",
       sortable: true,
     },
     {
       id: "actions",
       label: "操作",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (_: any, row: any) => (
+      render: (_: any, row: { id: any; }) => (
         <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
           <IconButton
             onClick={() => router.push(`/manage/interviewee/${row.id}`)}
             size="small"
+            title="編輯"
           >
             <Edit fontSize="small" />
           </IconButton>
           <IconButton
             onClick={() => router.push(`/manage/interviewee/report/${row.id}`)}
             size="small"
+            title="查看詳情"
           >
             <MoreHoriz fontSize="small" />
           </IconButton>
@@ -83,7 +184,7 @@ export default function Interviewee() {
           borderRadius: "16px",
         }}
       >
-        {/* 改進的標題與按鈕排版 */}
+        {/* 標題與按鈕 */}
         <Box
           sx={{
             display: "flex",
@@ -115,14 +216,16 @@ export default function Interviewee() {
           </Button>
         </Box>
 
+        {/* 搜尋欄 */}
         <Box sx={{ mb: 3 }}>
           <SearchBar
             items={intervieweeSearchData}
             formProps={formProps}
-            handleParams={(params: SearchType) => setSearchParams(params)}
+            handleParams={(params) => setSearchParams(params)}
           />
         </Box>
 
+        {/* 數據表格 */}
         <Box
           sx={{
             p: 2,
