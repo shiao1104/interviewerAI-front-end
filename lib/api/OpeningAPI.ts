@@ -1,4 +1,4 @@
-import { FetchQuestionTypes } from "../types/questionsTypes";
+import { OpeningTypes } from "../types/openingTypes";
 import API from "./api";
 import { Response } from "@/lib/types/requestType";
 
@@ -8,11 +8,17 @@ const OpeningAPI = {
   getData: (): Promise<Response<never>> =>
     API.get(`${BASE_URL}/openings/`),
 
-  getRecord: (id: number): Promise<Response<never>> =>
-    API.get(`${BASE_URL}/openings/${id}/`),
+  getRecord: (opening_id: number): Promise<Response<never>> =>
+    API.get(`${BASE_URL}/openings/${opening_id}/`),
 
-  create: (data: FetchQuestionTypes[]): Promise<Response<never>> =>
-    API.post(`${BASE_URL}/create/`, data),
+  create: (data: OpeningTypes): Promise<Response<never>> =>
+    API.post(`${BASE_URL}/openings/`, data),
+
+  update: (opening_id: number, data: OpeningTypes): Promise<Response<never>> =>
+    API.patch(`${BASE_URL}/openings/${opening_id}/`, data),
+
+  delete: (opening_id: number): Promise<Response<never>> =>
+    API.delete(`${BASE_URL}/openings/${opening_id}/`),
 
   getQuestionType: (): Promise<Response<never>> =>
     API.get(`${BASE_URL}/question-type/`),

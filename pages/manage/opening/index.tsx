@@ -17,6 +17,8 @@ import JobDetailDialog from "@/components/common/manage/JobDetailDialog";
 import { openingSearchData } from "@/lib/data/openingSearchData";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import { OpeningTypes } from "@/lib/types/openingTypes";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 export default function Opening() {
   const router = useRouter();
@@ -59,7 +61,7 @@ export default function Opening() {
             <Edit fontSize="small" />
           </IconButton>
           <IconButton
-            onClick={() => handleDelete(row.id)}
+            onClick={() => handleDelete(row.opening_id)}
             size="small"
             color="error"
           >
@@ -79,8 +81,26 @@ export default function Opening() {
     setDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    console.log("Delete item:", id);
+  const handleDelete = async (id: string) => {
+    const result = await Swal.fire({
+      title: '確認刪除職缺',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: '確認刪除',
+      cancelButtonText: '取消'
+    })
+
+    if (result.isConfirmed) {
+      try {
+        await OpeningAPI.delete(Number(id));
+        router.reload();
+        toast.success("職缺已成功刪除！");
+      } catch (error) {
+        toast.error("刪除職缺失敗，請稍後再試。");
+      }
+    }
   };
 
   return (
