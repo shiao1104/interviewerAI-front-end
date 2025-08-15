@@ -1,11 +1,8 @@
 export type QuestionsTypes = {
-  id: number;
-  questionType: number;
-  questionContent: string;
-  applicablePositions: string;
-  timeLimit: number;
-  questionlevel: string;
-  status: string;
+  question_type: number;
+  question: string;
+  time_allowed: number;
+  difficulty: string;
 };
 
 export type QuestionDataType = {
@@ -18,11 +15,8 @@ export type QuestionDataType = {
 };
 
 export type FetchQuestionTypes = {
-  question_type_id: number;
+  question_type: number;
   question: string;
-  company_id: number;
-  position: string;
   time_allowed: number;
   difficulty: string;
-  valid: string;
 };
