@@ -6,19 +6,17 @@ import {
   IconButton,
   Button,
   Chip,
-  Switch,
 } from "@mui/material";
 import { SearchType } from "@/lib/types/searchTypes";
-import { openingData } from "@/lib/data/testData";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
 import { Add, Delete, Edit, MoreHoriz, Work } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import JobDetailDialog from "@/components/common/manage/JobDetailDialog";
-import { getStatueColor } from "@/lib/hook/getStatueColor";
 import { openingSearchData } from "@/lib/data/openingSearchData";
 import OpeningAPI from "@/lib/api/OpeningAPI";
+import { OpeningTypes } from "@/lib/types/openingTypes";
 
 export default function Opening() {
   const router = useRouter();
@@ -27,7 +25,7 @@ export default function Opening() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [localOpeningData, setLocalOpeningData] = useState(openingData);
+  const [localOpeningData, setLocalOpeningData] = useState<OpeningTypes[]>([]);
 
   const fetchData = async () => {
     try {
@@ -42,14 +40,6 @@ export default function Opening() {
     console.log(searchParams);
     fetchData();
   }, []);
-
-  const handleToggleValidity = (id: number) => {
-    setLocalOpeningData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, vaild: !item.vaild } : item
-      )
-    );
-  };
 
   const columns = [
     { id: "opening_id", label: "代碼", sortable: true },
