@@ -1,21 +1,18 @@
 export type OpeningTypes = {
-  id: number;
-  openingTitle: string; // 新增：職缺名稱
-  headCount: number;    // 新增：需求人數
-  status: string;       // 新增：職缺狀態，例如：招募中、已結束
-  salaryRange: string;
-  workLocation: string;
-  jobType: string;
-  educationRequirement: string;
-  departmentRequirement: string;
-  experienceRequirement: string;
-  languageRequirement: string;
-  workNature: string;
-  workHours: string[];
-  skills: string[];
-  leavePolicy: string;
-  jobDescription: string;
-  contactInfo: string;
-  createDate: string;
-  vaild: boolean;
+  opening_id: number;
+  company: number;
+  opening_info: string;
+  salary: string;
+  employment_type: string;
+  applicant_count: number;
+  update_time: Date;
+  opening_name: string;
+  opening_quota: number;
+  address: number;
+  workplace_location: string;
+  education_level: string;
+  major_restriction: string;
+  experience_required: string;
+  language_requirement: string;
+  skills_required: string;
 };
