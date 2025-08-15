@@ -3,67 +3,78 @@ import Layout from "@/components/Layout/ManageLayout";
 import QuestionAPI from "@/lib/api/QuestionAPI";
 import { createQuestionData } from "@/lib/data/createQuestionsData";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
-import { QuestionDataType } from "@/lib/types/questionsTypes";
+import { QuestionDataType, QuestionsTypes } from "@/lib/types/questionsTypes";
 import { Edit as EditIcon, KeyboardBackspace, Save } from "@mui/icons-material";
 import { Box, Button, Grid, Typography, Paper, Divider } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FieldValues, useForm, UseFormReturn } from "react-hook-form";
+import { toast } from "react-toastify";
 
 export default function Edit() {
   const router = useRouter();
   const { id } = router.query;
   const [dropdownOptions, setDropdownOptions] = useState<{
     company_id: DropdownTypes[];
-    question_type_id: DropdownTypes[];
+    question_type: DropdownTypes[];
   }>({
     company_id: [],
-    question_type_id: [],
+    question_type: [],
   });
-  const formProps = useForm();
+  const formProps = useForm<QuestionsTypes>();
+  const { handleSubmit: handleFormSubmit, getValues } = formProps;
 
   useEffect(() => {
     if (id) {
       const fetch = async () => {
-        const response = await axios.all([
-          QuestionAPI.getRecord(id as unknown as number),
-          QuestionAPI.getOpeningJobs(),
-          QuestionAPI.getQuestionType(),
-        ]);
+        try {
+          const response = await axios.all([
+            QuestionAPI.getRecord(id as unknown as number),
+            QuestionAPI.getOpeningJobs(),
+            QuestionAPI.getQuestionType(),
+          ]);
 
-        const questionData = response[0].data as unknown as QuestionDataType;
+          const questionData = response[0].data as unknown as QuestionsTypes;
 
-        formProps.reset({
-          company_id: questionData?.company_id || "",
-          question_type_id: questionData.question_type_detail.question_type_id,
-          question: questionData.question,
-          time_allowed: questionData.time_allowed,
-          difficulty: questionData.difficulty,
-          valid: questionData.valid,
-        });
+          formProps.reset({
+            question_type: questionData?.question_type,
+            question: questionData.question,
+            time_allowed: questionData.time_allowed,
+            difficulty: questionData.difficulty
+          });
 
-        setDropdownOptions({
-          company_id: response[1].data || [],
-          question_type_id: response[2].data || [],
-        });
+          setDropdownOptions({
+            company_id: response[1].data || [],
+            question_type: response[2].data || [],
+          });
+        } catch (error) {
+          console.error("載入資料失敗:", error);
+          toast.error("載入資料失敗");
+        }
       };
 
       fetch();
     }
   }, [id, formProps]);
 
-  const handleSubmit = formProps.handleSubmit((data) => {
-    console.log("準備更新的數據:", data);
+  const onSubmit = async (data: QuestionsTypes) => {
+    try {
+      console.log("提交的資料:", data);
+      await QuestionAPI.update(Number(id), data);
+      toast.success("問題更新成功");
+      router.push("/manage/questions");
+    } catch (error) {
+      console.error("更新失敗:", error);
+      toast.error("更新問題失敗，請稍後再試");
+    }
+  };
 
-    // 可以在這裡發送數據到 API
-    // 例如: updateQuestion(id, data);
-
-    alert("問題更新成功！");
-
-    // 更新後可以選擇返回列表頁面
-    // router.push("/manage/questions");
-  });
+  // 手動觸發表單提交的函數
+  const handleManualSubmit = () => {
+    const formData = getValues();
+    onSubmit(formData as QuestionsTypes);
+  };
 
   return (
     <Layout>
@@ -99,7 +110,7 @@ export default function Edit() {
           <Button
             variant="contained"
             startIcon={<Save />}
-            onClick={handleSubmit}
+            onClick={handleManualSubmit}
             sx={{ height: "40px" }}
           >
             儲存更新
@@ -108,7 +119,7 @@ export default function Edit() {
 
         <Paper
           component="form"
-          onSubmit={handleSubmit}
+          onSubmit={handleFormSubmit(onSubmit)}
           elevation={2}
           sx={{
             mt: "2rem",
@@ -117,21 +128,16 @@ export default function Edit() {
             backgroundColor: "#fff",
           }}
         >
-          {/* 基本信息區塊 */}
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            問題基本資訊
-          </Typography>
-
           <Grid
             container
             sx={{
               mb: "1rem",
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "1fr 1fr 1fr",
               gap: "1rem",
             }}
           >
-            {createQuestionData.slice(0, 2).map((item, index) => (
+            {createQuestionData.slice(0, 3).map((item, index) => (
               <Grid key={index}>
                 <InputField
                   name={item.name}
@@ -141,7 +147,7 @@ export default function Edit() {
                   dropdownData={
                     dropdownOptions[
                     item.name as keyof typeof dropdownOptions
-                    ] || []
+                    ] || item.dropdownData
                   }
                   formProps={formProps}
                 />
@@ -149,7 +155,7 @@ export default function Edit() {
             ))}
           </Grid>
 
-          {createQuestionData.slice(2, 3).map((item, index) => (
+          {createQuestionData.slice(3).map((item, index) => (
             <Grid key={index}>
               <InputField
                 name={item.name}
@@ -162,50 +168,10 @@ export default function Edit() {
             </Grid>
           ))}
 
-          <Divider sx={{ my: 3 }} />
-
-          {/* 問題內容區塊 */}
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            問題內容設定
-          </Typography>
-
-          <Grid
-            container
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: "1rem",
-            }}
-          >
-            {/* 問題內容佔滿一行 */}
-            <Grid>
-              {createQuestionData.slice(3, 4).map((item, index) => (
-                <InputField
-                  key={index}
-                  name={item.name}
-                  label={item.label}
-                  type={item.type}
-                  placeholder={item.placeholder}
-                  dropdownData={item.dropdownData}
-                  formProps={formProps}
-                />
-              ))}
-            </Grid>
-
-            {/* 其他設定分兩列 */}
-            {createQuestionData.slice(4).map((item, index) => (
-              <Grid key={index}>
-                <InputField
-                  name={item.name}
-                  label={item.label}
-                  type={item.type}
-                  placeholder={item.placeholder}
-                  dropdownData={item.dropdownData}
-                  formProps={formProps}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          {/* 隱藏的提交按鈕，用於鍵盤 Enter 提交 */}
+          <Button type="submit" sx={{ display: "none" }}>
+            Submit
+          </Button>
         </Paper>
       </Box>
     </Layout>
