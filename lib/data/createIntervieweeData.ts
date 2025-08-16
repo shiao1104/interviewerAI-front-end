@@ -4,13 +4,13 @@ import { companyType } from "./testData";
 export const intervieweeInput: InputFieldTypes[] = [
   {
     label: "姓名",
-    name: "name",
+    name: "username",
     type: "text",
     placeholder: "請輸入面試者姓名",
   },
   {
     label: "聯絡電話",
-    name: "phone",
+    name: "phone_number",
     type: "text",
     placeholder: "請輸入聯絡電話",
   },
@@ -21,15 +21,8 @@ export const intervieweeInput: InputFieldTypes[] = [
     placeholder: "請輸入電子郵件",
   },
   {
-    label: "應徵部門",
-    name: "department",
-    type: "dropdown",
-    placeholder: "請選擇應徵部門",
-    dropdownData: companyType,
-  },
-  {
     label: "應徵職位",
-    name: "position",
+    name: "opening",
     type: "dropdown",
     placeholder: "請輸入應徵職位",
     dropdownData: companyType,
@@ -42,19 +35,19 @@ export const intervieweeInput: InputFieldTypes[] = [
   },
   {
     label: "備註",
-    name: "note",
+    name: "remark",
     type: "textarea",
     placeholder: "其他需要補充的資訊",
   },
   {
     label: "面試日期",
-    name: "interviewDate",
+    name: "interview_date",
     type: "date",
     placeholder: "請選擇面試日期",
   },
   {
     label: "面試時間",
-    name: "interviewDate",
+    name: "interview_time",
     type: "time",
     placeholder: "請選擇面試日期",
   },
