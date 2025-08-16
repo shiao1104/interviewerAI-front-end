@@ -10,6 +10,7 @@ import { AccountCircle, Add, Edit, MoreHoriz } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import InterviewAPI from "@/lib/api/InterviewAPI";
+import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
 
 export default function Interviewee() {
   const router = useRouter();
@@ -20,19 +21,17 @@ export default function Interviewee() {
   const fetchData = async () => {
     try {
       const response = await InterviewAPI.getData();
-      
-      // 處理並轉換後端數據格式
+
       if (response.data && Array.isArray(response.data)) {
-        const transformedData = response.data.map((item: { interview_id: any; candidate_detail: { username: any; }; opening_detail: { opening_name: any; company_name: any; }; interview_status: any; interview_datetime: string | number | Date; interview_result: any; total_score: any; }) => ({
+        const transformedData = response.data.map((item: IntervieweeTypes) => ({
           id: item.interview_id,
-          name: item.candidate_detail.username,
-          type: item.opening_detail.opening_name,
-          company: item.opening_detail.company_name,
+          name: item.candidate_detail?.username || '',
+          type: item.opening_detail?.opening_name || "-",
+          company: item.opening_detail?.company_name,
           difficulty: getInterviewStatus(item.interview_status, item.interview_datetime),
           createDate: formatDate(item.interview_datetime),
           interview_result: item.interview_result,
           total_score: item.total_score,
-          // 保留原始數據以供詳細查看使用
           originalData: item
         }));
         setIntervieweeData(transformedData);
@@ -58,7 +57,7 @@ export default function Interviewee() {
   const getInterviewStatus = (status: any, datetime: string | number | Date) => {
     const now = new Date();
     const interviewDate = new Date(datetime);
-    
+
     switch (status) {
       case "completed":
         return "已完成";
@@ -77,7 +76,7 @@ export default function Interviewee() {
     fetchData();
   }, []);
 
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = (difficulty: string | string[]) => {
     if (difficulty.includes("已完成")) {
       return "success";
     } else if (difficulty.includes("未到場")) {
@@ -92,12 +91,12 @@ export default function Interviewee() {
   const columns = [
     { id: "id", label: "面試ID", sortable: true },
     { id: "name", label: "姓名", textAlign: "center" },
-    { 
-      id: "type", 
-      label: "應徵職位", 
-      textAlign: "center", 
+    {
+      id: "type",
+      label: "應徵職位",
+      textAlign: "center",
       sortable: true,
-      render: (value: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined, row: { company: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
+      render: (value: any, row: { company: string }) => (
         <Box>
           <div>{value}</div>
           <Typography variant="caption" color="textSecondary">
@@ -109,11 +108,11 @@ export default function Interviewee() {
     {
       id: "difficulty",
       label: "面試狀態",
-      render: (value: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined) => (
-        <Chip 
-          label={value} 
-          color={getDifficultyColor(value)} 
-          size="small" 
+      render: (value: any) => (
+        <Chip
+          label={value}
+          color={getDifficultyColor(value)}
+          size="small"
           variant="outlined"
         />
       ),
