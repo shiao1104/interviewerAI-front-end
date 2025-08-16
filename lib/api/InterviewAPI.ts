@@ -1,3 +1,4 @@
+import { IntervieweeTypes } from "../types/intervieweeTypes";
 import { QuestionsTypes } from "../types/questionsTypes";
 import API from "./api";
 import { Response } from "@/lib/types/requestType";
@@ -8,17 +9,17 @@ const InterviewAPI = {
   getData: (): Promise<Response<never>> =>
     API.get(`${BASE_URL}/`),
 
-  getRecord: (question_id?: number): Promise<Response<never>> =>
-    API.get(`${BASE_URL}/questions/${question_id}/`),
+  getRecord: (interview_id?: number): Promise<Response<never>> =>
+    API.get(`${BASE_URL}/${interview_id}/`),
 
-  create: (data: QuestionsTypes[]): Promise<Response<never>> =>
-    API.post(`${BASE_URL}/questions/`, data),
+  create: (data: IntervieweeTypes): Promise<Response<never>> =>
+    API.post(`${BASE_URL}/`, data),
 
   delete: (question_id: number): Promise<Response<never>> =>
     API.delete(`${BASE_URL}/questions/${question_id}/`),
 
-  update: (question_id: number, data: QuestionsTypes): Promise<Response<never>> =>
-    API.put(`${BASE_URL}/questions/${question_id}/`, data),
+  update: (interview_id: number, data: IntervieweeTypes): Promise<Response<never>> =>
+    API.put(`${BASE_URL}/${interview_id}/`, data),
 
   getQuestionType: (): Promise<Response<never>> =>
     API.get(`${BASE_URL}/types/`),

@@ -5,34 +5,73 @@ import { CreateNewFolder, KeyboardBackspace, Save } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import { intervieweeInput } from "@/lib/data/createIntervieweeData";
 import InputField from "@/components/common/manage/InputField";
+import { toast } from "react-toastify";
+import InterviewAPI from "@/lib/api/InterviewAPI";
+import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
+import { useEffect, useState } from "react";
+import OpeningAPI from "@/lib/api/OpeningAPI";
+import { DropdownTypes } from "@/lib/types/dropdownTypes";
 
 export default function Create() {
   const router = useRouter();
-  const formProps = useForm();
+  const formProps = useForm<IntervieweeTypes>();
 
-  const contactFields = intervieweeInput.slice(0, 5);
-  const applicationFields = intervieweeInput.slice(5, 7);
-  const interviewFields = intervieweeInput.slice(7);
+  const contactFields = intervieweeInput.slice(0, 3);
+  const applicationFields = intervieweeInput.slice(3, 6);
+  const interviewFields = intervieweeInput.slice(6);
   const interviewState = formProps.watch("interviewState", false);
-
-  const handleSubmit = formProps.handleSubmit((data) => {
-    const formData = {
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      gender: data.gender,
-      educationLevel: data.educationLevel,
-      applyPosition: data.applyPosition,
-      resumeFile: data.resume,
-      interviewDate: data.interviewDate,
-      interviewTime: data.interviewTime,
-      interviewLocation: data.interviewLocation,
-    };
-    console.log("準備提交的數據:", formData);
-
-    // 提交後可以選擇返回列表頁面
-    // router.push("/manage/interviewee");
+  const [dropdownOptions, setDropdownOptions] = useState<{
+    opening: DropdownTypes[];
+  }>({
+    opening: [],
   });
+
+  const fetchData = async () => {
+    try {
+      const response = await OpeningAPI.getData();
+      const transformedOpenings = response.data?.map((item: any) => ({
+        key: item.opening_id,
+        value: item.opening_name
+      })) || [];
+
+      console.log("職缺資料:", transformedOpenings);
+
+      setDropdownOptions({
+        opening: transformedOpenings,
+      });
+    } catch (error) {
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleSubmit = async () => {
+    const data = formProps.getValues();
+
+    if (data.interviewState && data.interview_date && data.interview_time) {
+      try {
+        const date = new Date(`${data.interview_date}T${data.interview_time}`);
+        data.interview_datetime = date.toISOString();
+
+        delete data.interview_date;
+        delete data.interview_time;
+      } catch (error) {
+        toast.error("請檢查面試日期和時間格式");
+        return;
+      }
+    }
+
+    try {
+      await InterviewAPI.create(data);
+      toast.success("面試者資料已儲存成功！");
+      router.push("/manage/interviewee");
+    } catch (error) {
+      console.error("儲存面試者資料失敗:", error);
+      toast.error("無法儲存面試者資料，請稍後再試。");
+    }
+  };
 
   return (
     <Layout>
@@ -101,8 +140,11 @@ export default function Create() {
                   label={item.label}
                   type={item.type}
                   placeholder={item.placeholder}
-                  dropdownData={item.dropdownData}
-                  formProps={formProps}
+                  dropdownData={
+                    dropdownOptions[
+                    item.name as keyof typeof dropdownOptions
+                    ] || item.dropdownData
+                  } formProps={formProps}
                 />
               </Grid>
             ))}
@@ -119,8 +161,11 @@ export default function Create() {
                   label={item.label}
                   type={item.type}
                   placeholder={item.placeholder}
-                  dropdownData={item.dropdownData}
-                  formProps={formProps}
+                  dropdownData={
+                    dropdownOptions[
+                    item.name as keyof typeof dropdownOptions
+                    ] || item.dropdownData
+                  } formProps={formProps}
                 />
               </Grid>
             ))}
@@ -135,7 +180,7 @@ export default function Create() {
               sx={{
                 display: "grid",
                 gap: "1rem",
-                gridTemplateColumns: "1fr 1fr 2fr",
+                gridTemplateColumns: "1fr 1fr",
               }}
             >
               {interviewFields.map((item, index) => (
