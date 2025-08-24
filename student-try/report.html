@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"/>
+  <title>模擬面試報告</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="assets/css/styles.css"/>
+</head>
+<body data-page="report">
+  <main class="container">
+    <header class="header">
+      <div class="title">模擬面試報告</div>
+      <div class="subtitle">可回看各題影片與分數；影片僅保存在你的瀏覽器（IndexedDB）。</div>
+    </header>
+
+    <section class="card">
+      <div class="reportHeader">
+        <div><span class="muted">紀錄 ID：</span><b id="recId">—</b></div>
+        <div><span class="muted">科系：</span><span class="chip" id="recDept">—</span></div>
+        <div><span class="muted">日期：</span><b id="recDate">—</b></div>
+        <div><span class="muted">總分：</span><b id="recScore" class="score">—</b></div>
+        <div style="margin-left:auto">
+          <a class="btn btn-outline" href="interview-home.html">返回首頁</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid reportGrid">
+      <div class="card">
+        <div class="sectionTitle"><div class="badgeGrad">題目與分數</div></div>
+        <table class="table">
+          <thead><tr><th>#</th><th>題目</th><th>作答長度</th><th>分數</th><th>操作</th></tr></thead>
+          <tbody id="qBody"></tbody>
+        </table>
+        <div id="emptyQ" class="empty" style="display:none">找不到影片片段</div>
+      </div>
+
+      <div class="card">
+        <div class="sectionTitle"><div class="badgeGrad">影片播放器</div></div>
+        <div class="videoWrap">
+          <video id="player" controls playsinline></video>
+        </div>
+        <div class="actions">
+          <a id="btnDownload" class="btn btn-outline" download>下載目前題目影片</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
