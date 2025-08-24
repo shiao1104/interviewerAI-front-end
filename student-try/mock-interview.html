@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"/>
+  <title>學生模擬面試｜Interviewer AI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="assets/css/styles.css"/>
+</head>
+<body data-page="mock">
+  <main class="container">
+    <header class="header">
+      <div class="title">面試公司：<span id="companyName">科技未來有限公司</span></div>
+      <div class="subtitle">面試職位：<span id="roleName">資深前端工程師</span></div>
+
+      <div class="topRow">
+        <div class="muted">問題 <span id="headerQPos">1/5</span></div>
+        <div class="topProgress">
+          <div class="progress"><div class="bar" id="headerProgBar"></div></div>
+          <div class="label" id="headerProgPct">0%</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <!-- 左：題卡 -->
+      <div class="card">
+        <div class="question">
+          <div class="chipsRow">
+            <span class="chipTag" id="chipType">自我介紹</span>
+            <span class="chipTime">時間限制：<b id="chipAnsLimit">02:00</b></span>
+            <span class="chipPrep">準備時間：<b id="chipPrepInit">01:00</b></span>
+          </div>
+
+          <h3 class="qTitle" id="qTitle">問題 1：</h3>
+          <p class="stem" id="qStem"></p>
+
+          <div class="prepBox">
+            <div class="prepHead">準備時間剩餘：<b id="prepLeft">01:00</b></div>
+            <div class="prepBar"><div id="prepFill" class="prepFill"></div></div>
+          </div>
+
+          <div class="actionCol">
+            <button class="btnCTA blue" id="btnSkip">▶ 跳過準備時間</button>
+            <button class="btnCTA red" id="btnNext" disabled>＞ 下一題</button>
+            <button class="btnCTA gray" id="btnExit">⎋ 退出面試</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右：鏡頭（自動開始/停止錄製，無任何控制鈕） -->
+      <div class="card">
+        <div class="videoWrap">
+          <video id="preview" playsinline></video>
+          <div class="placeholder" id="placeholder">
+            <strong>視訊預覽</strong>
+            <div class="muted" style="margin-top:6px">尚未啟動</div>
+          </div>
+          <div id="cornerBadge" class="cornerBadge muted">⏳ 準備時間剩餘 01:00</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 站內彈窗：資料收集 + 權限檢查 -->
+  <div id="consentPermModal" class="modalBackdrop">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="modalTitle">準備開始面試</div>
+        <div class="modalSub"><b id="mCompany">—</b>｜<span id="mRole">—</span></div>
+      </div>
+
+      <div class="alertBlue">本次面試準備將收集您的影音資料，請閱讀以下隱私說明</div>
+
+      <div class="modalBody">
+        <h4>資料收集與使用聲明</h4>
+        <p>在您進行面試準備與錄製中，我們將會收集以下資訊：</p>
+        <ul class="ul">
+          <li>面試模擬過程的影音錄影</li>
+          <li>您的語音及回答內容</li>
+          <li>表情和肢體語言的視覺資料</li>
+        </ul>
+        <p>這些資料將用於：</p>
+        <ul class="ul indent">
+          <li>提供面試表現的分析和回饋</li>
+          <li>改善您的面試技巧</li>
+          <li>生成個人化的建議報告</li>
+        </ul>
+        <p class="note">您的資料將安全地封存並加密保存，未經同意不會分享給第三方。</p>
+
+        <label class="checkRow">
+          <input type="checkbox" id="consentCheck"/>
+          <span>我已閱讀並同意上述資料收集與使用聲明</span>
+        </label>
+
+        <hr style="border:none;border-top:1px solid #eef2f7;margin:6px 0"/>
+
+        <h4>設備權限檢查</h4>
+        <div class="statusList">
+          <div class="statusItem bad" id="camRow">📷 攝像頭：<span id="camStatus">未允許</span></div>
+          <div class="statusItem bad" id="micRow">🎤 麥克風：<span id="micStatus">未允許</span></div>
+        </div>
+      </div>
+
+      <div class="modalFoot">
+        <button class="btn btn-outline" id="btnBackHome">取消</button>
+        <button class="btn btn-outline" id="btnCheckPerm">檢查權限</button>
+        <button class="btn btn-primary" id="btnBegin" disabled>開始面試</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

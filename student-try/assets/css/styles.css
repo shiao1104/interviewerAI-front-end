@@ -1,0 +1,78 @@
+:root{--blue:#2F80ED;--blue2:#1b5cbe;--mint:#00DBDE;--bg1:#5d78a6;--bg2:#25314c;--text:#0f1d35;--muted:#667085;--card:#fff;--shadow:0 10px 30px rgba(20,35,70,.18)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:system-ui,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:var(--text);background:radial-gradient(ellipse at 50% 50%,var(--bg1),var(--bg2))}
+a{color:inherit;text-decoration:none}
+.container{min-height:100dvh;padding:24px;display:flex;flex-direction:column;gap:20px}
+.header{color:#fff}.title{font-weight:800;font-size:clamp(26px,3.2vw,36px)}.subtitle{opacity:.95;margin-top:4px}
+.card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:18px}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.badgeGrad{font-weight:800;background:linear-gradient(45deg,var(--blue),var(--mint));-webkit-background-clip:text;color:transparent}
+.muted{color:var(--muted)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.input,.select,.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(0,0,0,.12);background:#fff}
+.btn{font-weight:700}.btn-primary{background:linear-gradient(45deg,var(--blue),var(--mint));border:none;color:#fff}.btn-outline{color:#1b5cbe;border-color:#b6c7f5}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.table{width:100%;border-collapse:separate;border-spacing:0 10px}
+.table thead th{text-align:left;font-size:13px;color:#475467;font-weight:700;padding:0 12px}
+.row{background:#fff;border:1px solid rgba(0,0,0,.08);box-shadow:0 6px 18px rgba(0,0,0,.08);border-radius:12px;overflow:hidden}
+.row td{padding:12px}
+.status{font-weight:800}.status.done{color:#106d36}.status.pending{color:#b54708}
+.chip{font-size:12px;padding:6px 10px;border-radius:999px;background:#eef5ff;border:1px solid #dbeafe;color:#274a7a;font-weight:700}
+.empty{text-align:center;color:#334155;padding:22px;border:1px dashed rgba(0,0,0,.18);border-radius:12px;background:rgba(255,255,255,.6)}
+.deptGrid{display:grid;gap:12px}@media (min-width:720px){.deptGrid{grid-template-columns:repeat(3,1fr)}}
+.deptItem{display:flex;align-items:center;gap:8px;border:1px solid #dbeafe;background:#eef5ff;border-radius:10px;padding:10px 12px}.deptItem input{accent-color:#2F80ED}
+
+/* 面試頁 */
+.topRow{display:flex;align-items:center;gap:14px;margin-top:8px}
+.progress{width:100%;height:8px;border-radius:999px;background:rgba(255,255,255,.22);overflow:hidden}
+.progress .bar{height:100%;width:0;background:linear-gradient(45deg,var(--blue),var(--mint))}
+.topProgress{display:flex;align-items:center;gap:10px;flex:1}
+.topProgress .label{min-width:62px;text-align:right;color:#dbeafe;font-weight:800}
+.grid{display:grid;gap:20px}@media (min-width:1024px){.grid{grid-template-columns:1.1fr .9fr}}
+.question{display:flex;flex-direction:column;gap:14px}
+.chipsRow{display:flex;gap:10px;flex-wrap:wrap}
+.chipTag{background:#e0ecff;color:#0b3b91;border:1px solid #bcd2ff;border-radius:999px;padding:6px 12px;font-weight:800}
+.chipTime{background:#f1e7ff;color:#7a2cbf;border:1px solid #e0cfff;border-radius:999px;padding:6px 10px;font-weight:800}
+.chipPrep{background:#e6f3ff;color:#155e9b;border:1px solid #c9e6ff;border-radius:999px;padding:6px 10px;font-weight:800}
+.qTitle{font-weight:800}.stem{line-height:1.7}
+.prepBox{background:#eef2f7;border:1px solid #e2e8f0;border-radius:12px;padding:12px}
+.prepHead{font-weight:800;margin-bottom:8px;color:#1f2a44}
+.prepBar{height:8px;background:#dde5f1;border-radius:999px;overflow:hidden}
+.prepFill{height:100%;width:0;background:linear-gradient(90deg,#2F80ED,#00DBDE)}
+.actionCol{display:grid;gap:10px;margin-top:6px}
+.btnCTA{border:none;cursor:pointer;border-radius:12px;padding:14px 16px;font-weight:900;letter-spacing:.2px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.btnCTA.blue{background:linear-gradient(45deg,#2563eb,#38bdf8);color:#fff}
+.btnCTA.red{background:#dc2626;color:#fff}
+.btnCTA.gray{background:#eceff3;color:#1f2937}
+.videoWrap{position:relative;aspect-ratio:16/10;background:#f3f6fb;border:3px solid #d1d5db;border-radius:16px;overflow:hidden}
+.videoWrap video{width:100%;height:100%;object-fit:cover;display:none}
+.placeholder{text-align:center;color:#64748b}
+.cornerBadge{position:absolute;right:14px;top:14px;background:rgba(0,0,0,.65);color:#fff;border-radius:999px;padding:8px 12px;font-weight:800}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;flex-wrap:wrap}
+
+/* Modal（資料同意 + 權限檢查） */
+.modalBackdrop{position:fixed;inset:0;background:rgba(8,12,22,.55);backdrop-filter:blur(2px);display:grid;place-items:center;z-index:1000}
+.modal{width:min(880px,92vw);background:#fff;border-radius:14px;box-shadow:0 20px 80px rgba(0,0,0,.35);overflow:hidden}
+.modalHead{padding:16px 18px;border-bottom:1px solid #eef2f7}
+.modalTitle{font-size:20px;font-weight:900}.modalSub{color:#64748b;margin-top:2px}
+.alertBlue{background:#eaf4ff;border:1px solid #cde4ff;color:#0b3b91;padding:10px 12px;margin:12px 18px;border-radius:10px}
+.modalBody{padding:0 18px 12px 18px;display:grid;gap:10px}
+.modalFoot{padding:12px 18px;border-top:1px solid #eef2f7;display:flex;justify-content:flex-end;gap:10px}
+.ul{padding-left:18px}.ul.indent{padding-left:28px}.note{color:#475569}
+.checkRow{display:flex;gap:8px;align-items:flex-start;margin-top:6px}
+.checkRow input{margin-top:2px;accent-color:#2F80ED}
+.statusList{display:grid;gap:10px}
+.statusItem{padding:10px 12px;border-radius:12px;border:1px solid #e5e7eb}
+.statusItem.bad{background:#fff1f2;border-color:#fecaca;color:#991b1b}
+.statusItem.ok{background:#ecfdf5;border-color:#bbf7d0;color:#065f46}
+
+/* 報告頁補充 */
+.reportHeader{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.reportGrid{grid-template-columns:1.1fr .9fr}
+.score{font-weight:800}
+
+/* 報告頁：同頁影片瀏覽 */
+.reportGrid{grid-template-columns:1.2fr .9fr}
+.sticky{position:sticky; top:20px}
+.row.active{outline:2px solid #2F80ED}

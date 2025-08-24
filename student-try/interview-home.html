@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"/>
+  <title>學生模擬面試｜首頁</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="assets/css/styles.css"/>
+</head>
+<body data-page="home">
+  <main class="container">
+    <header class="header">
+      <div class="title">學生模擬面試｜首頁</div>
+      <div class="subtitle">選擇科系後開始；完成後可於下方查看「歷次紀錄」。</div>
+    </header>
+
+    <section class="card">
+      <div class="sectionTitle">
+        <div class="badgeGrad">選擇科系開始模擬</div>
+        <div class="muted">勾選一個科系後點擊「開始模擬面試」</div>
+      </div>
+      <form id="deptForm" class="deptGrid" aria-label="科系選擇">
+        <label class="deptItem"><input type="radio" name="dept" value="會計資訊系"><span>會計資訊系</span></label>
+        <label class="deptItem"><input type="radio" name="dept" value="財務金融系"><span>財務金融系</span></label>
+        <label class="deptItem"><input type="radio" name="dept" value="資訊管理系"><span>資訊管理系</span></label>
+        <label class="deptItem"><input type="radio" name="dept" value="財政稅務系"><span>財政稅務系</span></label>
+        <label class="deptItem"><input type="radio" name="dept" value="應用外語系"><span>應用外語系</span></label>
+        <label class="deptItem"><input type="radio" name="dept" value="國際商務系"><span>國際商務系</span></label>
+        <label class="deptItem"><input type="radio" name="dept" value="企業管理系"><span>企業管理系</span></label>
+      </form>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnStart">開始模擬面試</button>
+        <button class="btn btn-outline" id="btnFake">（開發）新增假紀錄</button>
+        <button class="btn btn-outline" id="btnClear">清除全部紀錄</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle">
+        <div class="badgeGrad">歷次模擬面試紀錄</div>
+        <div class="muted">完成會自動加入列表；可點「查看報告」。</div>
+      </div>
+
+      <div class="toolbar">
+        <select id="filterDept" class="select">
+          <option value="">全部科系</option>
+          <option>會計資訊系</option><option>財務金融系</option><option>資訊管理系</option>
+          <option>財政稅務系</option><option>應用外語系</option><option>國際商務系</option><option>企業管理系</option>
+        </select>
+        <input id="search" class="input" placeholder="搜尋：科系 / 狀態 / ID…" />
+      </div>
+
+      <table class="table" aria-label="紀錄列表">
+        <thead><tr><th>日期</th><th>科系</th><th>狀態</th><th>總分</th><th>操作</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty" style="display:none">尚無紀錄</div>
+    </section>
+  </main>
+
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

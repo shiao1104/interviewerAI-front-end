@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>模擬面試報表｜Interviewer AI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body data-page="report">
+  <main class="container">
+    <header class="header">
+      <div class="title">模擬面試報表</div>
+      <div class="subtitle">完成後的分析與建議（可列印/下載PDF）。</div>
+      <div class="actions">
+        <a class="btn btn-outline" href="interview-home.html">← 回首頁</a>
+        <a class="btn btn-outline" id="btnRemock" href="#">重新模擬</a>
+        <button class="btn btn-primary" onclick="window.print()">列印 / 下載 PDF</button>
+      </div>
+    </header>
+
+    <!-- 結果總覽 -->
+    <section class="card">
+      <div class="sectionTitle">
+        <div class="badgeGrad">結果總覽</div>
+        <div class="muted" id="reportId">報表 ID：—</div>
+      </div>
+      <div class="summary">
+        <div class="meta">
+          <div class="scoreCard">
+            <div class="scoreBadge" id="scoreBadge">—</div>
+            <div class="scoreDesc">
+              <div class="big">整體分數</div>
+              <div class="chips">
+                <span class="chip" id="deptChip">—</span>
+                <span class="chip" id="statusChip">完成</span>
+                <span class="chip" id="dateChip">—</span>
+              </div>
+            </div>
+          </div>
+          <div class="metaGrid">
+            <div class="metaItem"><label>完成狀態</label><div class="v" id="statusText">完成</div></div>
+            <div class="metaItem"><label>作答題數</label><div class="v" id="qCount">— 題</div></div>
+            <div class="metaItem"><label>總作答時間</label><div class="v" id="talkTime">—</div></div>
+            <div class="metaItem"><label>重錄次數</label><div class="v" id="redoCount">0 次</div></div>
+          </div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="kv" id="kpFluency">—</div><div class="kb">口條/語速</div></div>
+          <div class="kpi"><div class="kv" id="kpFiller">—</div><div class="kb">贅字比例</div></div>
+          <div class="kpi"><div class="kv" id="kpEye">—</div><div class="kb">視線對鏡頭比</div></div>
+          <div class="kpi"><div class="kv" id="kpEmotion">—</div><div class="kb">聲音情緒穩定度</div></div>
+          <div class="kpi"><div class="kv" id="kpRelevance">—</div><div class="kb">與題目相關度</div></div>
+          <div class="kpi"><div class="kv" id="kpConfidence">—</div><div class="kb">非語言自信指標</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 能力向度 -->
+    <section class="card">
+      <div class="sectionTitle"><div class="badgeGrad">能力向度</div><div class="muted">越接近 100 分代表表現越佳</div></div>
+      <div class="bars" id="bars"></div>
+    </section>
+
+    <!-- 每題表現 + 右側影片瀏覽（同頁） -->
+    <section class="grid reportGrid">
+      <!-- 左：每題表現 -->
+      <div class="card">
+        <div class="sectionTitle"><div class="badgeGrad">每題表現</div><div class="muted">點任一列即可在右側播放影片</div></div>
+        <table class="table" aria-label="每題表現">
+          <thead><tr><th style="width:44%">題目</th><th>用時</th><th>分數</th><th>評語</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div id="emptyQ" class="empty" style="display:none">找不到影片片段</div>
+      </div>
+
+      <!-- 右：影片瀏覽（固定於頁面） -->
+      <div class="card sticky">
+        <div class="sectionTitle">
+          <div class="badgeGrad">影片瀏覽</div>
+          <div class="muted" id="playerTitle">請點左側任一題目播放</div>
+        </div>
+        <div class="videoWrap">
+          <video id="player" controls playsinline></video>
+        </div>
+        <div class="actions">
+          <a id="btnDownload" class="btn btn-outline" download>下載目前題目影片</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
