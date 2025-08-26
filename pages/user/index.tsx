@@ -207,7 +207,7 @@ export default function InterviewerDashboard() {
                   <Typography variant="body2">
                     透過AI模擬真實面試，獲得實時反饋
                   </Typography>
-                  <Button variant="outlined" className={styles.toolButton}>
+                  <Button variant="outlined" className={styles.toolButton}component="a" href="/student-try/interview-home.html">
                     開始練習
                   </Button>
                 </div>
