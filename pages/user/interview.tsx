@@ -31,6 +31,8 @@ import VideoRecorder, {
   VideoRecorderRef,
 } from "@/components/common/user/VideoRecorder";
 import QuestionAPI from "@/lib/api/QuestionAPI";
+import QuestionTempAPI from "@/lib/api/QuestionTempAPI";
+import AnalyzeAPI from "@/lib/api/AnalyzeAPI";
 
 export default function Interview() {
   const [isClient, setIsClient] = useState(false);
@@ -74,6 +76,19 @@ export default function Interview() {
     }
 
     fetch();
+  }, []);
+
+  const fetchQuestion = async () => {
+    try {
+      const response = await QuestionTempAPI.getNextQuestion(1);
+      console.log("獲取到的問題:", response);
+    } catch (error) {
+      console.error("無法獲取問題:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuestion();
   }, []);
 
   // 初始化客戶端渲染
@@ -121,33 +136,26 @@ export default function Interview() {
     }
   };
 
-  // 錄影完成處理函數
-  const handleRecordingComplete = (blobs: Blob[]) => {
-    console.log("錄製完成，獲取到", blobs.length, "個數據片段");
+  const uploadVideo = async (formData: FormData) => {
+    try {
+      const response = await AnalyzeAPI.uploadMedia(formData);
+    } catch (error) {
+      console.error("上傳錯誤:", error);
+    }
+  };
 
-    // 這裡可以實現將錄製的視頻上傳到服務器的邏輯
-    // 例如:
-    // const formData = new FormData();
-    // formData.append('questionId', currentQuestion.id.toString());
-    // formData.append('questionIndex', currentQuestionIndex.toString());
-    //
-    // blobs.forEach((blob, index) => {
-    //   formData.append(`video-chunk-${index}`, blob);
-    // });
-    //
-    // fetch('/api/upload-interview-video', {
-    //   method: 'POST',
-    //   body: formData
-    // })
-    // .then(response => response.json())
-    // .then(data => {
-    //   console.log('上傳成功:', data);
-    //   showNotification("視頻上傳成功", "success");
-    // })
-    // .catch(error => {
-    //   console.error('上傳錯誤:', error);
-    //   showNotification("視頻上傳失敗", "error");
-    // });
+  const handleRecordingComplete = async (blobs: Blob[]) => {
+    const formData = new FormData();
+    formData.append('interview_id', '1');
+    formData.append('question_id', '9');
+
+    const videoBlob = new Blob(blobs, { type: 'video/webm' });
+    const audioBlob = new Blob(blobs, { type: 'audio/mp3' });
+
+    formData.append('audio_file', videoBlob, 'interview_video.webm');
+    formData.append('video_file', audioBlob, 'interview_video.mp3');
+
+    await uploadVideo(formData);
   };
 
   // 檢查媒體權限
