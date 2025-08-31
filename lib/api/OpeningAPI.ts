@@ -15,7 +15,7 @@ const OpeningAPI = {
     API.post(`${BASE_URL}/openings/`, data),
 
   update: (opening_id: number, data: OpeningTypes): Promise<Response<never>> =>
-    API.patch(`${BASE_URL}/openings/${opening_id}/`, data),
+    API.put(`${BASE_URL}/openings/${opening_id}/`, data),
 
   delete: (opening_id: number): Promise<Response<never>> =>
     API.delete(`${BASE_URL}/openings/${opening_id}/`),

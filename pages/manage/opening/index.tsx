@@ -5,7 +5,6 @@ import {
   Box,
   IconButton,
   Button,
-  Chip,
 } from "@mui/material";
 import { SearchType } from "@/lib/types/searchTypes";
 import { useForm } from "react-hook-form";
