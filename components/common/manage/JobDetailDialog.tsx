@@ -33,8 +33,6 @@ export default function JobDetailDialog({
 
   const openingInfo = [
     { label: "職缺名稱", value: data.opening_name },
-    { label: "工作地點", value: data.workplace_location },
-    { label: "工作類型", value: data.employment_type },
     { label: "工作內容說明", value: data.opening_info }
   ];
 
