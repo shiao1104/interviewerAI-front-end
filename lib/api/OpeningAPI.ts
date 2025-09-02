@@ -28,6 +28,9 @@ const OpeningAPI = {
 
   getRandom: (opening_id: number): Promise<Response<never>> =>
     API.post(`${BASE_URL}/start-interview/`, opening_id ? { opening_id } : {}),
+
+  getMyApplied: (user_id: number): Promise<Response<never>> =>
+    API.get(`${BASE_URL}/openings/my-applied/`, user_id ? { params: { user_id } } : {}),
 };
 
 export default OpeningAPI;
