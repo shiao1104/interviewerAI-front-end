@@ -26,6 +26,8 @@ import {
   Select,
   MenuItem,
   TextField,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import {
   Analytics,
@@ -41,6 +43,9 @@ import {
   KeyboardBackspace,
   Check,
   Cancel,
+  Phone,
+  Email,
+  Work,
 } from "@mui/icons-material";
 import CircleProgress from "@/components/common/manage/CircleProgress";
 import Layout from "@/components/Layout/ManageLayout";
@@ -52,6 +57,9 @@ import dayjs, { Dayjs } from "dayjs";
 import { useRef } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import InterviewAPI from "@/lib/api/InterviewAPI";
+import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
+import { useForm } from "react-hook-form";
 
 export default function IntervieweeDetail() {
   const router = useRouter();
@@ -61,7 +69,35 @@ export default function IntervieweeDetail() {
   const [passed, setPassed] = useState('');
   const [interviewTime, setInterviewTime] = useState<Dayjs | null>(null);
   const [interviewType, setInterviewType] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const aiReportRef = useRef<HTMLDivElement>(null);
+
+  const [intervieweeData, setIntervieweeData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    position: '',
+    interviewDate: '',
+    interviewTime: '',
+    confirmStatus: '未面試',
+    resumeUrl: '#',
+    scores: {
+      overall: 0,
+      language: 0,
+      attitude: 0,
+      technical: 0,
+      teamwork: 0,
+    },
+    comments: {
+      overall: '',
+      language: '',
+      attitude: '',
+      technical: '',
+      teamwork: '',
+    }
+  });
 
   const scoreItems = [
     {
@@ -90,58 +126,74 @@ export default function IntervieweeDetail() {
     },
   ];
 
-  // Simulated data
-  const [data] = useState({
-    name: "王小明",
-    email: "ming@example.com",
-    phone: "0912-345-678",
-    position: "前端工程師",
-    resumeUrl: "#",
-    interviewDate: "2025-05-20",
-    interviewTime: "14:30 - 15:30",
-    confirmStatus: "已面試",
-    audioUrl: "#",
-    videoUrl: "#",
-    transcriptUrl: "#",
-    emotionAnalysisUrl: "#",
-    scores: {
-      language: 83,
-      attitude: 75,
-      technical: 80,
-      overall: 85,
-    },
-    comments: {
-      language: "應徵者展現了良好的溝通能力，用詞精準，能清晰表達技術概念。",
-      attitude: "面試過程中表現自信，態度積極主動，表情自然，對問題回應迅速。",
-      technical:
-        "根據技術問題的回答分析，應徵者具備所需的前端開發技能，特別是在React方面表現出色。",
-      overall:
-        "整體而言，高度推薦此應徵者。專業素養良好，技術能力符合職位要求，建議進入下一輪面試。",
-    },
-  });
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await InterviewAPI.getRecord(Number(id));
 
-  const interviewAnalysis = [
-    {
-      question: "請描述您過去的專案經驗",
-      answer: "我曾負責一個React專案，協助建構UI元件與狀態管理...",
-      tags: ["React", "前端開發", "團隊合作"],
-      aiComment: "展現了良好的技術理解與解決問題能力。",
-    },
-    {
-      question: "請說明您如何處理團隊內的溝通問題",
-      answer: "我會主動開啟溝通會議，確保彼此理解一致。",
-      tags: ["溝通能力", "主動協調"],
-      aiComment: "展現了成熟的溝通技巧與主動處理問題的態度。",
-    },
-  ];
+      if (!response.data) return;
+      const data = response.data as IntervieweeTypes;
+
+      let interviewDate = '';
+      let interviewTime = '';
+      if (data.interview_datetime) {
+        const datetime = new Date(data.interview_datetime);
+        interviewDate = datetime.toISOString().split('T')[0];
+        interviewTime = datetime.toTimeString().slice(0, 5);
+      }
+
+      setIntervieweeData({
+        name: data.candidate_detail?.username || '',
+        email: data.candidate_detail?.email || '',
+        phone: data.candidate_detail?.phone_number || '',
+        position: data.opening_detail?.opening_name || '',
+        interviewDate,
+        interviewTime,
+        confirmStatus: data.interview_status === 'completed' ? '已面試' : '未面試',
+        resumeUrl: '#',
+        scores: {
+          overall: data.total_score || 0,
+          language: data.score_expression || 0,
+          attitude: data.score_attitude || 0,
+          technical: data.score_technical || 0,
+          teamwork: data.score_collaboration || 0,
+        },
+        comments: {
+          overall: data.result_abstract || '',
+          language: '候選人在回答問題時表達清晰，邏輯性強，能夠準確傳達自己的想法。',
+          attitude: '展現出積極的學習態度和對工作的熱忱，願意接受挑戰。',
+          technical: '具備紮實的技術基礎，對新技術有一定的了解和學習能力。',
+          teamwork: '具有良好的溝通協調能力，能與團隊成員有效配合。',
+        }
+      });
+    } catch (error) {
+      console.error('獲取數據失敗:', error);
+      setSnackbar({ open: true, message: '獲取數據失敗', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAnswers = async () => {
+    try {
+      setLoading(true);
+      const response = await InterviewAPI.getAnswers(Number(id));
+      console.log('獲取答案:', response.data);
+    } catch (error) {
+      console.error('獲取答案失敗:', error);
+      setSnackbar({ open: true, message: '獲取答案失敗', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (id) {
-      console.log(`Loading data for interviewee ${id}`);
+    if (router.isReady && id) {
+      fetchData();
+      fetchAnswers();
     }
   }, [id]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleTabChange = (event: any, newValue: any) => {
     setTabValue(newValue);
   };
@@ -149,18 +201,71 @@ export default function IntervieweeDetail() {
   const handleExportAIReport = async () => {
     if (!aiReportRef.current) return;
 
-    const canvas = await html2canvas(aiReportRef.current, {
-      scale: 2,
-      useCORS: true,
-    });
+    try {
+      const canvas = await html2canvas(aiReportRef.current, {
+        scale: 2,
+        useCORS: true,
+      });
 
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("AI-面試分析報告.pdf");
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`AI面試分析報告_${intervieweeData.name}.pdf`);
+
+      setSnackbar({ open: true, message: 'PDF 導出成功', severity: 'success' });
+    } catch (error) {
+      console.error('導出PDF失敗:', error);
+      setSnackbar({ open: true, message: 'PDF 導出失敗', severity: 'error' });
+    }
+  };
+
+  const handleSubmitResult = async () => {
+    if (!passed) {
+      setSnackbar({ open: true, message: '請選擇面試結果', severity: 'error' });
+      return;
+    }
+
+    if (passed === 'yes' && (!interviewTime || !interviewType)) {
+      setSnackbar({ open: true, message: '通過面試需要設定下次面試時間和方式', severity: 'error' });
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const resultData = {
+        interview_id: id,
+        passed: passed === 'yes',
+        next_interview_time: passed === 'yes' ? interviewTime?.toISOString() : null,
+        interview_type: passed === 'yes' ? interviewType : null,
+        rejection_reason: passed === 'no' ? rejectionReason : null,
+      };
+
+      // 這裡應該調用 API 提交結果
+      // await InterviewAPI.submitResult(resultData);
+
+      setSnackbar({
+        open: true,
+        message: `面試結果已${passed === 'yes' ? '通過' : '未通過'}`,
+        severity: 'success'
+      });
+
+    } catch (error) {
+      console.error('提交結果失敗:', error);
+      setSnackbar({ open: true, message: '提交失敗', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setPassed('');
+    setInterviewTime(null);
+    setInterviewType('');
+    setRejectionReason('');
   };
 
   return (
@@ -170,10 +275,12 @@ export default function IntervieweeDetail() {
         <Button
           startIcon={<KeyboardBackspace />}
           onClick={() => router.push("/manage/interviewee")}
+          sx={{ mb: 2 }}
         >
           返回列表
         </Button>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 3, mt: 3 }}>
+
+        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Typography
             variant="h4"
             sx={{
@@ -187,7 +294,7 @@ export default function IntervieweeDetail() {
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Chip
-            label={`綜合評分: ${data.scores.overall}`}
+            label={`綜合評分: ${intervieweeData.scores.overall}`}
             color="primary"
             size="medium"
             sx={{
@@ -202,272 +309,158 @@ export default function IntervieweeDetail() {
 
         <Grid container sx={{ display: "grid", gap: "1rem" }}>
           {/* 應徵者資訊 */}
-          <Grid
+          <Card
+            elevation={0}
             sx={{
-              display: "grid",
-              gridTemplateColumns: "2fr 1fr",
-              gap: "1rem",
+              borderRadius: 2,
+              border: `1px solid ${theme.palette.divider}`,
+              height: "100%",
             }}
           >
-            <Card
-              elevation={0}
-              sx={{
-                borderRadius: 2,
-                border: `1px solid ${theme.palette.divider}`,
-                height: "100%",
-              }}
-            >
-              <CardContent>
-                <Grid
-                  container
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: "2fr auto 1fr",
-                    gap: "1rem",
-                  }}
-                >
-                  {/* 資訊區 - 左邊 */}
-                  <Grid sx={{ display: "flex", alignItems: "center" }}>
-                    <Box
-                      sx={{
-                        width: "175px",
-                        height: "225px",
-                        overflow: "hidden",
-                        marginRight: "1rem",
-                      }}
-                    >
-                      <Image src={pic} alt="" width={175} />
+            <CardContent>
+              <Grid
+                container
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "2fr auto 1fr",
+                  gap: "1rem",
+                }}
+              >
+                {/* 資訊區 - 左邊 */}
+                <Grid sx={{ display: "flex", alignItems: "center" }}>
+                  <Box>
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="h6" fontWeight="bold">
+                        {intervieweeData.name || '載入中...'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {intervieweeData.position}
+                      </Typography>
                     </Box>
-                    <Box>
-                      <Box sx={{ mb: 3 }}>
-                        <Typography variant="h6">{data.name}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {data.position}
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Stack spacing={2} sx={{ mb: 3 }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Email
+                          fontSize="small"
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ width: "80px" }}
+                        >
+                          Email:
                         </Typography>
+                        <Typography variant="body2">{intervieweeData.email}</Typography>
                       </Box>
 
-                      <Divider sx={{ my: 2 }} />
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Phone
+                          fontSize="small"
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ width: "80px" }}
+                        >
+                          電話:
+                        </Typography>
+                        <Typography variant="body2">{intervieweeData.phone}</Typography>
+                      </Box>
 
-                      <Stack spacing={2} sx={{ mb: 3 }}>
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Person
-                            fontSize="small"
-                            sx={{ color: "text.secondary", mr: 1 }}
-                          />
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ width: "80px" }}
-                          >
-                            Email:
-                          </Typography>
-                          <Typography variant="body2">{data.email}</Typography>
-                        </Box>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Work
+                          fontSize="small"
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ width: "80px" }}
+                        >
+                          應徵職位:
+                        </Typography>
+                        <Typography variant="body2">
+                          {intervieweeData.position}
+                        </Typography>
+                      </Box>
+                    </Stack>
 
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Person
-                            fontSize="small"
-                            sx={{ color: "text.secondary", mr: 1 }}
-                          />
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ width: "80px" }}
-                          >
-                            電話:
-                          </Typography>
-                          <Typography variant="body2">{data.phone}</Typography>
-                        </Box>
-
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Description
-                            fontSize="small"
-                            sx={{ color: "text.secondary", mr: 1 }}
-                          />
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ width: "80px" }}
-                          >
-                            應徵職位:
-                          </Typography>
-                          <Typography variant="body2">
-                            {data.position}
-                          </Typography>
-                        </Box>
-                      </Stack>
-
-                      <Button
-                        variant="outlined"
-                        fullWidth
-                        href={data.resumeUrl}
-                        startIcon={<Description />}
-                        sx={{
-                          borderRadius: 2,
-                          textTransform: "none",
-                        }}
-                      >
-                        查看履歷
-                      </Button>
-                    </Box>
-                  </Grid>
-
-                  {/* 分隔線 */}
-                  <Divider orientation="vertical" flexItem />
-
-                  {/* 面試排程區 - 右邊 */}
-                  <Grid>
-                    <Typography variant="h6" fontWeight="medium" sx={{ mb: 2 }}>
-                      面試排程
-                    </Typography>
-
-                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                      <DateRange
-                        fontSize="small"
-                        sx={{ color: "text.secondary", mr: 1 }}
-                      />
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ width: "80px" }}
-                      >
-                        日期:
-                      </Typography>
-                      <Typography variant="body2">
-                        {data.interviewDate}
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                      <AccessTime
-                        fontSize="small"
-                        sx={{ color: "text.secondary", mr: 1 }}
-                      />
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ width: "80px" }}
-                      >
-                        時間:
-                      </Typography>
-                      <Typography variant="body2">
-                        {data.interviewTime}
-                      </Typography>
-                    </Box>
-
-                    <Chip
-                      label={data.confirmStatus}
-                      color="success"
-                      size="small"
+                    {/* <Button
                       variant="outlined"
-                      sx={{ borderRadius: 1 }}
-                    />
-                  </Grid>
+                      fullWidth
+                      href={intervieweeData.resumeUrl}
+                      target="_blank"
+                      startIcon={<Description />}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: "none",
+                      }}
+                    >
+                      查看履歷
+                    </Button> */}
+                  </Box>
                 </Grid>
-              </CardContent>
-            </Card>
 
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                border: `1px solid ${theme.palette.divider}`,
-                background: theme.palette.background.paper,
-              }}
-            >
-              <Box>
-                <Typography variant="h6" fontWeight="medium" sx={{ mb: 2 }}>
-                  面試資料
-                </Typography>
-                {/* {data.confirmStatus == "已面試" ? ( */}
-                {id == "A002" ? (
-                  <Grid
-                    container
-                    sx={{
-                      display: "grid",
-                      gap: "1rem",
-                      gridTemplateColumns: "1fr 1fr",
-                    }}
-                  >
-                    <Grid>
-                      <Button
-                        variant="outlined"
-                        startIcon={<VolumeUp />}
-                        fullWidth
-                        href={data.audioUrl}
-                        sx={{
-                          p: 1,
-                          borderRadius: 2,
-                          height: "100%",
-                          textTransform: "none",
-                          justifyContent: "flex-start",
-                        }}
-                      >
-                        錄音
-                      </Button>
-                    </Grid>
-                    <Grid>
-                      <Button
-                        variant="outlined"
-                        startIcon={<VideoCall />}
-                        fullWidth
-                        href={data.videoUrl}
-                        sx={{
-                          p: 1,
-                          borderRadius: 2,
-                          height: "100%",
-                          textTransform: "none",
-                          justifyContent: "flex-start",
-                        }}
-                      >
-                        影片
-                      </Button>
-                    </Grid>
-                    <Grid>
-                      <Button
-                        variant="outlined"
-                        startIcon={<DocumentScanner />}
-                        fullWidth
-                        href={data.transcriptUrl}
-                        sx={{
-                          p: 1,
-                          borderRadius: 2,
-                          height: "100%",
-                          textTransform: "none",
-                          justifyContent: "flex-start",
-                        }}
-                      >
-                        逐字稿
-                      </Button>
-                    </Grid>
-                    <Grid>
-                      <Button
-                        variant="outlined"
-                        startIcon={<Analytics />}
-                        fullWidth
-                        onClick={() => window.open("/manage/interviewee/report/export", "_blank")}
-                        sx={{
-                          p: 1,
-                          borderRadius: 2,
-                          height: "100%",
-                          textTransform: "none",
-                          justifyContent: "flex-start",
-                        }}
-                      >
-                        分析
-                      </Button>
-                    </Grid>
-                  </Grid>
-                ) : (
-                  "尚未接受面試"
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-          {/* {data.confirmStatus == "已面試" ? ( */}
-          {id == "A002" ? (
+                {/* 分隔線 */}
+                <Divider orientation="vertical" flexItem />
 
+                {/* 面試排程區 - 右邊 */}
+                <Grid>
+                  <Typography variant="h6" fontWeight="medium" sx={{ mb: 2 }}>
+                    面試排程
+                  </Typography>
+
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <DateRange
+                      fontSize="small"
+                      sx={{ color: "text.secondary", mr: 1 }}
+                    />
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ width: "80px" }}
+                    >
+                      日期:
+                    </Typography>
+                    <Typography variant="body2">
+                      {intervieweeData.interviewDate || '未設定'}
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                    <AccessTime
+                      fontSize="small"
+                      sx={{ color: "text.secondary", mr: 1 }}
+                    />
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ width: "80px" }}
+                    >
+                      時間:
+                    </Typography>
+                    <Typography variant="body2">
+                      {intervieweeData.interviewTime || '未設定'}
+                    </Typography>
+                  </Box>
+
+                  <Chip
+                    label={intervieweeData.confirmStatus}
+                    color={intervieweeData.confirmStatus === '已面試' ? 'success' : 'default'}
+                    size="small"
+                    variant="outlined"
+                    sx={{ borderRadius: 1 }}
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+
+          {intervieweeData.confirmStatus === "已面試" ? (
             <>
               {/* AI 面試分析報告 */}
               <div ref={aiReportRef}>
@@ -481,10 +474,25 @@ export default function IntervieweeDetail() {
                       overflow: "hidden",
                     }}
                   >
-                    <Box sx={{ p: 2, bgcolor: theme.palette.background.paper }}>
+                    <Box sx={{
+                      p: 2,
+                      bgcolor: theme.palette.background.paper,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
                       <Typography variant="h6" fontWeight="medium">
                         AI 面試分析報告
                       </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={handleExportAIReport}
+                        startIcon={<Description />}
+                        sx={{ textTransform: 'none' }}
+                      >
+                        導出 PDF
+                      </Button>
                     </Box>
 
                     <Tabs
@@ -506,27 +514,35 @@ export default function IntervieweeDetail() {
 
                     <Box sx={{ p: 3 }}>
                       {tabValue === 0 && (
-                        <Box sx={{ display: "flex" }}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Box
                             sx={{
                               display: "flex",
                               justifyContent: "center",
-                              mr: 3,
+                              mr: 4,
                             }}
                           >
                             <CircleProgress
-                              score={data.scores.overall}
+                              score={intervieweeData.scores.overall}
                               label="總體評分"
                               color={theme.palette.primary.main}
                               size={160}
                             />
                           </Box>
-                          <Typography
-                            variant="body1"
-                            sx={{ px: 2, margin: "2rem 0" }}
-                          >
-                            {data.comments.overall}
-                          </Typography>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography
+                              variant="h6"
+                              sx={{ mb: 2, fontWeight: 'medium' }}
+                            >
+                              總體評價
+                            </Typography>
+                            <Typography
+                              variant="body1"
+                              sx={{ lineHeight: 1.6 }}
+                            >
+                              {intervieweeData.comments.overall || '該應徵者在面試中表現良好，展現出積極的態度和良好的溝通能力。技術能力符合職位要求，具備團隊合作精神。建議進入下一輪面試。'}
+                            </Typography>
+                          </Box>
                         </Box>
                       )}
 
@@ -536,7 +552,7 @@ export default function IntervieweeDetail() {
                           sx={{
                             display: "grid",
                             gridTemplateColumns: "1fr 1fr",
-                            gap: "1rem",
+                            gap: "2rem",
                           }}
                         >
                           {scoreItems.map((item) => (
@@ -548,14 +564,15 @@ export default function IntervieweeDetail() {
                                   border: `1px solid ${theme.palette.divider}`,
                                 }}
                               >
-                                <Typography variant="subtitle2" gutterBottom>
+                                <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
                                   {item.title}
                                 </Typography>
-                                <Box sx={{ mb: 1 }}>
+                                <Box sx={{ mb: 2 }}>
                                   <Box
                                     sx={{
                                       display: "flex",
                                       justifyContent: "space-between",
+                                      mb: 0.5,
                                     }}
                                   >
                                     <Typography
@@ -569,8 +586,8 @@ export default function IntervieweeDetail() {
                                       fontWeight="medium"
                                     >
                                       {
-                                        data.scores[
-                                        item.key as keyof typeof data.scores
+                                        intervieweeData.scores[
+                                        item.key as keyof typeof intervieweeData.scores
                                         ]
                                       }
                                       /100
@@ -579,18 +596,17 @@ export default function IntervieweeDetail() {
                                   <LinearProgress
                                     variant="determinate"
                                     value={
-                                      data.scores[
-                                      item.key as keyof typeof data.scores
+                                      intervieweeData.scores[
+                                      item.key as keyof typeof intervieweeData.scores
                                       ]
                                     }
                                     sx={{
-                                      mt: 0.5,
-                                      height: 6,
-                                      borderRadius: 3,
+                                      height: 8,
+                                      borderRadius: 4,
                                       bgcolor: theme.palette.grey[100],
                                       "& .MuiLinearProgress-bar": {
                                         bgcolor: item.color,
-                                        borderRadius: 3,
+                                        borderRadius: 4,
                                       },
                                     }}
                                   />
@@ -598,11 +614,11 @@ export default function IntervieweeDetail() {
                                 <Typography
                                   variant="body2"
                                   color="text.secondary"
-                                  sx={{ mt: 2 }}
+                                  sx={{ lineHeight: 1.5 }}
                                 >
                                   {
-                                    data.comments[
-                                    item.key as keyof typeof data.comments
+                                    intervieweeData.comments[
+                                    item.key as keyof typeof intervieweeData.comments
                                     ]
                                   }
                                 </Typography>
@@ -614,63 +630,9 @@ export default function IntervieweeDetail() {
                     </Box>
                   </Paper>
                 </Grid>
-
-                {/* 問題分析 */}
-                <Grid>
-                  <Paper
-                    sx={{
-                      borderRadius: 2,
-                      border: `1px solid ${theme.palette.divider}`,
-                      overflow: "hidden",
-                    }}
-                  >
-                    <Box sx={{ p: 2, bgcolor: theme.palette.background.paper }}>
-                      <Typography variant="h6" fontWeight="medium">
-                        問題分析
-                      </Typography>
-
-                      {interviewAnalysis.map((item, index) => (
-                        <Card
-                          key={index}
-                          sx={{
-                            mt: 2,
-                            p: 2,
-                            borderRadius: 2,
-                            border: `1px solid ${theme.palette.divider}`,
-                          }}
-                        >
-                          <Typography variant="h6" fontWeight="medium" sx={{ mb: 1 }}>
-                            問題 {index + 1}: {item.question}
-                          </Typography>
-
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                            面試者回答：
-                          </Typography>
-                          <Typography sx={{ mb: 1 }}>{item.answer}</Typography>
-
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
-                            重點標籤：
-                          </Typography>
-                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-                            {item.tags.map((tag, i) => (
-                              <Chip key={i} label={tag} color="primary" variant="outlined" />
-                            ))}
-                          </Box>
-
-                          <Typography variant="subtitle2" color="text.secondary">
-                            AI評論：
-                          </Typography>
-                          <Typography>{item.aiComment}</Typography>
-                        </Card>
-                      ))}
-
-                      <IconButton sx={{ mt: 2 }}>
-                        <ExpandMore />
-                      </IconButton>
-                    </Box>
-                  </Paper>
-                </Grid>
               </div>
+
+              {/* 面試結果決定 */}
               <Grid>
                 <Paper
                   elevation={0}
@@ -683,16 +645,14 @@ export default function IntervieweeDetail() {
                   }}
                 >
                   {/* Header */}
-                  <Box sx={{
-                    bgcolor: 'white',
-                  }}>
+                  <Box sx={{ bgcolor: 'white' }}>
                     <Typography
                       variant="h6"
                       fontWeight={600}
                       sx={{
                         color: '#1a1f36',
                         fontSize: '18px',
-                        mb: 1
+                        mb: 2
                       }}
                     >
                       是否通過此次初步面試？
@@ -702,7 +662,7 @@ export default function IntervieweeDetail() {
                   {/* Content */}
                   <Box>
                     {/* Radio Selection */}
-                    <FormControl component="fieldset" sx={{ mb: 2 }}>
+                    <FormControl component="fieldset" sx={{ mb: 3 }}>
                       <RadioGroup
                         value={passed}
                         onChange={(e) => setPassed(e.target.value)}
@@ -723,7 +683,7 @@ export default function IntervieweeDetail() {
                           }
                           label={
                             <Typography sx={{ fontWeight: 500, color: '#1a1f36' }}>
-                              是
+                              通過
                             </Typography>
                           }
                         />
@@ -741,7 +701,7 @@ export default function IntervieweeDetail() {
                           }
                           label={
                             <Typography sx={{ fontWeight: 500, color: '#1a1f36' }}>
-                              否
+                              未通過
                             </Typography>
                           }
                         />
@@ -754,9 +714,12 @@ export default function IntervieweeDetail() {
                         bgcolor: '#f8fbff',
                         border: '1px solid #e3f2fd',
                         borderRadius: 2,
-                        p: 2,
-                        mb: 1
+                        p: 3,
+                        mb: 3
                       }}>
+                        <Typography variant="subtitle2" sx={{ mb: 2, color: '#1976d2' }}>
+                          請設定下次面試資訊
+                        </Typography>
                         <Grid container spacing={3}>
                           <Grid>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -793,7 +756,6 @@ export default function IntervieweeDetail() {
                                 label="面試方式"
                                 onChange={(e) => setInterviewType(e.target.value)}
                                 sx={{
-                                  minWidth: 200,
                                   borderRadius: 2,
                                   bgcolor: 'white',
                                   '& .MuiOutlinedInput-notchedOutline': {
@@ -825,6 +787,8 @@ export default function IntervieweeDetail() {
                           rows={4}
                           label="未通過原因 (選填)"
                           placeholder="請簡述未通過面試的主要原因..."
+                          value={rejectionReason}
+                          onChange={(e) => setRejectionReason(e.target.value)}
                           sx={{
                             '& .MuiOutlinedInput-root': {
                               borderRadius: 2,
@@ -845,6 +809,8 @@ export default function IntervieweeDetail() {
                       <Button
                         variant="outlined"
                         color="primary"
+                        onClick={handleCancel}
+                        disabled={loading}
                         sx={{ height: 40 }}
                       >
                         取消
@@ -852,9 +818,11 @@ export default function IntervieweeDetail() {
                       <Button
                         variant="contained"
                         color="primary"
+                        onClick={handleSubmitResult}
+                        disabled={loading || !passed}
                         sx={{ height: 40 }}
                       >
-                        確認送出
+                        {loading ? '處理中...' : '確認送出'}
                       </Button>
                     </Box>
                   </Box>
@@ -862,9 +830,42 @@ export default function IntervieweeDetail() {
               </Grid>
             </>
           ) : (
-            ""
+            <Grid>
+              <Paper
+                elevation={0}
+                sx={{
+                  borderRadius: 2,
+                  border: `1px solid ${theme.palette.divider}`,
+                  p: 4,
+                  textAlign: 'center'
+                }}
+              >
+                <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+                  面試尚未完成
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  AI 分析報告和結果決定將在面試完成後顯示
+                </Typography>
+              </Paper>
+            </Grid>
           )}
         </Grid>
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={() => setSnackbar({ open: false, message: '', severity: 'success' })}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Alert
+            onClose={() => setSnackbar({ open: false, message: '', severity: 'success' })}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </Layout>
   );
