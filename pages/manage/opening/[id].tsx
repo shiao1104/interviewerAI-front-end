@@ -123,7 +123,6 @@ export default function Edit() {
             sx={{
               mb: "1rem",
               display: "grid",
-              gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr" },
               gap: "1rem",
             }}
           >
