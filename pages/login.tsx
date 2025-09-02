@@ -85,6 +85,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
   useEffect(() => {
     setIsClient(true);
+    sessionStorage.clear();
   }, []);
 
   const handleClickOpen = () => {
