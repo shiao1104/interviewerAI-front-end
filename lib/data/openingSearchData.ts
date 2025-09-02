@@ -6,9 +6,4 @@ export const openingSearchData: InputFieldTypes[] = [
     name: "location",
     type: "text",
   },
-  {
-    label: "工作地點",
-    name: "location",
-    type: "text",
-  },
 ];
