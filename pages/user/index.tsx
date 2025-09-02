@@ -28,34 +28,72 @@ import Layout from "@/components/Layout/Layout";
 import { completedInterviews, upcomingInterviews } from "@/lib/data/testData";
 import ConfirmPopup from "@/components/common/user/ConfirmPupup";
 import CompanyIntroPopup from "@/components/common/user/CompanyIntroPopup";
+import OpeningAPI from "@/lib/api/OpeningAPI";
 
-export interface interviewData {
-  position: string;
-  company: string;
-  date: string;
-  time: string;
+export interface CompanyInfo {
+  company_name: string;
+  telephone: string;
+  company_website: string;
+  company_description: string;
+}
+
+export interface InterviewApiData {
+  opening_id: number;
+  opening_info: string;
+  update_time: string;
+  opening_name: string;
+  skills_required: string;
+  company: CompanyInfo;
+  address: number;
+  interview_datetime: string;
+  company_address: string;
 }
 
 export default function InterviewerDashboard() {
   const router = useRouter();
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedInterview, setSelectedInterview] =
-    useState<interviewData | null>(null);
+    useState<InterviewApiData | null>(null);
   const [openDetail, setOpenDetail] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const [showAllCompleted, setShowAllCompleted] = useState(false);
+  const [companyIntro, setCompanyIntro] = useState<InterviewApiData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchInterviews = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await OpeningAPI.getMyApplied(1);
+      
+      if (response.result && response.data) {
+        setCompanyIntro(response.data);
+        console.log("成功獲取面試數據:", response.data);
+      } else {
+        throw new Error(response.message || "獲取數據失敗");
+      }
+    } catch (error) {
+      console.error("獲取面試數據錯誤:", error);
+      setError(error instanceof Error ? error.message : "未知錯誤");
+      setCompanyIntro([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // 頁面載入後的動畫效果
     setAnimateIn(true);
+    fetchInterviews();
   }, []);
 
-  const handleOpenDialog = (interview: interviewData) => {
+  const handleOpenDialog = (interview: InterviewApiData) => {
     setSelectedInterview(interview);
     setOpenDialog(true);
   };
 
-  const handleOpendetail = (interview: interviewData) => {
+  const handleOpendetail = (interview: InterviewApiData) => {
     setSelectedInterview(interview);
     setOpenDetail(true);
   };
@@ -90,8 +128,84 @@ export default function InterviewerDashboard() {
             </div>
           </div>
 
+          {/* 顯示錯誤信息 */}
+          {error && (
+            <div className={styles.errorMessage}>
+              <Typography color="error">
+                獲取面試數據失敗: {error}
+              </Typography>
+              <Button 
+                onClick={fetchInterviews}
+                variant="outlined" 
+                size="small"
+                style={{ marginTop: '8px' }}
+              >
+                重試
+              </Button>
+            </div>
+          )}
+
+          {/* 顯示載入狀態 */}
+          {loading && (
+            <div className={styles.loadingMessage}>
+              <Typography>正在載入面試數據...</Typography>
+            </div>
+          )}
+
           <div className={styles.interviewCards}>
-            {upcomingInterviews.map((interview, index) => (
+            {/* 渲染來自 API 的真實面試數據 */}
+            {companyIntro.length > 0 && companyIntro.map((apiInterview, index) => {
+              return (
+                <div
+                  key={apiInterview.opening_id}
+                  className={styles.interviewCard}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className={styles.cardGlow}></div>
+                  <div className={styles.cardHeader}>
+                    <Avatar className={styles.companyLogo}>
+                      {apiInterview.company.company_name.charAt(0)}
+                    </Avatar>
+                    <div className={styles.interviewInfo}>
+                      <Typography variant="h6">{apiInterview.opening_name}</Typography>
+                      <Typography variant="subtitle2">
+                        {apiInterview.company.company_name}
+                      </Typography>
+                    </div>
+                  </div>
+                  <div className={styles.cardDetails}>
+                    <div className={styles.detailItem}>
+                      <CalendarToday className={styles.detailIcon} />
+                      <Typography variant="body2">{apiInterview.interview_datetime.toString().split('T')[0]}</Typography>
+                    </div>
+                    <div className={styles.detailItem}>
+                      <Timer className={styles.detailIcon} />
+                      <Typography variant="body2">{apiInterview.interview_datetime.toString().split('T')[1]}</Typography>
+                    </div>
+                  </div>
+                  <div className={styles.cardActions}>
+                    <Button
+                      variant="contained"
+                      className={styles.primaryButton}
+                      onClick={() => handleOpenDialog(apiInterview)}
+                    >
+                      準備面試
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      className={styles.secondaryButton}
+                      onClick={() => handleOpendetail(apiInterview)}
+                    >
+                      查看詳情
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* 如果沒有 API 數據，則顯示測試數據 */}
+            {!loading && companyIntro.length === 0 && !error && upcomingInterviews.map((interview, index) => (
               <div
                 key={interview.id}
                 className={styles.interviewCard}
@@ -184,8 +298,7 @@ export default function InterviewerDashboard() {
           </div>
         </section>
 
-        <Grid container spacing={3} className={styles.dashboardGrid}>
-          {/* 面試準備工具 */}
+        {/* <Grid container spacing={3} className={styles.dashboardGrid}>
           <Grid className={styles.gridItem}>
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
@@ -207,7 +320,7 @@ export default function InterviewerDashboard() {
                   <Typography variant="body2">
                     透過AI模擬真實面試，獲得實時反饋
                   </Typography>
-                  <Button variant="outlined" className={styles.toolButton}component="a" href="/student-try/interview-home.html">
+                  <Button variant="outlined" className={styles.toolButton} component="a" href="/student-try/interview-home.html">
                     開始練習
                   </Button>
                 </div>
@@ -238,7 +351,7 @@ export default function InterviewerDashboard() {
               </div>
             </section>
           </Grid>
-        </Grid>
+        </Grid> */}
       </div>
 
       {/* 使用單獨的關閉函數 */}
@@ -253,7 +366,7 @@ export default function InterviewerDashboard() {
       <CompanyIntroPopup
         open={openDetail}
         onClose={handleCloseDetailDialog}
-        interview={selectedInterview}
+        companyIntro={selectedInterview}
       />
     </Layout>
   );
