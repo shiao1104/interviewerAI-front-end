@@ -43,9 +43,9 @@ export default function Opening() {
   }, []);
 
   const columns = [
-    { id: "opening_id", label: "代碼", sortable: true },
+    { id: "opening_id", label: "ID", sortable: true },
     { id: "opening_name", label: "職缺名稱", sortable: true },
-    { id: "workplace_location", label: "工作地點", sortable: true },
+    { id: "opening_info", label: "工作內容說明" },
     { id: "update_time", label: "建立日期", sortable: true },
     {
       id: "actions",
@@ -65,9 +65,6 @@ export default function Opening() {
             color="error"
           >
             <Delete fontSize="small" />
-          </IconButton>
-          <IconButton onClick={() => handleShow(row.opening_id)} size="small">
-            <MoreHoriz fontSize="small" />
           </IconButton>
         </Box>
       ),
@@ -164,12 +161,6 @@ export default function Opening() {
           <DataTable columns={columns} data={localOpeningData} />
         </Box>
       </Box>
-      <JobDetailDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        data={selectedJob}
-        type="opening"
-      />
     </Layout>
   );
 }
