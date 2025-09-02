@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout/ManageLayout";
 import { Typography, Box, Button, Grid, Divider, Switch } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { CreateNewFolder, KeyboardBackspace, Save } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import { intervieweeInput } from "@/lib/data/createIntervieweeData";
@@ -20,7 +20,9 @@ export default function Edit() {
   const contactFields = intervieweeInput.slice(0, 3);
   const applicationFields = intervieweeInput.slice(3, 6);
   const interviewFields = intervieweeInput.slice(6);
-  const interviewState = formProps.watch("interviewState", false);
+  const interviewState = formProps.watch("interview_status");
+  const [interviewStatus, setInterviewStatus] = useState<boolean>();
+
   const [dropdownOptions, setDropdownOptions] = useState<{
     opening: DropdownTypes[];
   }>({
@@ -29,41 +31,41 @@ export default function Edit() {
 
   const fetchData = async () => {
     try {
-      const response = await OpeningAPI.getData();
-      const intervieweeData = await InterviewAPI.getRecord(Number(id));
+      const [openingListResponse, intervieweeResponse] = await Promise.all([
+        OpeningAPI.getData(),
+        InterviewAPI.getRecord(Number(id))
+      ]);
 
-      const transformedOpenings = response.data?.map((item: any) => ({
+      const openingList: any[] = openingListResponse.data ?? [];
+      const transformedOpenings = openingList.map((item: any) => ({
         key: item.opening_id,
         value: item.opening_name
-      })) || [];
+      }));
 
       setDropdownOptions({
         opening: transformedOpenings,
       });
 
-      if (intervieweeData.data) {
-        const backendData = intervieweeData.data;
-        
-        let formData = typeof backendData === "object" && backendData !== null ? { ...backendData } : {};
-        
-        if (backendData.interview_datetime) {
-          const interviewDate = new Date(backendData.interview_datetime);
-          formData.interview_date = interviewDate.toISOString().split('T')[0]; // YYYY-MM-DD
-          formData.interview_time = interviewDate.toTimeString().slice(0, 5); // HH:MM
-          formData.interviewState = true;
-        } else {
-          formData.interviewState = false;
-        }
+      if (intervieweeResponse.data) {
+        const intervieweeData = intervieweeResponse.data as IntervieweeTypes;
 
-        if (backendData.candidate_detail) {
-          formData.username = backendData.candidate_detail.username;
-          formData.email = backendData.candidate_detail.email;
-          formData.phone_number = backendData.candidate_detail.phone_number;
-        }
+        const formData = {
+          opening: intervieweeData.opening,
+          remark: intervieweeData.remark,
+          name: intervieweeData.candidate_detail?.username || '',
+          email: intervieweeData.candidate_detail?.email || '',
+          phone_number: intervieweeData.candidate_detail?.phone_number || '',
+          interview_status: intervieweeData.interview_status,
+          interview_datetime: intervieweeData.interview_datetime,
+          interview_date: '',
+          interview_time: '',
+        };
 
-        if (backendData.opening_detail) {
-          formData.opening_name = backendData.opening_detail.opening_name;
-          formData.company_name = backendData.opening_detail.company_name;
+        if (intervieweeData.interview_datetime) {
+          const interviewDate = new Date(intervieweeData.interview_datetime);
+          formData.interview_date = interviewDate.toISOString().split('T')[0];
+          formData.interview_time = interviewDate.toTimeString().slice(0, 5);
+          setInterviewStatus(true);
         }
 
         formProps.reset(formData);
@@ -72,7 +74,7 @@ export default function Edit() {
       console.error("獲取資料失敗:", error);
       toast.error("無法獲取資料，請稍後再試。");
     }
-  }
+  };
 
   useEffect(() => {
     if (id) {
@@ -81,30 +83,20 @@ export default function Edit() {
   }, [id]);
 
   const handleSubmit = async () => {
-    const data = formProps.getValues();
-
-    // 如果有面試安排，處理日期時間
-    if (data.interviewState && data.interview_date && data.interview_time) {
-      try {
-        const date = new Date(`${data.interview_date}T${data.interview_time}`);
-        data.interview_datetime = date.toISOString();
-
-        // 清理不需要的欄位
-        delete data.interview_date;
-        delete data.interview_time;
-      } catch (error) {
-        toast.error("請檢查面試日期和時間格式");
-        return;
-      }
-    }
-
-    // 清理不需要傳送到後端的欄位
-    delete data.candidate_detail;
-    delete data.opening_detail;
-    delete data.interviewState;
-
     try {
-      await InterviewAPI.update(Number(id), data); // 使用 update 而不是 create
+      const data = formProps.getValues();
+
+      const date = new Date(`${data.interview_date}T${data.interview_time}`);
+      data.interview_datetime = date.toISOString();
+
+      delete data.interview_date;
+      delete data.interview_time;
+      delete data.candidate_detail;
+      delete data.opening_detail;
+      delete data.interviewState;
+      delete data.interview_status;
+
+      await InterviewAPI.update(Number(id), data);
       toast.success("面試者資料已更新成功！");
       router.push("/manage/interviewee");
     } catch (error) {
@@ -184,13 +176,15 @@ export default function Edit() {
                     dropdownOptions[
                     item.name as keyof typeof dropdownOptions
                     ] || item.dropdownData
-                  } 
+                  }
                   formProps={formProps}
                 />
               </Grid>
             ))}
           </Grid>
+
           <Divider sx={{ m: "1rem 0" }} />
+
           <Typography variant="h6" sx={{ mb: ".5rem" }}>
             應徵資料
           </Typography>
@@ -206,41 +200,48 @@ export default function Edit() {
                     dropdownOptions[
                     item.name as keyof typeof dropdownOptions
                     ] || item.dropdownData
-                  } 
+                  }
                   formProps={formProps}
                 />
               </Grid>
             ))}
           </Grid>
-          <Divider sx={{ m: "1rem 0" }} />
-          <Typography variant="h6" sx={{ mb: ".5rem" }}>
-            安排初步面試
-            <Switch 
-              {...formProps.register("interviewState")}
-              checked={interviewState}
-            />
-          </Typography>
-          {interviewState && (
-            <Grid
-              sx={{
-                display: "grid",
-                gap: "1rem",
-                gridTemplateColumns: "1fr 1fr",
-              }}
-            >
-              {interviewFields.map((item, index) => (
-                <Grid key={index}>
-                  <InputField
-                    name={item.name}
-                    label={item.label}
-                    type={item.type}
-                    placeholder={item.placeholder}
-                    dropdownData={item.dropdownData}
-                    formProps={formProps}
-                  />
+
+          {interviewState !== 'completed' && (
+            <>
+              <Divider sx={{ m: "1rem 0" }} />
+              <Typography variant="h6" sx={{ mb: ".5rem" }}>
+                安排初步面試
+                <Switch
+                  checked={interviewStatus || false}
+                  onChange={(e) => {
+                    setInterviewStatus(!interviewStatus);
+                  }}
+                />
+              </Typography>
+              {interviewStatus && (
+                <Grid
+                  sx={{
+                    display: "grid",
+                    gap: "1rem",
+                    gridTemplateColumns: "1fr 1fr",
+                  }}
+                >
+                  {interviewFields.map((item, index) => (
+                    <Grid key={index}>
+                      <InputField
+                        name={item.name}
+                        label={item.label}
+                        type={item.type}
+                        placeholder={item.placeholder}
+                        dropdownData={item.dropdownData}
+                        formProps={formProps}
+                      />
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
-            </Grid>
+              )}
+            </>
           )}
         </Box>
       </Box>
