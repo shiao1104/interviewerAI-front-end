@@ -4,7 +4,7 @@ import { companyType } from "./testData";
 export const intervieweeInput: InputFieldTypes[] = [
   {
     label: "姓名",
-    name: "username",
+    name: "name",
     type: "text",
     placeholder: "請輸入面試者姓名",
   },
