@@ -12,23 +12,17 @@ const InterviewAPI = {
   getRecord: (interview_id?: number): Promise<Response<never>> =>
     API.get(`${BASE_URL}/${interview_id}/`),
 
+  getAnswers: (interview_id?: number): Promise<Response<QuestionsTypes[]>> =>
+    API.get(`/answers/`),
+
   create: (data: IntervieweeTypes): Promise<Response<never>> =>
     API.post(`${BASE_URL}/`, data),
 
-  delete: (question_id: number): Promise<Response<never>> =>
-    API.delete(`${BASE_URL}/questions/${question_id}/`),
-
   update: (interview_id: number, data: IntervieweeTypes): Promise<Response<never>> =>
-    API.put(`${BASE_URL}/${interview_id}/`, data),
+    API.patch(`${BASE_URL}/${interview_id}/`, data),
 
-  getQuestionType: (): Promise<Response<never>> =>
-    API.get(`${BASE_URL}/types/`),
-
-  getOpeningJobs: (): Promise<Response<never>> =>
-    API.get(`${BASE_URL}/opening-jobs/`),
-
-  getRandom: (opening_id: number): Promise<Response<never>> =>
-    API.post(`${BASE_URL}/start-interview/`, opening_id ? { opening_id } : {}),
+  delete: (interview_id: number): Promise<Response<never>> =>
+    API.delete(`${BASE_URL}/${interview_id}/`),
 };
 
 export default InterviewAPI;
