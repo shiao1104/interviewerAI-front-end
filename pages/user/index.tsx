@@ -359,7 +359,7 @@ export default function InterviewerDashboard() {
         open={openDialog}
         onClose={handleCloseConfirmDialog}
         onConfirm={handleStartInterview}
-        interview={selectedInterview}
+        companyIntro={selectedInterview}
       />
 
       {/* 使用單獨的關閉函數 */}

@@ -11,18 +11,18 @@ import {
   Alert,
   Divider,
 } from "@mui/material";
-import { interviewData } from "@/pages/user";
+import { InterviewApiData } from "@/pages/user";
 
 export default function ConfirmPopup({
   open,
   onClose,
   onConfirm,
-  interview,
+  companyIntro,
 }: {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  interview: interviewData | null;
+  companyIntro: InterviewApiData | null;
 }) {
   const [consentGiven, setConsentGiven] = React.useState(false);
 
@@ -34,11 +34,11 @@ export default function ConfirmPopup({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogContent dividers>
-        {interview && (
+        {companyIntro && (
           <div>
-            <Typography variant="h6">{interview.position}</Typography>
+            <Typography variant="h6">{companyIntro.opening_name}</Typography>
             <Typography variant="subtitle1" gutterBottom>
-              {interview.company}
+              {companyIntro.company.company_name}
             </Typography>
 
             <Divider sx={{ my: 2 }} />
