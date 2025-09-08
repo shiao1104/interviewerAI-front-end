@@ -19,14 +19,14 @@ import { QuestionsTypes } from "@/lib/types/questionsTypes";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { getDifficultyColor } from "@/lib/hook/getDifficultyColor";
 
 export default function Questions() {
   const router = useRouter();
   const formProps = useForm();
   const [searchParams, setSearchParams] = useState<SearchType>();
-  const [dataList, setDataList] = useState<QuestionsTypes[]>(
-    []
-  );
+  const [dataList, setDataList] = useState<QuestionsTypes[]>([]);
+  const [filteredDataList, setFilteredDataList] = useState<QuestionsTypes[]>([]);
 
   const fetchData = async () => {
     try {
@@ -45,28 +45,54 @@ export default function Questions() {
       );
 
       setDataList(processedData || []);
+      setFilteredDataList(processedData || []);
     } catch (err) {
-      console.log(err);
+      toast.error(err instanceof Error ? err.message : "取得資料失敗，請稍後再試");
     }
+  };
+
+  const filterData = (params: SearchType | undefined) => {
+    if (!params || Object.keys(params).length === 0) {
+      setFilteredDataList(dataList);
+      return;
+    }
+
+    const filtered = dataList.filter((item) => {
+      const { nowPage, ...filterParams } = params;
+
+      return Object.entries(filterParams).every(([key, value]) => {
+        if (!value || value === '') return true;
+
+        const itemValue = item[key as keyof QuestionsTypes];
+
+        if (!itemValue) return false;
+
+        const itemStr = String(itemValue).toLowerCase();
+        const searchStr = String(value).toLowerCase();
+
+        switch (key) {
+          case 'difficulty':
+            return searchStr === '全部' ? true : itemStr === searchStr;
+          case 'question':
+            return itemStr.includes(searchStr);
+          default:
+            return itemStr.includes(searchStr);
+        }
+      });
+    });
+
+    setFilteredDataList(filtered);
   };
 
   useEffect(() => {
-    console.log(searchParams);
     fetchData();
   }, []);
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "容易":
-        return "success";
-      case "中等":
-        return "warning";
-      case "困難":
-        return "error";
-      default:
-        return "default";
+  useEffect(() => {
+    if (dataList.length > 0) {
+      filterData(searchParams);
     }
-  };
+  }, [searchParams, dataList]);
 
   const columns = [
     { id: "question_type", label: "問題類型", sortable: true },
@@ -119,12 +145,19 @@ export default function Questions() {
     if (result.isConfirmed) {
       try {
         await QuestionAPI.delete(Number(id));
-        router.reload();
+        await fetchData();
         toast.success("問題刪除成功");
+        window.location.reload();
       } catch (error) {
-        toast.error("新增問題失敗，請稍後再試");
+        toast.error("刪除問題失敗，請稍後再試");
       }
     }
+  };
+
+  const handleResetFilter = () => {
+    formProps.reset();
+    setSearchParams(undefined);
+    setFilteredDataList(dataList);
   };
 
   return (
@@ -137,7 +170,6 @@ export default function Questions() {
           borderRadius: "16px",
         }}
       >
-        {/* 改進的標題與按鈕排版 */}
         <Box
           sx={{
             display: "flex",
@@ -169,12 +201,20 @@ export default function Questions() {
           </Button>
         </Box>
 
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'end', gap: 1 }}>
           <SearchBar
             items={questionsSearchData}
             formProps={formProps}
             handleParams={(params: SearchType) => setSearchParams(params)}
           />
+
+          <Button
+            variant="text"
+            onClick={handleResetFilter}
+            sx={{ minWidth: "auto", marginTop: "12px" }}
+          >
+            重置篩選
+          </Button>
         </Box>
 
         <Box
@@ -185,9 +225,9 @@ export default function Questions() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={dataList} />
+          <DataTable columns={columns} data={filteredDataList} />
         </Box>
       </Box>
-    </Layout>
+    </Layout >
   );
 }

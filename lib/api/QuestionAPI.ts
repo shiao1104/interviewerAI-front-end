@@ -25,9 +25,6 @@ const QuestionAPI = {
 
   getOpeningJobs: (): Promise<Response<never>> =>
     API.get(`${BASE_URL}/opening-jobs/`),
-
-  getRandom: (opening_id: number): Promise<Response<never>> =>
-    API.post(`${BASE_URL}/start-interview/`, opening_id ? { opening_id } : {}),
 };
 
 export default QuestionAPI;
