@@ -10,37 +10,73 @@ import { SearchType } from "@/lib/types/searchTypes";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
-import { Add, Delete, Edit, MoreHoriz, Work } from "@mui/icons-material";
+import { Add, Delete, Edit, Work } from "@mui/icons-material";
 import { useRouter } from "next/router";
-import JobDetailDialog from "@/components/common/manage/JobDetailDialog";
 import { openingSearchData } from "@/lib/data/openingSearchData";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import { OpeningTypes } from "@/lib/types/openingTypes";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { QuestionsTypes } from "@/lib/types/questionsTypes";
 
 export default function Opening() {
   const router = useRouter();
   const formProps = useForm();
   const [searchParams, setSearchParams] = useState<SearchType>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedJob, setSelectedJob] = useState<any>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [localOpeningData, setLocalOpeningData] = useState<OpeningTypes[]>([]);
+  const [filteredDataList, setFilteredDataList] = useState<OpeningTypes[]>([]);
 
   const fetchData = async () => {
     try {
       const response = await OpeningAPI.getData();
       setLocalOpeningData(response.data || []);
     } catch (err) {
-      console.log(err);
+      toast.error(err instanceof Error ? err.message : "取得資料失敗，請稍後再試");
     }
   };
 
+  const filterData = (params: SearchType | undefined) => {
+    if (!params || Object.keys(params).length === 0) {
+      setFilteredDataList(localOpeningData);
+      return;
+    }
+
+    const filtered = localOpeningData.filter((item) => {
+      const { nowPage, ...filterParams } = params;
+
+      return Object.entries(filterParams).every(([key, value]) => {
+        if (!value || value === '') return true;
+
+        const itemValue = item[key as keyof OpeningTypes];
+
+        if (!itemValue) return false;
+
+        const itemStr = String(itemValue).toLowerCase();
+        const searchStr = String(value).toLowerCase();
+
+        switch (key) {
+          case 'difficulty':
+            return searchStr === '全部' ? true : itemStr === searchStr;
+          case 'question':
+            return itemStr.includes(searchStr);
+          default:
+            return itemStr.includes(searchStr);
+        }
+      });
+    });
+
+    setFilteredDataList(filtered);
+  };
+
   useEffect(() => {
-    console.log(searchParams);
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (localOpeningData.length > 0) {
+      filterData(searchParams);
+    }
+  }, [searchParams, localOpeningData]);
 
   const columns = [
     { id: "opening_id", label: "ID", sortable: true },
@@ -71,12 +107,6 @@ export default function Opening() {
     },
   ];
 
-  const handleShow = (id: number) => {
-    const found = localOpeningData.find((item) => item.opening_id === id);
-    setSelectedJob(found);
-    setDialogOpen(true);
-  };
-
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
       title: '確認刪除職缺',
@@ -97,6 +127,12 @@ export default function Opening() {
         toast.error("刪除職缺失敗，請稍後再試。");
       }
     }
+  };
+
+  const handleResetFilter = () => {
+    formProps.reset();
+    setSearchParams(undefined);
+    setFilteredDataList(localOpeningData);
   };
 
   return (
@@ -140,14 +176,20 @@ export default function Opening() {
           </Button>
         </Box>
 
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'end', gap: 1 }}>
           <SearchBar
             items={openingSearchData}
             formProps={formProps}
-            handleParams={(params: SearchType) =>
-              setSearchParams(params)
-            }
+            handleParams={(params: SearchType) => setSearchParams(params)}
           />
+
+          <Button
+            variant="text"
+            onClick={handleResetFilter}
+            sx={{ minWidth: "auto", marginTop: "12px" }}
+          >
+            重置篩選
+          </Button>
         </Box>
 
         <Box
@@ -158,7 +200,7 @@ export default function Opening() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={localOpeningData} />
+          <DataTable columns={columns} data={filteredDataList} />
         </Box>
       </Box>
     </Layout>
