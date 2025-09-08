@@ -59,9 +59,9 @@ export default function Interviewee() {
     const interviewDate = new Date(datetime);
 
     switch (status) {
-      case "completed":
+      case "已完成":
         return "已完成";
-      case "scheduled":
+      case "已排定":
         if (interviewDate < now) {
           return "未到場";
         } else {
@@ -123,12 +123,16 @@ export default function Interviewee() {
       id: "interview_result",
       label: "面試結果",
       render: (value: string, row: any) => {
-        if (value === "accepted") {
-          return <Chip label="錄取" color="success" size="small" />;
-        } else if (value === "rejected") {
-          return <Chip label="未錄取" color="error" size="small" />;
-        } else if (value === "pending") {
-          return <Chip label="待結果" color="warning" size="small" />;
+        if (value === "第二階段通過") {
+          return <Chip label="第二階段通過" color="success" size="small" />;
+        } else if (value === "第二階段未通過") {
+          return <Chip label="第二階段未通過" color="error" size="small" />;
+        } else if (value === "第一階段通過") {
+          return <Chip label="第一階段通過" variant="outlined" color="success" size="small" />;
+        } else if (value === "第一階段未通過") {
+          return <Chip label="第一階段未通過" variant="outlined" color="error" size="small" />;
+        } else if (value === "尚未面試") {
+          return <Chip label="尚未面試" color="warning" size="small" />;
         }
         return "-";
       },
