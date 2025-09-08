@@ -71,7 +71,6 @@ export default function Create() {
       toast.success("問題新增成功");
       router.push("/manage/questions");
     } catch (error) {
-      console.error("Error creating question:", error);
       toast.error("新增問題失敗，請稍後再試");
     }
   };
