@@ -11,12 +11,21 @@ import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import InterviewAPI from "@/lib/api/InterviewAPI";
 import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
+import { getDifficultyColor } from "@/lib/hook/getDifficultyColor";
 
 export default function Interviewee() {
   const router = useRouter();
   const formProps = useForm();
   const [intervieweeData, setIntervieweeData] = useState([]);
   const [searchParams, setSearchParams] = useState<SearchType>();
+  const [filteredIntervieweeData, setFilteredIntervieweeData] = useState([]);
+
+  const dropdownData = async () => {
+    try {
+      const response = await InterviewAPI.getData();
+    } catch (err) {
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -28,7 +37,7 @@ export default function Interviewee() {
           name: item.candidate_detail?.username || '',
           type: item.opening_detail?.opening_name || "-",
           company: item.opening_detail?.company_name,
-          difficulty: getInterviewStatus(item.interview_status, item.interview_datetime),
+          interview_status: getInterviewStatus(item.interview_status, item.interview_datetime),
           createDate: formatDate(item.interview_datetime),
           interview_result: item.interview_result,
           total_score: item.total_score,
@@ -42,7 +51,6 @@ export default function Interviewee() {
     }
   };
 
-  // 格式化日期
   const formatDate = (dateString: string | number | Date) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
@@ -53,7 +61,6 @@ export default function Interviewee() {
     });
   };
 
-  // 根據面試狀態和時間判斷顯示狀態
   const getInterviewStatus = (status: any, datetime: string | number | Date) => {
     const now = new Date();
     const interviewDate = new Date(datetime);
@@ -72,21 +79,56 @@ export default function Interviewee() {
     }
   };
 
+  const filterData = (params: SearchType | undefined) => {
+    if (!params || Object.keys(params).length === 0) {
+      setFilteredIntervieweeData(intervieweeData);
+      return;
+    }
+
+    const filtered = intervieweeData.filter((item: any) => {
+      const { nowPage, ...filterParams } = params;
+
+      return Object.entries(filterParams).every(([key, value]) => {
+        if (!value || value === '') return true;
+
+        const itemValue = item[key];
+        if (!itemValue) return false;
+
+        const itemStr = String(itemValue).toLowerCase();
+        const searchStr = String(value).toLowerCase();
+        console.log('Filtering:', { key, itemStr, searchStr });
+
+        switch (key) {
+          case 'interview_result':
+            return searchStr === '全部' ? true : itemStr === searchStr;
+          case 'name':
+          case 'type':
+          case 'company':
+            return itemStr.includes(searchStr);
+          default:
+            return itemStr.includes(searchStr);
+        }
+      });
+    });
+
+    setFilteredIntervieweeData(filtered);
+  };
+
+  const handleResetFilter = () => {
+    formProps.reset();
+    setSearchParams(undefined);
+    setFilteredIntervieweeData(intervieweeData);
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
 
-  const getDifficultyColor = (difficulty: string | string[]) => {
-    if (difficulty.includes("已完成")) {
-      return "success";
-    } else if (difficulty.includes("未到場")) {
-      return "error";
-    } else if (difficulty.includes("預計")) {
-      return "primary";
-    } else {
-      return "default";
+  useEffect(() => {
+    if (intervieweeData.length > 0) {
+      filterData(searchParams);
     }
-  };
+  }, [searchParams, intervieweeData]);
 
   const columns = [
     { id: "id", label: "面試ID", sortable: true },
@@ -106,7 +148,7 @@ export default function Interviewee() {
       )
     },
     {
-      id: "difficulty",
+      id: "interview_status",
       label: "面試狀態",
       render: (value: any) => (
         <Chip
@@ -220,12 +262,20 @@ export default function Interviewee() {
         </Box>
 
         {/* 搜尋欄 */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'end', gap: 1 }}>
           <SearchBar
             items={intervieweeSearchData}
             formProps={formProps}
             handleParams={(params) => setSearchParams(params)}
           />
+
+          <Button
+            variant="text"
+            onClick={handleResetFilter}
+            sx={{ minWidth: "auto", marginTop: "12px" }}
+          >
+            重置篩選
+          </Button>
         </Box>
 
         {/* 數據表格 */}
@@ -237,7 +287,7 @@ export default function Interviewee() {
             border: "1px solid #e0e0e0",
           }}
         >
-          <DataTable columns={columns} data={intervieweeData} />
+          <DataTable columns={columns} data={filteredIntervieweeData} />
         </Box>
       </Box>
     </Layout>
