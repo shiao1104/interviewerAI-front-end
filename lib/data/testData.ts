@@ -142,6 +142,15 @@ export const companyType = [
   { key: 14, value: "媒體/廣告/公關" },
 ];
 
+export const interviewStateData = [
+  {key: 0, value: "全部" },
+  { key: 1, value: "尚未面試" },
+  { key: 2, value: "第一階段通過" },
+  { key: 3, value: "第一階段未通過" },
+  { key: 4, value: "第二階段通過" },
+  { key: 5, value: "第二階段未通過" },
+]
+
 export const questionsData = [
   {
     id: 1,

@@ -4,4 +4,5 @@ export interface SearchType {
     location?: string;
     size?: string;
     founded?: string;
+    nowPage?: number;
 }
