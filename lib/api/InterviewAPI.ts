@@ -5,6 +5,11 @@ import { Response } from "@/lib/types/requestType";
 
 const BASE_URL = "/interview/interviews";
 
+type ResultType = {
+  interview_result: string,
+  interview_datetime: string,
+}
+
 const InterviewAPI = {
   getData: (): Promise<Response<never>> =>
     API.get(`${BASE_URL}/`),
@@ -13,7 +18,7 @@ const InterviewAPI = {
     API.get(`${BASE_URL}/${interview_id}/`),
 
   getAnswers: (interview_id?: number): Promise<Response<QuestionsTypes[]>> =>
-    API.get(`/answers/`),
+    API.get(`/interview/answers/${interview_id}/`),
 
   create: (data: IntervieweeTypes): Promise<Response<never>> =>
     API.post(`${BASE_URL}/`, data),
@@ -23,6 +28,12 @@ const InterviewAPI = {
 
   delete: (interview_id: number): Promise<Response<never>> =>
     API.delete(`${BASE_URL}/${interview_id}/`),
+
+  getAllReport: (interview_id: number): Promise<Response<never>> =>
+    API.get(`${BASE_URL}/${interview_id}/`),
+
+  result: (interview_id: number, data: ResultType): Promise<Response<never>> =>
+    API.post(`${BASE_URL}/${interview_id}/result/`, data),
 };
 
 export default InterviewAPI;

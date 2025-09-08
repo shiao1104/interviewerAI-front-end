@@ -149,7 +149,7 @@ export default function IntervieweeDetail() {
         position: data.opening_detail?.opening_name || '',
         interviewDate,
         interviewTime,
-        confirmStatus: data.interview_status === 'completed' ? '已面試' : '未面試',
+        confirmStatus: data.interview_status === '已完成' ? '已完成' : '未面試',
         resumeUrl: '#',
         scores: {
           overall: data.total_score || 0,
@@ -228,7 +228,7 @@ export default function IntervieweeDetail() {
       return;
     }
 
-    if (passed === 'yes' && (!interviewTime || !interviewType)) {
+    if (passed === '通過' && (!interviewTime)) {
       setSnackbar({ open: true, message: '通過面試需要設定下次面試時間和方式', severity: 'error' });
       return;
     }
@@ -236,20 +236,14 @@ export default function IntervieweeDetail() {
     try {
       setLoading(true);
 
-      const resultData = {
-        interview_id: id,
-        passed: passed === 'yes',
-        next_interview_time: passed === 'yes' ? interviewTime?.toISOString() : null,
-        interview_type: passed === 'yes' ? interviewType : null,
-        rejection_reason: passed === 'no' ? rejectionReason : null,
-      };
-
-      // 這裡應該調用 API 提交結果
-      // await InterviewAPI.submitResult(resultData);
+      await InterviewAPI.result(Number(id), {
+        interview_result: passed,
+        interview_datetime: interviewTime ? interviewTime.toISOString() : '',
+      });
 
       setSnackbar({
         open: true,
-        message: `面試結果已${passed === 'yes' ? '通過' : '未通過'}`,
+        message: `面試結果已${passed === '通過' ? '通過' : '未通過'}`,
         severity: 'success'
       });
 
@@ -460,7 +454,7 @@ export default function IntervieweeDetail() {
             </CardContent>
           </Card>
 
-          {intervieweeData.confirmStatus === "已面試" ? (
+          {intervieweeData.confirmStatus === "已完成" ? (
             <>
               {/* AI 面試分析報告 */}
               <div ref={aiReportRef}>
@@ -670,7 +664,7 @@ export default function IntervieweeDetail() {
                         sx={{ gap: 3 }}
                       >
                         <FormControlLabel
-                          value="yes"
+                          value="通過"
                           control={
                             <Radio
                               sx={{
@@ -688,7 +682,7 @@ export default function IntervieweeDetail() {
                           }
                         />
                         <FormControlLabel
-                          value="no"
+                          value="未通過"
                           control={
                             <Radio
                               sx={{
@@ -708,8 +702,8 @@ export default function IntervieweeDetail() {
                       </RadioGroup>
                     </FormControl>
 
-                    {/* Conditional Fields for "Yes" */}
-                    {passed === "yes" && (
+                    {/* Conditional Fields for "通過" */}
+                    {passed === "通過" && (
                       <Box sx={{
                         bgcolor: '#f8fbff',
                         border: '1px solid #e3f2fd',
@@ -742,38 +736,12 @@ export default function IntervieweeDetail() {
                             </LocalizationProvider>
                           </Grid>
 
-                          <Grid>
-                            <FormControl fullWidth>
-                              <InputLabel
-                                id="interview-type-label"
-                                sx={{ color: '#6b7280' }}
-                              >
-                                面試方式
-                              </InputLabel>
-                              <Select
-                                labelId="interview-type-label"
-                                value={interviewType}
-                                label="面試方式"
-                                onChange={(e) => setInterviewType(e.target.value)}
-                                sx={{
-                                  borderRadius: 2,
-                                  bgcolor: 'white',
-                                  '& .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: '#d1d5db'
-                                  }
-                                }}
-                              >
-                                <MenuItem value="online">線上面試</MenuItem>
-                                <MenuItem value="onsite">實體面試</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
                         </Grid>
                       </Box>
                     )}
 
                     {/* Rejection Reason for "No" */}
-                    {passed === "no" && (
+                    {passed === "未通過" && (
                       <Box sx={{
                         bgcolor: '#fef7f7',
                         border: '1px solid #fed7d7',
