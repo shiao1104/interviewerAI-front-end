@@ -1,8 +1,9 @@
 export type QuestionsTypes = {
-  question_type: number;
-  question: string;
-  time_allowed: number;
-  difficulty: string;
+  question_type?: number;
+  question?: string;
+  time_allowed?: number;
+  difficulty?: string;
+  opening_name?: string;
 };
 
 export type QuestionDataType = {

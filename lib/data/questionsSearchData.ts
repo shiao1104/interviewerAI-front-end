@@ -4,12 +4,12 @@ import { levelData } from "./dropdownData";
 export const questionsSearchData: InputFieldTypes[] = [
   {
     label: "問題內容",
-    name: "location",
+    name: "question",
     type: "text",
   },
   {
     label: "難易度",
-    name: "founded",
+    name: "difficulty",
     type: "dropdown",
     dropdownData: levelData,
     placeholder: '請選擇難易度'
