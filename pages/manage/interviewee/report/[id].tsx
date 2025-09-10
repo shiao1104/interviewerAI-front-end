@@ -68,11 +68,12 @@ export default function IntervieweeDetail() {
   const [tabValue, setTabValue] = useState(0);
   const [passed, setPassed] = useState('');
   const [interviewTime, setInterviewTime] = useState<Dayjs | null>(null);
-  const [interviewType, setInterviewType] = useState('');
+  const [answerList, setAnswerList] = useState<any[]>([]);
   const [rejectionReason, setRejectionReason] = useState('');
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const aiReportRef = useRef<HTMLDivElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const [intervieweeData, setIntervieweeData] = useState({
     name: '',
@@ -178,7 +179,7 @@ export default function IntervieweeDetail() {
     try {
       setLoading(true);
       const response = await InterviewAPI.getAnswers(Number(id));
-      console.log('獲取答案:', response.data);
+      setAnswerList(response.data || []);
     } catch (error) {
       console.error('獲取答案失敗:', error);
       setSnackbar({ open: true, message: '獲取答案失敗', severity: 'error' });
@@ -239,6 +240,7 @@ export default function IntervieweeDetail() {
       await InterviewAPI.result(Number(id), {
         interview_result: passed,
         interview_datetime: interviewTime ? interviewTime.toISOString() : '',
+        reason: rejectionReason,
       });
 
       setSnackbar({
@@ -248,7 +250,6 @@ export default function IntervieweeDetail() {
       });
 
     } catch (error) {
-      console.error('提交結果失敗:', error);
       setSnackbar({ open: true, message: '提交失敗', severity: 'error' });
     } finally {
       setLoading(false);
@@ -258,7 +259,6 @@ export default function IntervieweeDetail() {
   const handleCancel = () => {
     setPassed('');
     setInterviewTime(null);
-    setInterviewType('');
     setRejectionReason('');
   };
 
@@ -620,6 +620,190 @@ export default function IntervieweeDetail() {
                             </Grid>
                           ))}
                         </Grid>
+                      )}
+                    </Box>
+                  </Paper>
+                </Grid>
+
+                <Grid>
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      borderRadius: 3,
+                      overflow: "hidden",
+                      mt: 3,
+                      p: 2,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      border: `1px solid ${theme.palette.divider}`,
+                    }}
+                  >
+                    <Typography variant="h6" fontWeight="medium" sx={{ mb: 3 }}>
+                      問題分析
+                    </Typography>
+
+                    <Box>
+                      {answerList.slice(0, isExpanded ? answerList.length : 1).map((item, index) => (
+                        <Card
+                          key={index}
+                          elevation={0}
+                          sx={{
+                            mb: index === (isExpanded ? answerList.length - 1 : 0) ? 0 : 3,
+                            p: 3,
+                            borderRadius: 3,
+                            border: `1px solid ${theme.palette.divider}`,
+                            bgcolor: theme.palette.background.default,
+                            transition: 'all 0.2s ease-in-out',
+                            '&:hover': {
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                              transform: 'translateY(-1px)',
+                            }
+                          }}
+                        >
+                          {/* 問題標題 */}
+                          <Box sx={{ mb: 2.5 }}>
+                            <Typography
+                              variant="h6"
+                              fontWeight="600"
+                              sx={{
+                                mb: 1,
+                                color: theme.palette.primary.main,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  borderRadius: '50%',
+                                  bgcolor: theme.palette.primary.main,
+                                  color: 'white',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.875rem',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {index + 1}
+                              </Box>
+                              {item.question_detail.question}
+                            </Typography>
+                          </Box>
+
+                          {/* 面試者回答 */}
+                          <Box sx={{ mb: 3 }}>
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="600"
+                              sx={{
+                                mb: 1.5,
+                                color: theme.palette.text.primary,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                              }}
+                            >
+                              面試者回答
+                            </Typography>
+                            <Paper
+                              elevation={0}
+                              sx={{
+                                p: 2.5,
+                                bgcolor: theme.palette.background.paper,
+                                borderRadius: 2,
+                                border: `1px solid ${theme.palette.divider}`,
+                                borderLeft: `4px solid ${theme.palette.info.main}`,
+                              }}
+                            >
+                              <Typography
+                                variant="body1"
+                                sx={{
+                                  lineHeight: 1,
+                                  color: theme.palette.text.primary
+                                }}
+                              >
+                                {item.answer_text}
+                              </Typography>
+                            </Paper>
+                          </Box>
+
+                          {/* AI評論 */}
+                          <Box>
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="600"
+                              sx={{
+                                mb: 1.5,
+                                color: theme.palette.text.primary,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                              }}
+                            >
+                              AI 評論與建議
+                            </Typography>
+                            <Paper
+                              elevation={0}
+                              sx={{
+                                p: 2.5,
+                                bgcolor: theme.palette.success.light + '08',
+                                borderRadius: 2,
+                                border: `1px solid ${theme.palette.success.light}`,
+                                borderLeft: `4px solid ${theme.palette.success.main}`,
+                              }}
+                            >
+                              <Typography
+                                variant="body1"
+                                sx={{
+                                  lineHeight: 1,
+                                  color: theme.palette.text.primary
+                                }}
+                              >
+                                {item.ai_comments}
+                              </Typography>
+                            </Paper>
+                          </Box>
+                        </Card>
+                      ))}
+
+                      {/* 展開按鈕 */}
+                      {answerList.length > 1 && (
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: "center",
+                            mt: 3,
+                            pt: 3,
+                            borderTop: `1px solid ${theme.palette.divider}`
+                          }}
+                        >
+                          <Button
+                            variant="outlined"
+                            endIcon={
+                              <ExpandMore sx={{
+                                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                transition: 'transform 0.2s'
+                              }} />
+                            }
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            sx={{
+                              borderRadius: 25,
+                              px: 3,
+                              py: 1,
+                              textTransform: 'none',
+                              fontWeight: 500,
+                              transition: 'all 0.2s ease-in-out',
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 4px 8px rgba(0,0,0,0.12)'
+                              }
+                            }}
+                          >
+                            {isExpanded ? '收合問題' : '展開所有問題'}
+                          </Button>
+                        </Box>
                       )}
                     </Box>
                   </Paper>
