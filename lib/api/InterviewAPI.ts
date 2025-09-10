@@ -8,6 +8,7 @@ const BASE_URL = "/interview/interviews";
 type ResultType = {
   interview_result: string,
   interview_datetime: string,
+  reason: string,
 }
 
 const InterviewAPI = {
@@ -29,8 +30,8 @@ const InterviewAPI = {
   delete: (interview_id: number): Promise<Response<never>> =>
     API.delete(`${BASE_URL}/${interview_id}/`),
 
-  getAllReport: (interview_id: number): Promise<Response<never>> =>
-    API.get(`${BASE_URL}/${interview_id}/`),
+  getReportList: (candidate_id: number): Promise<Response<never>> =>
+    API.get(`${BASE_URL}/${candidate_id}/history/`),
 
   result: (interview_id: number, data: ResultType): Promise<Response<never>> =>
     API.post(`${BASE_URL}/${interview_id}/result/`, data),
