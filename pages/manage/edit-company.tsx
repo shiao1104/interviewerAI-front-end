@@ -237,7 +237,7 @@ export default function EditCompanyInfo() {
           </Typography>
 
           {/* 公司頭像上傳區塊 */}
-          <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {/* <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 500 }}>
               公司標誌 / 大頭照
             </Typography>
@@ -292,7 +292,7 @@ export default function EditCompanyInfo() {
             </Typography>
           </Box>
 
-          <Divider sx={{ mb: 3 }} />
+          <Divider sx={{ mb: 3 }} /> */}
 
           {/* 公司基本信息表單 */}
           <Grid
