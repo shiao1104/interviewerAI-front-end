@@ -9,26 +9,22 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  Grid,
 } from "@mui/material";
 import {
   EventNote,
   AssignmentTurnedIn,
-  Videocam,
-  Description,
-  Lightbulb,
   CalendarToday,
   Timer,
   BusinessCenter,
-  Person,
   CheckCircle,
   Visibility,
 } from "@mui/icons-material";
 import Layout from "@/components/Layout/Layout";
-import { completedInterviews, upcomingInterviews } from "@/lib/data/testData";
 import ConfirmPopup from "@/components/common/user/ConfirmPupup";
 import CompanyIntroPopup from "@/components/common/user/CompanyIntroPopup";
 import OpeningAPI from "@/lib/api/OpeningAPI";
+import InterviewAPI from "@/lib/api/InterviewAPI";
+import { toast } from "react-toastify";
 
 export interface CompanyInfo {
   company_name: string;
@@ -49,6 +45,10 @@ export interface InterviewApiData {
   company_address: string;
 }
 
+export type ReportListType = {
+  interview_history: []
+}
+
 export default function InterviewerDashboard() {
   const router = useRouter();
   const [openDialog, setOpenDialog] = useState(false);
@@ -56,27 +56,24 @@ export default function InterviewerDashboard() {
     useState<InterviewApiData | null>(null);
   const [openDetail, setOpenDetail] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
-  const [showAllCompleted, setShowAllCompleted] = useState(false);
   const [companyIntro, setCompanyIntro] = useState<InterviewApiData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [reportList, setReportList] = useState<any[]>([]);
 
   const fetchInterviews = async () => {
     setLoading(true);
-    setError(null);
-    
+
     try {
       const response = await OpeningAPI.getMyApplied(1);
-      
-      if (response.result && response.data) {
+      const reportListResponse = await InterviewAPI.getReportList(1);
+
+      if (response.result && response.data && reportListResponse.data) {
+        const reportList = reportListResponse.data as ReportListType;
         setCompanyIntro(response.data);
-        console.log("成功獲取面試數據:", response.data);
-      } else {
-        throw new Error(response.message || "獲取數據失敗");
+        setReportList(reportList.interview_history);
       }
     } catch (error) {
-      console.error("獲取面試數據錯誤:", error);
-      setError(error instanceof Error ? error.message : "未知錯誤");
+      toast.error("獲取面試數據失敗，請稍後重試。");
       setCompanyIntro([]);
     } finally {
       setLoading(false);
@@ -127,23 +124,6 @@ export default function InterviewerDashboard() {
               </Typography>
             </div>
           </div>
-
-          {/* 顯示錯誤信息 */}
-          {error && (
-            <div className={styles.errorMessage}>
-              <Typography color="error">
-                獲取面試數據失敗: {error}
-              </Typography>
-              <Button 
-                onClick={fetchInterviews}
-                variant="outlined" 
-                size="small"
-                style={{ marginTop: '8px' }}
-              >
-                重試
-              </Button>
-            </div>
-          )}
 
           {/* 顯示載入狀態 */}
           {loading && (
@@ -204,55 +184,6 @@ export default function InterviewerDashboard() {
               );
             })}
 
-            {/* 如果沒有 API 數據，則顯示測試數據 */}
-            {!loading && companyIntro.length === 0 && !error && upcomingInterviews.map((interview, index) => (
-              <div
-                key={interview.id}
-                className={styles.interviewCard}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className={styles.cardGlow}></div>
-                <div className={styles.cardHeader}>
-                  <Avatar src={interview.logo} className={styles.companyLogo}>
-                    {interview.company.charAt(0)}
-                  </Avatar>
-                  <div className={styles.interviewInfo}>
-                    <Typography variant="h6">{interview.position}</Typography>
-                    <Typography variant="subtitle2">
-                      {interview.company}
-                    </Typography>
-                  </div>
-                </div>
-                <div className={styles.cardDetails}>
-                  <div className={styles.detailItem}>
-                    <CalendarToday className={styles.detailIcon} />
-                    <Typography variant="body2">{interview.date}</Typography>
-                  </div>
-                  <div className={styles.detailItem}>
-                    <Timer className={styles.detailIcon} />
-                    <Typography variant="body2">{interview.time}</Typography>
-                  </div>
-                </div>
-                <div className={styles.cardActions}>
-                  <Button
-                    variant="contained"
-                    className={styles.primaryButton}
-                    onClick={() => handleOpenDialog(interview)}
-                  >
-                    準備面試
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    className={styles.secondaryButton}
-                    onClick={() => handleOpendetail(interview)}
-                  >
-                    查看詳情
-                  </Button>
-                </div>
-              </div>
-            ))}
-
             <div className={styles.completedInterviewsCard}>
               <div className={styles.cardGlow}></div>
               <div className={styles.completedHeader}>
@@ -260,26 +191,16 @@ export default function InterviewerDashboard() {
                   <AssignmentTurnedIn className={styles.completedIcon} />
                   <Typography variant="h6">已完成面試報告</Typography>
                 </div>
-                <Button
-                  variant="text"
-                  className={styles.viewAllTextButton}
-                  onClick={() => setShowAllCompleted(!showAllCompleted)}
-                >
-                  {showAllCompleted ? "收起" : "查看全部"}
-                </Button>
               </div>
               <List className={styles.completedList}>
-                {(showAllCompleted
-                  ? completedInterviews
-                  : completedInterviews.slice(0, 2)
-                ).map((item) => (
+                {reportList.map((item) => (
                   <ListItem key={item.id} className={styles.completedItem}>
                     <ListItemIcon>
                       <BusinessCenter className={styles.listIcon} />
                     </ListItemIcon>
                     <ListItemText
-                      primary={`${item.position} @ ${item.company}`}
-                      secondary={`面試日期：${item.date}`}
+                      primary={`${item.opening_detail.opening_name} @ ${item.opening_detail.company_name}`}
+                      secondary={`面試日期：${item.interview_datetime.split('T')[0]}`}
                     />
                     <Button
                       startIcon={
@@ -287,9 +208,9 @@ export default function InterviewerDashboard() {
                       }
                       variant="text"
                       className={styles.feedbackButton}
-                      onClick={() => router.push('/user/report/1')}
+                      onClick={() => router.push(`/user/report/${item.interview_id}`)}
                     >
-                      {item.feedback ? "查看回饋" : "等待回饋"}
+                      {item.interview_status == "已完成" ? "查看回饋" : "等待回饋"}
                     </Button>
                   </ListItem>
                 ))}
