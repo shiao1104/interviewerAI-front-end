@@ -5,15 +5,12 @@ import { Box, Typography, Button } from '@mui/material';
 import { 
   VideocamOff,
   MicOff,
-  HourglassEmpty,
   CheckCircle
 } from '@mui/icons-material';
 
 interface NonRecordingUIProps {
   isInterviewStarted: boolean;
   isPreparing: boolean;
-  prepTimeLeft: number;
-  formatTime: (seconds: number) => string;
   mediaPermissions: {
     camera: boolean;
     microphone: boolean;
@@ -24,12 +21,9 @@ interface NonRecordingUIProps {
 export const NonRecordingUI: React.FC<NonRecordingUIProps> = ({
   isInterviewStarted,
   isPreparing,
-  prepTimeLeft,
-  formatTime,
   mediaPermissions,
   onCheckPermissions,
 }) => {
-  // 不同狀態的提示
   if (!isInterviewStarted) {
     return (
       <Box className={styles.nonRecordingUI}>
@@ -46,12 +40,6 @@ export const NonRecordingUI: React.FC<NonRecordingUIProps> = ({
   if (isPreparing) {
     return (
       <Box className={styles.nonRecordingUI}>
-        <Box className={`${styles.statusChip} ${styles.preparing}`}>
-          <HourglassEmpty className={styles.statusIcon} />
-          <Typography variant="body2">
-            準備時間剩餘 {formatTime(prepTimeLeft)}
-          </Typography>
-        </Box>
       </Box>
     );
   }
