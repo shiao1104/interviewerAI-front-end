@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Button,
@@ -27,6 +27,7 @@ import {
 } from "@mui/icons-material";
 import Layout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
+import UserAPI from "@/lib/api/UserAPI";
 
 // 建立藍白主題
 const theme = createTheme({
@@ -84,7 +85,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState({
     name: "王小明",
     email: "wang.xiaoming@example.com",
-    phone: "0912-345-678",
+    phone_number: "0912-345-678",
     location: "台北市信義區忠孝東路四段123號",
     company: "科技創新股份有限公司",
     position: "前端工程師",
@@ -92,6 +93,45 @@ export default function ProfilePage() {
   });
 
   const [editProfile, setEditProfile] = useState(profile);
+
+  // 取得目前使用者資料 → 帶入個人檔案
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const meRes = await UserAPI.me();
+        const me = (meRes as any).data?.data ?? (meRes as any).data ?? meRes;
+
+        const fullName =
+          me.full_name ??
+          `${me.last_name ?? ""}${me.first_name ?? ""}`.trim() ||
+          me.username ||
+          profile.name;
+
+        setProfile((prev) => ({
+          ...prev,
+          name: fullName,
+          email: me.email ?? prev.email,
+          userId: String(me.id ?? ""),
+          role: me.role ?? "",
+          phone_number: me.phone_number ?? prev.phone_number,
+        }));
+        setEditProfile((prev) => ({
+          ...prev,
+          name: fullName,
+          email: me.email ?? prev.email,
+          userId: String(me.id ?? ""),
+          role: me.role ?? "",
+           phone_number: me.phone_number ?? prev.phone_number,
+        }));
+
+        const sid = sessionStorage.getItem("user_id");
+        console.log("[ProfilePage] session user_id =", sid, " / me.id =", me.id);
+      } catch (e) {
+        console.warn("[ProfilePage] 無法取得 /user/me/，使用預設資料。", e);
+      }
+    };
+    init();
+  }, []);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -323,7 +363,7 @@ export default function ProfilePage() {
                   {isEditing ? (
                     <TextField
                       fullWidth
-                      value={editProfile.phone}
+                      value={editProfile.phone_number}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       placeholder="請輸入電話號碼"
                       variant="outlined"
@@ -331,7 +371,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <Typography variant="body1" sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                      {profile.phone}
+                      {profile.phone_number}
                     </Typography>
                   )}
                 </Grid>
