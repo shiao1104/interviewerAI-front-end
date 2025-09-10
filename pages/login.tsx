@@ -106,6 +106,23 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
       const response = await UserAPI.access(dataList);
       if (response.data && response.data.access) {
         sessionStorage.setItem("token", response.data.access);
+
+        try {
+          const meRes = await UserAPI.me();
+          const me = meRes.data;
+
+          if (me) {
+            const userName =
+              me.full_name ||
+              `${me.first_name ?? ""}${me.last_name ?? ""}`.trim() ||
+              me.username ||
+              "";
+            sessionStorage.setItem("user_id", String(me.id));
+            sessionStorage.setItem("user_name", userName);
+            sessionStorage.setItem("user_role", me.role);
+          }
+        } catch {}
+
         toast.success("登入成功", {
           position: "top-center",
           autoClose: 1500,
