@@ -120,6 +120,12 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             sessionStorage.setItem("user_id", String(me.id));
             sessionStorage.setItem("user_name", userName);
             sessionStorage.setItem("user_role", me.role);
+
+            if (me.role === "面試者") {
+              router.push("/user");
+            } else if (me.role === "管理者") {
+              router.push("/manage");
+            }
           }
         } catch {}
 
@@ -214,13 +220,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 variant="outlined"
                 error={!!errors.email}
                 helperText={errors.email?.message}
-                {...register("email", {
-                  required: "請輸入您的Email",
-                  pattern: {
-                    // value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Email 格式錯誤",
-                  },
-                })}
+                {...register("email")}
               />
             </FormControl>
 
@@ -236,17 +236,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 variant="outlined"
                 error={!!errors.password}
                 helperText={errors.password?.message}
-                {...register("password", {
-                  // required: "請輸入密碼",
-                  // minLength: {
-                  //   value: 6,
-                  //   message: "密碼至少6位數以上",
-                  // },
-                  // pattern: {
-                  //   value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).+$/,
-                  //   message: "密碼需包含大小寫字母與符號",
-                  // },
-                })}
+                {...register("password")}
               />
             </FormControl>
 
