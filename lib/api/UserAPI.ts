@@ -1,5 +1,6 @@
 import API from "./api";
 import { Response } from "@/lib/types/requestType";
+import axios from 'axios';
 
 interface Params {
   username: string;
@@ -77,6 +78,50 @@ const UserAPI = {
     });
   },
   me: (): Promise<Response<MeData>> => API.get(`/user/me/`),
+
+
+  findUserByEmail: async (email: string) => {
+    try {
+      // 使用既有的 API instance（會帶上正確的 baseURL），避免打到 3000
+      const res: any = await API.get(`/user/find-by-email/`, {
+        params: { email },
+      });
+
+      // 你的 API instance 可能回的是 data；也可能回完整 response.data
+      const data = (res && (res as any).data) ? (res as any).data : res;
+
+      // 同時支援兩種結構：
+      // 1) { user: {...} }
+      // 2) { result: true, data: { user: {...} } }
+      const user =
+        (data && (data as any).user) ??
+        (data && (data as any).data && (data as any).data.user) ??
+        null;
+
+      return user; // 找到→物件；若後端回 200 但 user 為 null → null
+    } catch (error: any) {
+      // 404（找不到）會進到這裡
+      if (error?.response?.status === 404) return null;
+
+      const msg =
+        error?.response?.data?.error ||
+        error?.response?.data?.detail ||
+        error?.message ||
+        "未知錯誤";
+      console.error("Error finding user by email:", error);
+      throw new Error(msg);
+    }
+  },
+
+  getDjangoJWT: async (email: string) => {
+    try {
+      const response = await API.post(`/user/google-login/`, { email });
+      return response.data;
+    } catch (error) {
+      console.error("Error during google login:", error);
+      throw error;
+    }
+  },
 };
 
 export default UserAPI;

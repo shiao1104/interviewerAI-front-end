@@ -166,14 +166,43 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     }
   };
 
-  const googleLogin = (credentialResponse: CredentialResponse) => {
+  const googleLogin = async (credentialResponse: CredentialResponse) => {
     if (credentialResponse.credential) {
       const decoded: GoogleUser = jwtDecode(credentialResponse.credential);
-      console.log("登入成功:", decoded);
-      sessionStorage.setItem("google_token", "sssssssssssssssss");
-      sessionStorage.setItem("name", decoded.name);
-      sessionStorage.setItem("email", decoded.email);
-      router.push("/");
+      console.log("Google 登入成功:", decoded);
+
+      try {
+        // 1. 呼叫 getDjangoJWT 函數，取得 Django JWT 和使用者資訊
+        const data = await UserAPI.getDjangoJWT(decoded.email);
+
+        // 2. 儲存 Django JWT
+        sessionStorage.setItem("token", data.access);
+
+        // 3. 儲存使用者資訊 (只使用後端回傳的)
+        sessionStorage.setItem("user_id", String(data.user.id)); // 假設後端回傳 user 物件
+        sessionStorage.setItem("user_name", data.user.full_name || data.user.username); // 假設後端回傳 user 物件
+        sessionStorage.setItem("user_role", data.user.role); // 假設後端回傳 user 物件
+        sessionStorage.setItem("email", decoded.email); // 保留 google email
+
+        // 4. 根據 is_superuser 和 is_staff 重新導向
+        if (data.user.is_superuser || data.user.is_staff) {
+          router.push("/manage"); // 管理者頁面
+        } else {
+          router.push("/user"); // 一般使用者頁面
+        }
+      } catch (error : any) {
+        console.error("Google 登入失敗:", error);
+        toast.error(`Google 登入失敗: ${error.message}`, {
+          position: "top-center",
+          autoClose: 1500,
+          hideProgressBar: true,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
     }
   };
 
