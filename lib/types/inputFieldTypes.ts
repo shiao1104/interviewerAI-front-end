@@ -9,4 +9,5 @@ export type InputFieldTypes = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     formProps?: any;
     textClassName?: string;
+    optionsKey?: string;
   };
