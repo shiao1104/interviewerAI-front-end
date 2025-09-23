@@ -25,6 +25,7 @@ import CompanyIntroPopup from "@/components/common/user/CompanyIntroPopup";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import InterviewAPI from "@/lib/api/InterviewAPI";
 import { toast } from "react-toastify";
+import UserAPI from "@/lib/api/UserAPI"; 
 
 export interface CompanyInfo {
   company_name: string;
@@ -59,13 +60,13 @@ export default function InterviewerDashboard() {
   const [companyIntro, setCompanyIntro] = useState<InterviewApiData[]>([]);
   const [loading, setLoading] = useState(false);
   const [reportList, setReportList] = useState<any[]>([]);
-
-  const fetchInterviews = async () => {
+  const [userId, setUserId] = useState<number | null>(null);
+  const fetchInterviews = async (uid: number) => {
     setLoading(true);
 
     try {
-      const response = await OpeningAPI.getMyApplied(1);
-      const reportListResponse = await InterviewAPI.getReportList(1);
+      const response = await OpeningAPI.getMyApplied(uid);
+      const reportListResponse = await InterviewAPI.getReportList(uid);
 
       if (response.result && response.data && reportListResponse.data) {
         const reportList = reportListResponse.data as ReportListType;
@@ -82,8 +83,24 @@ export default function InterviewerDashboard() {
 
   useEffect(() => {
     setAnimateIn(true);
-    fetchInterviews();
+    (async () => {
+      try {
+        const me = await UserAPI.me();
+        if (me?.data?.id) {
+          setUserId(me.data.id);
+        } else {
+          console.warn("No user id from /user/me/");
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    })();
   }, []);
+
+  useEffect(() => {
+    if (userId == null) return;
+    fetchInterviews(userId);
+  }, [userId]);
 
   const handleOpenDialog = (interview: InterviewApiData) => {
     setSelectedInterview(interview);
@@ -193,27 +210,27 @@ export default function InterviewerDashboard() {
                 </div>
               </div>
               <List className={styles.completedList}>
-                {reportList.map((item) => (
-                  <ListItem key={item.id} className={styles.completedItem}>
-                    <ListItemIcon>
-                      <BusinessCenter className={styles.listIcon} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`${item.opening_detail.opening_name} @ ${item.opening_detail.company_name}`}
-                      secondary={`面試日期：${item.interview_datetime.split('T')[0]}`}
-                    />
-                    <Button
-                      startIcon={
-                        item.feedback ? <Visibility /> : <CheckCircle />
-                      }
-                      variant="text"
-                      className={styles.feedbackButton}
-                      onClick={() => router.push(`/user/report/${item.interview_id}`)}
-                    >
-                      {item.interview_status == "已完成" ? "查看回饋" : "等待回饋"}
-                    </Button>
-                  </ListItem>
-                ))}
+                {reportList
+                  .filter((item) => item.interview_status === "已完成")   // 🔑 過濾只留下已完成
+                  .map((item) => (
+                    <ListItem key={item.id} className={styles.completedItem}>
+                      <ListItemIcon>
+                        <BusinessCenter className={styles.listIcon} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={`${item.opening_detail.opening_name} @ ${item.opening_detail.company_name}`}
+                        secondary={`面試日期：${item.interview_datetime.split("T")[0]}`}
+                      />
+                      <Button
+                        startIcon={item.feedback ? <Visibility /> : <CheckCircle />}
+                        variant="text"
+                        className={styles.feedbackButton}
+                        onClick={() => router.push(`/user/report/${item.interview_id}`)}
+                      >
+                        查看回饋
+                      </Button>
+                    </ListItem>
+                  ))}
               </List>
             </div>
           </div>
