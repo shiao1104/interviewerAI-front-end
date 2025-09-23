@@ -11,10 +11,10 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/interview/page": [
+    "/interview/session/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/interview/page.js"
+      "static/chunks/app/interview/session/page.js"
     ]
   }
 }
