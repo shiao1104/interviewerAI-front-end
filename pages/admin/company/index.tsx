@@ -1,53 +1,113 @@
+import PopupModal from "@/components/common/admin/PopupModal";
 import DataTable from "@/components/common/DataTables";
 import SearchBar from "@/components/common/searchBar";
-import Layout from "@/components/Layout/ManageLayout";
+import Layout from "@/components/Layout/AdminLayout";
+import CompanyAPI from "@/lib/api/CompanyAPI";
+import { companyCreateData } from "@/lib/data/admin/companyCreateData";
 import { companySearchData } from "@/lib/data/admin/companySearchData";
 import { SearchType } from "@/lib/types/searchTypes";
-import { AccountCircle, Add, Delete, Edit } from "@mui/icons-material";
+import { AccountCircle, Add, Delete, Edit, MoreHoriz } from "@mui/icons-material";
 import { Box, Typography, Button, IconButton } from "@mui/material";
-import router from "next/router";
+import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 
 export default function Company() {
+    const router = useRouter();
     const formProps = useForm();
     const [searchParams, setSearchParams] = useState<any>();
     const [filterDataList, setFilterDataList] = useState<any>([]);
-    const [companyData, setCompanyData] = useState<any>([
-        { id: 1, name: "公司A" },
-        { id: 2, name: "公司B" },
-        { id: 3, name: "公司C" },
-    ]);
+    const [companyData, setCompanyData] = useState<any>([]);
+    const [popupCreateActive, setPopupCreateActive] = useState(false);
+    const [popupEditActive, setPopupEditActive] = useState(false);
+    const [editingCompany, setEditingCompany] = useState<any>(null);
+
+    const handleEdit = async (row: any) => {
+        try {
+            const res = await CompanyAPI.getData(row.company_id);
+            setEditingCompany(res.data);
+            setPopupEditActive(true);
+        } catch (error) {
+            toast.error("無法載入公司資訊");
+        }
+    };
+
+    const handleUpdate = async (formData: any) => {
+        try {
+            await CompanyAPI.update(formData, formData.company_id);
+            toast.success("公司資料已更新！");
+            setPopupEditActive(false);
+            setEditingCompany(null);
+            fetchData(); // 重新載入
+        } catch (error) {
+            toast.error("更新失敗，請稍後再試。");
+        }
+    };
+
+
+    const deleteCompany = async () => {
+        try {
+            await CompanyAPI.delete(1);
+            toast.success("公司資料已成功刪除！");
+            fetchData();
+        } catch (error) {
+            toast.error("無法刪除公司資料，請稍後再試。");
+        }
+    };
 
     const columns = [
-        { id: "id", label: "公司 ID", sortable: true },
-        { id: "name", label: "公司名稱", textAlign: "center" },
+        { id: "company_id", label: "公司 ID", sortable: true },
+        { id: "company_name", label: "公司名稱", textAlign: "center" },
         {
             id: "actions",
             label: "操作",
-            render: (_: any, row: { id: any; }) => (
+            render: (_: any, row: { company_id: any; }) => (
                 <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
                     <IconButton
-                        onClick={() => router.push(`/manage/interviewee/${row.id}`)}
+                        onClick={() => handleEdit(row)}
                         size="small"
                         title="編輯"
                         color="primary"
                     >
                         <Edit fontSize="small" />
                     </IconButton>
+
                     <IconButton
-                        onClick={() => router.push(`/manage/interviewee/${row.id}`)}
+                        onClick={deleteCompany}
                         size="small"
                         title="刪除"
                         color="error"
                     >
                         <Delete fontSize="small" />
                     </IconButton>
+
+                    <IconButton
+                        onClick={() => router.push(`/admin/permissions/${row.company_id}`)}
+                        size="small"
+                        title="管理權限"
+                    >
+                        <MoreHoriz fontSize="small" />
+                    </IconButton>
                 </Box>
             ),
             textAlign: "center",
         },
     ];
+
+    const fetchData = async () => {
+        try {
+            const response = await CompanyAPI.getData();
+            setCompanyData(response.data);
+            setFilterDataList(response.data);
+        } catch (error) {
+            toast.error("無法載入公司資料，請稍後再試。");
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const filterData = (params: SearchType | undefined) => {
         if (!params || Object.keys(params).length === 0) {
@@ -66,10 +126,9 @@ export default function Company() {
 
                 const itemStr = String(itemValue).toLowerCase();
                 const searchStr = String(value).toLowerCase();
-                console.log('Filtering:', { key, itemStr, searchStr });
 
                 switch (key) {
-                    case 'name':
+                    case 'company_name':
                         return itemStr.includes(searchStr);
                     default:
                         return itemStr.includes(searchStr);
@@ -84,7 +143,7 @@ export default function Company() {
         if (companyData.length > 0) {
             filterData(searchParams);
         }
-    }, [searchParams, companyData]);
+    }, [companyData, searchParams]);
 
     const handleResetFilter = () => {
         formProps.reset();
@@ -119,14 +178,14 @@ export default function Company() {
                         }}
                     >
                         <AccountCircle color="primary" sx={{ fontSize: "35px" }} />
-                        公司管理
+                        公司列表
                     </Typography>
 
                     <Button
                         variant="contained"
                         color="primary"
                         startIcon={<Add />}
-                        onClick={() => router.push("/manage/interviewee/create")}
+                        onClick={() => setPopupCreateActive(true)}
                         sx={{ height: 40 }}
                     >
                         新增公司
@@ -157,9 +216,35 @@ export default function Company() {
                         border: "1px solid #e0e0e0",
                     }}
                 >
-                    <DataTable columns={columns} data={companyData} />
+                    <DataTable columns={columns} data={filterDataList} />
                 </Box>
             </Box>
+            {popupEditActive && editingCompany && (
+                <PopupModal
+                    title="編輯公司資訊"
+                    inputList={companyCreateData}
+                    defaultValues={editingCompany}
+                    onClose={() => setPopupEditActive(false)}
+                    onSubmit={handleUpdate}
+                />
+            )}
+            {popupCreateActive && (
+                <PopupModal
+                    title="新增公司"
+                    inputList={companyCreateData}
+                    onClose={() => setPopupCreateActive(false)}
+                    onSubmit={async (data) => {
+                        try {
+                            await CompanyAPI.create(data);
+                            toast.success("公司資料已新增！");
+                            setPopupCreateActive(false);
+                            fetchData();
+                        } catch (error) {
+                            toast.error("新增失敗，請稍後再試。");
+                        }
+                    }}
+                />
+            )}
         </Layout>
     )
 }
