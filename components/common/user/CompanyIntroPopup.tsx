@@ -30,8 +30,6 @@ export default function CompanyIntroPopup({
   onClose: () => void;
   companyIntro: InterviewApiData | null;
 }) {
-  console.log('CompanyIntroPopup interview:', companyIntro);
-
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogContent dividers>
