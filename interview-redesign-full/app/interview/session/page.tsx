@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { SAMPLE_QUESTIONS, type Department } from "@/lib/constants";
 
 export default function InterviewSession() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const dept = searchParams.get("dept") as Department;
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -90,11 +91,29 @@ export default function InterviewSession() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setPhase("prep"); // 重設為準備階段
     } else {
-      // 所有問題完成
-      if (confirm("面試已完成！是否返回首頁？")) {
-        window.location.href = "/";
+      // 所有問題完成，生成報告並導向報告頁面
+      const reportId = generateMockReport(dept);
+      if (confirm("面試已完成！是否查看分析報告？")) {
+        router.push(`/user/report/${reportId}`);
+      } else {
+        router.push("/");
       }
     }
+  };
+
+  // 生成模擬報告ID（實際應用中會是真實的API調用）
+  const generateMockReport = (department: Department) => {
+    // 根據科系簡單生成報告ID
+    const reportMap: Record<Department, string> = {
+      "會計資訊系": "1",
+      "財務金融系": "2", 
+      "資訊管理系": "3",
+      "財政稅務系": "1",
+      "應用外語系": "2",
+      "國際商務系": "3",
+      "企業管理系": "1"
+    };
+    return reportMap[department] || "1";
   };
 
   const handleEndInterview = () => {
@@ -208,9 +227,19 @@ export default function InterviewSession() {
                 ) : (
                   <>
                     <button 
-                      onClick={handleNextQuestion}
+                      onClick={() => {
+                        if (currentQuestionIndex >= questions.length - 1) {
+                          // 最後一題，完成面試
+                          const reportId = generateMockReport(dept);
+                          if (confirm("確定要完成面試並查看報告嗎？")) {
+                            router.push(`/user/report/${reportId}`);
+                          }
+                        } else {
+                          // 非最後一題，進入下一題
+                          handleNextQuestion();
+                        }
+                      }}
                       className="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                      disabled={currentQuestionIndex >= questions.length - 1}
                     >
                       {currentQuestionIndex >= questions.length - 1 ? "完成面試" : "> 下一題"}
                     </button>
