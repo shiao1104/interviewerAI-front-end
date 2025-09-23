@@ -5,14 +5,22 @@ import { TimerOutlined } from "@mui/icons-material";
 interface CountdownTimerProps {
   timeAllowed?: number;
   onTimeUp?: () => void;
+  onCanSkip?: (canSkip: boolean) => void;
 }
 
-function CountdownTimer({ timeAllowed = 60, onTimeUp }: CountdownTimerProps) {
+function CountdownTimer({ timeAllowed = 60, onTimeUp, onCanSkip }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState(timeAllowed);
 
   useEffect(() => {
     setTimeLeft(timeAllowed);
   }, [timeAllowed]);
+
+  useEffect(() => {
+    if (onCanSkip) {
+      const canSkip = timeLeft <= (timeAllowed - 20);
+      onCanSkip(canSkip);
+    }
+  }, [timeLeft, timeAllowed, onCanSkip]);
 
   useEffect(() => {
     if (timeLeft <= 0) {
