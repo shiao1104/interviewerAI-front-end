@@ -62,6 +62,7 @@ export default function Interview() {
 
   const [isPreparing, setIsPreparing] = useState(false);
   const [questionNo, setQuestionNo] = useState(1);
+  const [canSkip, setCanSkip] = useState<boolean>(false);
 
   const recorderRef = useRef<VideoRecorderRef>(null);
 
@@ -73,7 +74,12 @@ export default function Interview() {
         setQuestion(questionData);
       }
     } catch (error) {
-      console.error("無法獲取問題:", error);
+      Swal.fire({
+        title: "面試結束",
+        text: "所有問題已完成，感謝您的參與！",
+        icon: "success",
+        confirmButtonText: "確定"
+      }).then (() => router.push('/user'))
     }
   };
 
@@ -240,8 +246,8 @@ export default function Interview() {
                   key={`${question?.question_id}-${isPreparing ? "prep" : "answer"}`}
                   timeAllowed={isPreparing ? 60 : question?.time_allowed || 60}
                   onTimeUp={isPreparing ? finishPreparation : finishAnswer}
+                  onCanSkip={canSkip => setCanSkip(canSkip)}
                 />
-
               </Stack>
             </Grid>
 
@@ -257,6 +263,7 @@ export default function Interview() {
                   startIcon={<TimerOutlined />}
                   onClick={finishPreparation}
                   fullWidth
+                  disabled={!canSkip}
                 >
                   跳過準備時間
                 </Button>
