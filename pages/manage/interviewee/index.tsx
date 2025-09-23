@@ -20,13 +20,6 @@ export default function Interviewee() {
   const [searchParams, setSearchParams] = useState<SearchType>();
   const [filteredIntervieweeData, setFilteredIntervieweeData] = useState([]);
 
-  const dropdownData = async () => {
-    try {
-      const response = await InterviewAPI.getData();
-    } catch (err) {
-    }
-  };
-
   const fetchData = async () => {
     try {
       const response = await InterviewAPI.getData();
@@ -96,7 +89,6 @@ export default function Interviewee() {
 
         const itemStr = String(itemValue).toLowerCase();
         const searchStr = String(value).toLowerCase();
-        console.log('Filtering:', { key, itemStr, searchStr });
 
         switch (key) {
           case 'interview_result':
