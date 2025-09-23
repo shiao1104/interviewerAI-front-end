@@ -26,8 +26,34 @@ export default function Page() {
   };
 
   // 模擬的歷次面試記錄
-  const interviewHistory: any[] = [
-    // 這裡可以放置歷史記錄，目前顯示為空
+  const interviewHistory = [
+    {
+      id: "1",
+      date: "2025/09/25",
+      department: "會計資訊系",
+      interviewNumber: "#001",
+      status: "已完成",
+      score: 87,
+      duration: "00:20"
+    },
+    {
+      id: "2", 
+      date: "2025/09/20",
+      department: "財務金融系",
+      interviewNumber: "#002",
+      status: "已完成",
+      score: 92,
+      duration: "00:15"
+    },
+    {
+      id: "3",
+      date: "2025/09/15", 
+      department: "資訊管理系",
+      interviewNumber: "#003",
+      status: "已完成",
+      score: 75,
+      duration: "00:18"
+    }
   ];
 
   return (
@@ -128,7 +154,7 @@ export default function Page() {
               </select>
               <input
                 type="text"
-                placeholder="搜尋：科系 / 狀態 / ID..."
+                placeholder="搜尋：科系 / 編號 / 狀態..."
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
             </div>
@@ -163,22 +189,62 @@ export default function Page() {
                       </td>
                     </tr>
                   ) : (
-                    interviewHistory.map((record, index) => (
-                      <tr key={index}>
+                    interviewHistory.map((record) => (
+                      <tr key={record.id} className="hover:bg-gray-50">
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {/* 日期 */}
+                          {record.date}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{record.department}</div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              <span className="inline-flex items-center gap-1">
+                                <span>🔢</span>
+                                <span>{record.interviewNumber}</span>
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            {record.status}
+                          </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {/* 科系 */}
+                          <div className="flex items-center gap-2">
+                            <span className={`font-medium ${
+                              record.score >= 90 ? 'text-green-600' : 
+                              record.score >= 80 ? 'text-blue-600' : 
+                              'text-orange-600'
+                            }`}>
+                              {record.score}
+                            </span>
+                            <div className="w-16 bg-gray-200 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full ${
+                                  record.score >= 90 ? 'bg-green-500' : 
+                                  record.score >= 80 ? 'bg-blue-500' : 
+                                  'bg-orange-500'
+                                }`}
+                                style={{ width: `${record.score}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">時長: {record.duration}</div>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {/* 狀態 */}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {/* 總分 */}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {/* 操作按鈕 */}
+                        <td className="px-4 py-4 whitespace-nowrap text-sm">
+                          <button 
+                            onClick={() => router.push(`/user/report/${record.id}`)}
+                            className="text-blue-600 hover:text-blue-800 font-medium mr-4"
+                          >
+                            查看報告
+                          </button>
+                          <button 
+                            onClick={() => alert(`重新練習: ${record.department}`)}
+                            className="text-gray-600 hover:text-gray-800"
+                          >
+                            重新練習
+                          </button>
                         </td>
                       </tr>
                     ))
