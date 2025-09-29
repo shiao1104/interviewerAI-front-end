@@ -25,7 +25,7 @@ import CompanyIntroPopup from "@/components/common/user/CompanyIntroPopup";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import InterviewAPI from "@/lib/api/InterviewAPI";
 import { toast } from "react-toastify";
-import UserAPI from "@/lib/api/UserAPI"; 
+import UserAPI from "@/lib/api/UserAPI";
 
 export interface CompanyInfo {
   company_name: string;
@@ -44,6 +44,7 @@ export interface InterviewApiData {
   address: number;
   interview_datetime: string;
   company_address: string;
+  interview_id: number;
 }
 
 export type ReportListType = {
@@ -121,6 +122,7 @@ export default function InterviewerDashboard() {
   };
 
   const handleStartInterview = () => {
+    sessionStorage.setItem('interview_id', selectedInterview?.interview_id.toString() || '');
     router.push("/user/interview");
   };
 
@@ -152,6 +154,12 @@ export default function InterviewerDashboard() {
           <div className={styles.interviewCards}>
             {/* 渲染來自 API 的真實面試數據 */}
             {companyIntro.length > 0 && companyIntro.map((apiInterview, index) => {
+              const interviewTime = new Date(apiInterview.interview_datetime);
+              const now = new Date();
+
+              const isDisabled =
+                now.getTime() < interviewTime.getTime()
+
               return (
                 <div
                   key={apiInterview.opening_id}
@@ -181,13 +189,26 @@ export default function InterviewerDashboard() {
                     </div>
                   </div>
                   <div className={styles.cardActions}>
-                    <Button
-                      variant="contained"
-                      className={styles.primaryButton}
-                      onClick={() => handleOpenDialog(apiInterview)}
-                    >
-                      準備面試
-                    </Button>
+                    {!isDisabled ? (
+                      <Button
+                        disabled
+                        variant="contained"
+                        onClick={() => handleOpenDialog(apiInterview)}
+                        sx={{ backgroundColor: '#ccc', cursor: 'not-allowed' }}
+                      >
+                        面試即將開始
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        className={styles.primaryButton}
+                        onClick={() => handleOpenDialog(apiInterview)}
+                      >
+                        準備面試
+                      </Button>
+                    )
+
+                    }
 
                     <Button
                       variant="outlined"

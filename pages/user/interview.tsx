@@ -63,25 +63,25 @@ export default function Interview() {
   const [isPreparing, setIsPreparing] = useState(false);
   const [questionNo, setQuestionNo] = useState(1);
   const [canSkip, setCanSkip] = useState<boolean>(false);
+  const interviewId = sessionStorage.getItem('interview_id');
 
   const recorderRef = useRef<VideoRecorderRef>(null);
 
   const fetchQuestion = async () => {
-    const userId = sessionStorage.getItem('user_id');
-
     try {
-      const response = await QuestionTempAPI.getNextQuestion(Number(userId));
+      const response = await QuestionTempAPI.getNextQuestion(Number(interviewId));
       if (response?.data && response.data as Question) {
         const questionData = response.data as Question;
         setQuestion(questionData);
       }
     } catch (error) {
+      sessionStorage.removeItem('interview_id');
       Swal.fire({
         title: "面試結束",
         text: "所有問題已完成，感謝您的參與！",
         icon: "success",
         confirmButtonText: "確定"
-      }).then (() => router.push('/user'))
+      }).then(() => router.push('/user'))
     }
   };
 
@@ -112,7 +112,7 @@ export default function Interview() {
     if (!question?.question_id || !Array.isArray(blobs) || blobs.length === 0) return;
 
     const formData = new FormData();
-    formData.append('interview_id', '1');
+    formData.append('interview_id', interviewId || '');
     formData.append('question_id', question.question_id.toString());
     const videoBlob = new Blob(blobs, { type: 'video/webm' });
     const audioBlob = new Blob(blobs, { type: 'audio/webm' });

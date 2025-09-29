@@ -72,10 +72,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Image src={logo} alt="Logo" width={200} onClick={() => router.push('/user')} />
             </Typography>
           </div>
-          <Typography variant="subtitle1" className={styles.subtitle}>
-            今天是準備面試的好日子！您有{" "}
-            <span className={styles.highlight}>2</span> 個即將到來的面試。
-          </Typography>
         </Box>
 
         {/* 右側按鈕群 */}
