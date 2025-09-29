@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
-    setName(sessionStorage.getItem("name"));
+    setName(sessionStorage.getItem("user_name"));
   }, []);
 
   const handleNotifClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -76,14 +76,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* 右側按鈕群 */}
         <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <IconButton onClick={handleNotifClick}>
+          {/* <IconButton onClick={handleNotifClick}>
             <NotificationsActive />
           </IconButton>
           <NotificationPopover
             anchorEl={notifAnchor}
             open={Boolean(notifAnchor)}
             onClose={handleNotifClose}
-          />
+          /> */}
 
           <IconButton onClick={handleProfileClick}>
             <Avatar className={styles.userAvatar}>{name?.split("")[0]}</Avatar>
@@ -105,9 +105,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             <MenuItem disabled>👤 {name}</MenuItem>
             <Divider />
-            <MenuItem onClick={() => router.push('/user/profile')}>
+            {/* <MenuItem onClick={() => router.push('/user/profile')}>
               查看個人檔案
-            </MenuItem>
+            </MenuItem> */}
             <MenuItem onClick={() => router.push('/login')}>登出</MenuItem>
           </Menu>
         </Box>
