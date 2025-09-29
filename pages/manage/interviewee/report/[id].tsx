@@ -82,7 +82,7 @@ export default function IntervieweeDetail() {
     position: '',
     interviewDate: '',
     interviewTime: '',
-    confirmStatus: '未面試',
+    interview_result: '',
     resumeUrl: '#',
     scores: {
       overall: 0,
@@ -150,7 +150,7 @@ export default function IntervieweeDetail() {
         position: data.opening_detail?.opening_name || '',
         interviewDate,
         interviewTime,
-        confirmStatus: data.interview_status === '已完成' ? '已完成' : '未面試',
+        interview_result: data.interview_result,
         resumeUrl: '#',
         scores: {
           overall: data.total_score || 0,
@@ -443,8 +443,8 @@ export default function IntervieweeDetail() {
                   </Box>
 
                   <Chip
-                    label={intervieweeData.confirmStatus}
-                    color={intervieweeData.confirmStatus === '已面試' ? 'success' : 'default'}
+                    label={intervieweeData.interview_result}
+                    color={intervieweeData.interview_result === '已面試' ? 'success' : 'default'}
                     size="small"
                     variant="outlined"
                     sx={{ borderRadius: 1 }}
@@ -454,7 +454,7 @@ export default function IntervieweeDetail() {
             </CardContent>
           </Card>
 
-          {intervieweeData.confirmStatus === "已完成" ? (
+          {(intervieweeData.interview_result !== "尚未面試") ? (
             <>
               {/* AI 面試分析報告 */}
               <div ref={aiReportRef}>

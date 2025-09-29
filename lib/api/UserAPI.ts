@@ -30,7 +30,8 @@ export type MeData = {
   last_name: string;
   full_name: string;
   email: string;
-  role: "面試者" | "管理者";
+  is_staff: boolean;
+  is_superuser: boolean;
 };
 
 

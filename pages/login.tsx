@@ -117,17 +117,21 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               `${me.first_name ?? ""}${me.last_name ?? ""}`.trim() ||
               me.username ||
               "";
+
             sessionStorage.setItem("user_id", String(me.id));
             sessionStorage.setItem("user_name", userName);
-            sessionStorage.setItem("user_role", me.role);
-
-            if (me.role === "面試者") {
-              router.push("/user");
-            } else if (me.role === "管理者") {
+            if (me.is_staff) {
+              sessionStorage.setItem("user_role", "公司端");
               router.push("/manage");
+            } else if (me.is_superuser) {
+              sessionStorage.setItem("user_role", "公司端");
+              router.push("/admin");
+            } else {
+              sessionStorage.setItem("user_role", "公司端");
+              router.push("/user");
             }
           }
-        } catch {}
+        } catch { }
 
         toast.success("登入成功", {
           position: "top-center",
@@ -139,7 +143,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
           progress: undefined,
           theme: "light",
         });
-        router.push("/");
       } else {
         toast.error("登入失敗：無法取得存取權杖", {
           position: "top-center",
@@ -190,7 +193,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         } else {
           router.push("/user"); // 一般使用者頁面
         }
-      } catch (error : any) {
+      } catch (error: any) {
         console.error("Google 登入失敗:", error);
         toast.error(`Google 登入失敗: ${error.message}`, {
           position: "top-center",
