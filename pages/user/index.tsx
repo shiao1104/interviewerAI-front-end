@@ -189,7 +189,7 @@ export default function InterviewerDashboard() {
                     </div>
                   </div>
                   <div className={styles.cardActions}>
-                    {!isDisabled ? (
+                    {isDisabled ? (
                       <Button
                         disabled
                         variant="contained"
