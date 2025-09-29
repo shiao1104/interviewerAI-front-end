@@ -67,8 +67,10 @@ export default function Interview() {
   const recorderRef = useRef<VideoRecorderRef>(null);
 
   const fetchQuestion = async () => {
+    const userId = sessionStorage.getItem('user_id');
+
     try {
-      const response = await QuestionTempAPI.getNextQuestion(1);
+      const response = await QuestionTempAPI.getNextQuestion(Number(userId));
       if (response?.data && response.data as Question) {
         const questionData = response.data as Question;
         setQuestion(questionData);
