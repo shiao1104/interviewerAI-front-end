@@ -7,8 +7,7 @@ const BASE_URL = "/interview/interviews";
 
 type ResultType = {
   interview_result: string,
-  interview_datetime: string,
-  reason: string,
+  interview_datetime?: string,
 }
 
 const InterviewAPI = {

@@ -6,12 +6,16 @@ import { SearchType } from "@/lib/types/searchTypes";
 import { useForm } from "react-hook-form";
 import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
-import { AccountCircle, Add, Edit, MoreHoriz } from "@mui/icons-material";
+import { AccountCircle, Add, Edit, MoreHoriz, Search } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import InterviewAPI from "@/lib/api/InterviewAPI";
 import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
 import { getDifficultyColor } from "@/lib/hook/getDifficultyColor";
+import InputField from "@/components/common/InputField";
+import { DropdownTypes } from "@/lib/types/dropdownTypes";
+import OpeningAPI from "@/lib/api/OpeningAPI";
+import { interviewStateData } from "@/lib/data/testData";
 
 export default function Interviewee() {
   const router = useRouter();
@@ -19,6 +23,28 @@ export default function Interviewee() {
   const [intervieweeData, setIntervieweeData] = useState([]);
   const [searchParams, setSearchParams] = useState<SearchType>();
   const [filteredIntervieweeData, setFilteredIntervieweeData] = useState([]);
+  const [dropdownOptions, setDropdownOptions] = useState<{
+    opening: DropdownTypes[];
+  }>({
+    opening: [],
+  });
+
+  const fetchOpenings = async () => {
+    try {
+      const response = await OpeningAPI.getData();
+      const openingList: any[] = response.data ?? [];
+      const transformedOpenings = openingList.map((item: any) => ({
+        key: item.opening_id,
+        value: item.opening_name
+      }));
+
+      setDropdownOptions({
+        opening: transformedOpenings,
+      });
+    } catch (err) {
+      toast.error("無法獲取職位列表，請稍後再試。");
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -106,7 +132,14 @@ export default function Interviewee() {
     setFilteredIntervieweeData(filtered);
   };
 
+  const handleSearch = () => {
+    const params = formProps.getValues();
+
+    setSearchParams({ nowPage: 0, ...params });
+  };
+
   const handleResetFilter = () => {
+    window.location.reload();
     formProps.reset();
     setSearchParams(undefined);
     setFilteredIntervieweeData(intervieweeData);
@@ -114,6 +147,7 @@ export default function Interviewee() {
 
   useEffect(() => {
     fetchData();
+    fetchOpenings();
   }, []);
 
   useEffect(() => {
@@ -253,21 +287,49 @@ export default function Interviewee() {
           </Button>
         </Box>
 
-        {/* 搜尋欄 */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'end', gap: 1 }}>
-          <SearchBar
-            items={intervieweeSearchData}
-            formProps={formProps}
-            handleParams={(params) => setSearchParams(params)}
-          />
+        <Box sx={{ display: 'flex', justifyContent: 'end', alignItems: 'center'}}>
+          {/* 搜尋欄 */}
+          <Box sx={{ display: 'grid', gap: '1rem', gridTemplateColumns: '200px 200px 200px 100px 100px', alignItems: 'center', mb: 3 }}>
+            <InputField
+              name={'name'}
+              label={'姓名'}
+              type={'text'}
+              formProps={formProps}
+            />
+            <InputField
+              name={'type'}
+              label={'應徵職位'}
+              type={'dropdown'}
+              placeholder={'請選擇應徵職位'}
+              dropdownData={dropdownOptions.opening}
+              formProps={formProps}
+            />
+            <InputField
+              name={'interview_result'}
+              label={'面試結果'}
+              type={'dropdown'}
+              placeholder={'請選擇面試結果'}
+              dropdownData={interviewStateData}
+              formProps={formProps}
+            />
 
-          <Button
-            variant="text"
-            onClick={handleResetFilter}
-            sx={{ minWidth: "auto", marginTop: "12px" }}
-          >
-            重置篩選
-          </Button>
+            <Button
+              endIcon={<Search />}
+              variant="outlined"
+              sx={{ height: "43px" }}
+              onClick={handleSearch}
+            >
+              搜尋
+            </Button>
+
+            <Button
+              variant="text"
+              onClick={handleResetFilter}
+              sx={{ minWidth: "auto" }}
+            >
+              重置篩選
+            </Button>
+          </Box>
         </Box>
 
         {/* 數據表格 */}

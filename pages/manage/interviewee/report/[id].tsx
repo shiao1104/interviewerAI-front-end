@@ -83,6 +83,7 @@ export default function IntervieweeDetail() {
     interviewDate: '',
     interviewTime: '',
     interview_result: '',
+    interview_status: '',
     resumeUrl: '#',
     scores: {
       overall: 0,
@@ -151,6 +152,7 @@ export default function IntervieweeDetail() {
         interviewDate,
         interviewTime,
         interview_result: data.interview_result,
+        interview_status: data.interview_status || '',
         resumeUrl: '#',
         scores: {
           overall: data.total_score || 0,
@@ -237,11 +239,16 @@ export default function IntervieweeDetail() {
     try {
       setLoading(true);
 
-      await InterviewAPI.result(Number(id), {
-        interview_result: passed,
-        interview_datetime: interviewTime ? interviewTime.toISOString() : '',
-        reason: rejectionReason,
-      });
+      if (passed === '未通過') {
+        await InterviewAPI.result(Number(id), {
+          interview_result: passed,
+        });
+      } else {
+        await InterviewAPI.result(Number(id), {
+          interview_result: passed,
+          interview_datetime: interviewTime ? interviewTime.toISOString() : '',
+        });
+      }
 
       setSnackbar({
         open: true,
@@ -811,175 +818,178 @@ export default function IntervieweeDetail() {
               </div>
 
               {/* 面試結果決定 */}
-              <Grid>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    borderRadius: 3,
-                    border: '1px solid #e1e8ed',
-                    overflow: 'hidden',
-                    bgcolor: 'white',
-                    p: 3
-                  }}
-                >
-                  {/* Header */}
-                  <Box sx={{ bgcolor: 'white' }}>
-                    <Typography
-                      variant="h6"
-                      fontWeight={600}
-                      sx={{
-                        color: '#1a1f36',
-                        fontSize: '18px',
-                        mb: 2
-                      }}
-                    >
-                      是否通過此次初步面試？
-                    </Typography>
-                  </Box>
+              {intervieweeData.interview_status == "已完成" && intervieweeData.interview_result === "待處理" && (
 
-                  {/* Content */}
-                  <Box>
-                    {/* Radio Selection */}
-                    <FormControl component="fieldset" sx={{ mb: 3 }}>
-                      <RadioGroup
-                        value={passed}
-                        onChange={(e) => setPassed(e.target.value)}
-                        row
-                        sx={{ gap: 3 }}
+                <Grid>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      borderRadius: 3,
+                      border: '1px solid #e1e8ed',
+                      overflow: 'hidden',
+                      bgcolor: 'white',
+                      p: 3
+                    }}
+                  >
+                    {/* Header */}
+                    <Box sx={{ bgcolor: 'white' }}>
+                      <Typography
+                        variant="h6"
+                        fontWeight={600}
+                        sx={{
+                          color: '#1a1f36',
+                          fontSize: '18px',
+                          mb: 2
+                        }}
                       >
-                        <FormControlLabel
-                          value="通過"
-                          control={
-                            <Radio
-                              sx={{
-                                color: '#1976d2',
-                                '&.Mui-checked': {
-                                  color: '#1976d2',
-                                }
-                              }}
-                            />
-                          }
-                          label={
-                            <Typography sx={{ fontWeight: 500, color: '#1a1f36' }}>
-                              通過
-                            </Typography>
-                          }
-                        />
-                        <FormControlLabel
-                          value="未通過"
-                          control={
-                            <Radio
-                              sx={{
-                                color: '#1976d2',
-                                '&.Mui-checked': {
-                                  color: '#1976d2',
-                                }
-                              }}
-                            />
-                          }
-                          label={
-                            <Typography sx={{ fontWeight: 500, color: '#1a1f36' }}>
-                              未通過
-                            </Typography>
-                          }
-                        />
-                      </RadioGroup>
-                    </FormControl>
+                        是否通過此次初步面試？
+                      </Typography>
+                    </Box>
 
-                    {/* Conditional Fields for "通過" */}
-                    {passed === "通過" && (
-                      <Box sx={{
-                        bgcolor: '#f8fbff',
-                        border: '1px solid #e3f2fd',
-                        borderRadius: 2,
-                        p: 3,
-                        mb: 3
-                      }}>
-                        <Typography variant="subtitle2" sx={{ mb: 2, color: '#1976d2' }}>
-                          請設定下次面試資訊
-                        </Typography>
-                        <Grid container spacing={3}>
-                          <Grid>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                              <DateTimePicker
-                                label="請選擇下次面試時間"
-                                value={interviewTime}
-                                onChange={(newValue) => setInterviewTime(newValue)}
-                                slotProps={{
-                                  textField: {
-                                    fullWidth: true,
-                                    sx: {
-                                      '& .MuiOutlinedInput-root': {
-                                        borderRadius: 2,
-                                        bgcolor: 'white'
-                                      }
-                                    }
+                    {/* Content */}
+                    <Box>
+                      {/* Radio Selection */}
+                      <FormControl component="fieldset" sx={{ mb: 3 }}>
+                        <RadioGroup
+                          value={passed}
+                          onChange={(e) => setPassed(e.target.value)}
+                          row
+                          sx={{ gap: 3 }}
+                        >
+                          <FormControlLabel
+                            value="通過"
+                            control={
+                              <Radio
+                                sx={{
+                                  color: '#1976d2',
+                                  '&.Mui-checked': {
+                                    color: '#1976d2',
                                   }
                                 }}
                               />
-                            </LocalizationProvider>
-                          </Grid>
-
-                        </Grid>
-                      </Box>
-                    )}
-
-                    {/* Rejection Reason for "No" */}
-                    {passed === "未通過" && (
-                      <Box sx={{
-                        bgcolor: '#fef7f7',
-                        border: '1px solid #fed7d7',
-                        borderRadius: 2,
-                        p: 3,
-                        mb: 3
-                      }}>
-                        <TextField
-                          fullWidth
-                          multiline
-                          rows={4}
-                          label="未通過原因 (選填)"
-                          placeholder="請簡述未通過面試的主要原因..."
-                          value={rejectionReason}
-                          onChange={(e) => setRejectionReason(e.target.value)}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 2,
-                              bgcolor: 'white'
                             }
-                          }}
-                        />
-                      </Box>
-                    )}
+                            label={
+                              <Typography sx={{ fontWeight: 500, color: '#1a1f36' }}>
+                                通過
+                              </Typography>
+                            }
+                          />
+                          <FormControlLabel
+                            value="未通過"
+                            control={
+                              <Radio
+                                sx={{
+                                  color: '#1976d2',
+                                  '&.Mui-checked': {
+                                    color: '#1976d2',
+                                  }
+                                }}
+                              />
+                            }
+                            label={
+                              <Typography sx={{ fontWeight: 500, color: '#1a1f36' }}>
+                                未通過
+                              </Typography>
+                            }
+                          />
+                        </RadioGroup>
+                      </FormControl>
 
-                    {/* Action Buttons */}
-                    <Box sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 2,
-                      pt: 2
-                    }}>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        onClick={handleCancel}
-                        disabled={loading}
-                        sx={{ height: 40 }}
-                      >
-                        取消
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleSubmitResult}
-                        disabled={loading || !passed}
-                        sx={{ height: 40 }}
-                      >
-                        {loading ? '處理中...' : '確認送出'}
-                      </Button>
+                      {/* Conditional Fields for "通過" */}
+                      {passed === "通過" && (
+                        <Box sx={{
+                          bgcolor: '#f8fbff',
+                          border: '1px solid #e3f2fd',
+                          borderRadius: 2,
+                          p: 3,
+                          mb: 3
+                        }}>
+                          <Typography variant="subtitle2" sx={{ mb: 2, color: '#1976d2' }}>
+                            請設定下次面試資訊
+                          </Typography>
+                          <Grid container spacing={3}>
+                            <Grid>
+                              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DateTimePicker
+                                  label="請選擇下次面試時間"
+                                  value={interviewTime}
+                                  onChange={(newValue) => setInterviewTime(newValue)}
+                                  slotProps={{
+                                    textField: {
+                                      fullWidth: true,
+                                      sx: {
+                                        '& .MuiOutlinedInput-root': {
+                                          borderRadius: 2,
+                                          bgcolor: 'white'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </LocalizationProvider>
+                            </Grid>
+
+                          </Grid>
+                        </Box>
+                      )}
+
+                      {/* Rejection Reason for "No" */}
+                      {passed === "未通過" && (
+                        <Box sx={{
+                          bgcolor: '#fef7f7',
+                          border: '1px solid #fed7d7',
+                          borderRadius: 2,
+                          p: 3,
+                          mb: 3
+                        }}>
+                          <TextField
+                            fullWidth
+                            multiline
+                            rows={4}
+                            label="未通過原因 (選填)"
+                            placeholder="請簡述未通過面試的主要原因..."
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                bgcolor: 'white'
+                              }
+                            }}
+                          />
+                        </Box>
+                      )}
+
+                      {/* Action Buttons */}
+                      <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: 2,
+                        pt: 2
+                      }}>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          onClick={handleCancel}
+                          disabled={loading}
+                          sx={{ height: 40 }}
+                        >
+                          取消
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={handleSubmitResult}
+                          disabled={loading || !passed}
+                          sx={{ height: 40 }}
+                        >
+                          {loading ? '處理中...' : '確認送出'}
+                        </Button>
+                      </Box>
                     </Box>
-                  </Box>
-                </Paper>
-              </Grid>
+                  </Paper>
+                </Grid>
+              )}
             </>
           ) : (
             <Grid>

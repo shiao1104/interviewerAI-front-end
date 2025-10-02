@@ -143,7 +143,7 @@ export const companyType = [
 ];
 
 export const interviewStateData = [
-  {key: 0, value: "全部" },
+  { key: 0, value: "全部" },
   { key: 1, value: "尚未面試" },
   { key: 2, value: "第一階段通過" },
   { key: 3, value: "第一階段未通過" },
