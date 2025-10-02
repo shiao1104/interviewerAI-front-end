@@ -7,12 +7,12 @@ export const intervieweeSearchData: InputFieldTypes[] = [
     name: "name",
     type: "text",
   },
-  {
-    label: "應徵職位",
-    name: "type",
-    type: "dropdown",
-    dropdownData: companyType,
-  },
+  // {
+  //   label: "應徵職位",
+  //   name: "type",
+  //   type: "dropdown",
+  //   dropdownData: companyType,
+  // },
   {
     label: "面試結果",
     name: "interview_result",
