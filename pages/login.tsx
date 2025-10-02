@@ -121,13 +121,13 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             sessionStorage.setItem("user_id", String(me.id));
             sessionStorage.setItem("user_name", userName);
             if (me.is_staff) {
-              sessionStorage.setItem("user_role", "公司端");
+              sessionStorage.setItem("user_role", "manage");
               router.push("/manage");
             } else if (me.is_superuser) {
-              sessionStorage.setItem("user_role", "公司端");
+              sessionStorage.setItem("user_role", "admin");
               router.push("/admin");
             } else {
-              sessionStorage.setItem("user_role", "公司端");
+              sessionStorage.setItem("user_role", "user");
               router.push("/user");
             }
           }
