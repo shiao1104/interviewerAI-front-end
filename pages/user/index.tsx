@@ -156,9 +156,9 @@ export default function InterviewerDashboard() {
             {companyIntro.length > 0 && companyIntro.map((apiInterview, index) => {
               const interviewTime = new Date(apiInterview.interview_datetime);
               const now = new Date();
+              console.log("Comparing times:", now, interviewTime);
 
-              const isDisabled =
-                now.getTime() < interviewTime.getTime()
+              const isDisabled = now.getTime() < interviewTime.getTime() - (5 * 60 * 1000);
 
               return (
                 <div
