@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
+import Swal from 'sweetalert2';
 
 const API = axios.create({ 'baseURL': process.env.NEXT_PUBLIC_API_URL });
 
@@ -29,7 +30,20 @@ API.interceptors.response.use(
     }
     return config.data;
   },
-  error => Promise.reject(error.response.data)
+  error => {
+    Promise.reject(error.response.data)
+    if (error.response?.status === 401) {
+      Swal.fire({
+        title: "請重新登入",
+        text: "登入逾時，請重新登入",
+        icon: "error",
+        confirmButtonText: "確定"
+      }).then(() => {
+        sessionStorage.clear();
+        window.location.href = '/login';
+      })
+    }
+  }
 );
 
 export default API;
