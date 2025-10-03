@@ -38,7 +38,6 @@ export default function IntervieweeDetail() {
     const aiReportRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        console.log('11')
         const handleExportAIReport = async () => {
             if (!aiReportRef.current) return;
 
@@ -51,9 +50,8 @@ export default function IntervieweeDetail() {
             const pdf = new jsPDF("p", "mm", "a4");
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            const margin = 10; // 邊界 10mm
+            const margin = 10;
 
-            // 計算可用寬高 (扣掉左右上下的邊界)
             const usableWidth = pdfWidth - margin * 2;
             const usableHeight = pdfHeight - margin * 2;
 

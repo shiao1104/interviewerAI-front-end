@@ -121,7 +121,7 @@ export default function ProfilePage() {
           email: me.email ?? prev.email,
           userId: String(me.id ?? ""),
           role: me.role ?? "",
-           phone_number: me.phone_number ?? prev.phone_number,
+          phone_number: me.phone_number ?? prev.phone_number,
         }));
 
         const sid = sessionStorage.getItem("user_id");
@@ -375,30 +375,6 @@ export default function ProfilePage() {
                     </Typography>
                   )}
                 </Grid>
-
-                <Grid>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    <CalendarIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
-                    到職日期
-                  </Typography>
-                  {isEditing ? (
-                    <TextField
-                      fullWidth
-                      value={editProfile.joinDate}
-                      onChange={(e) => handleInputChange('joinDate', e.target.value)}
-                      placeholder="請輸入到職日期"
-                      variant="outlined"
-                      size="small"
-                    />
-                  ) : (
-                    <Typography variant="body1" sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                      {profile.joinDate}
-                    </Typography>
-                  )}
-                </Grid>
-              </InfoGrid>
-
-              <SingleInfoGrid container>
                 <Grid>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     <LocationIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
@@ -419,7 +395,7 @@ export default function ProfilePage() {
                     </Typography>
                   )}
                 </Grid>
-              </SingleInfoGrid>
+              </InfoGrid>
             </InfoSection>
 
             {/* 操作按鈕 */}

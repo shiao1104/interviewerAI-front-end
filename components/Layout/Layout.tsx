@@ -105,9 +105,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             <MenuItem disabled>👤 {name}</MenuItem>
             <Divider />
-            {/* <MenuItem onClick={() => router.push('/user/profile')}>
+            <MenuItem onClick={() => router.push('/user/profile')}>
               查看個人檔案
-            </MenuItem> */}
+            </MenuItem>
             <MenuItem onClick={() => router.push('/login')}>登出</MenuItem>
           </Menu>
         </Box>
