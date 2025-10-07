@@ -64,6 +64,7 @@ export default function Interview() {
   const [canSkip, setCanSkip] = useState<boolean>(false);
   const [companyName, setCompanyName] = useState('');
   const [openingName, setOpeningName] = useState('');
+  const [interviewId] = useState<string | null>(sessionStorage.getItem('interview_id'));
 
   const recorderRef = useRef<VideoRecorderRef>(null);
 
@@ -82,6 +83,12 @@ export default function Interview() {
         }).then(() => router.push('/user'))
       }
     } catch (error) {
+      Swal.fire({
+        title: "面試結束",
+        text: "所有問題已完成，感謝您的參與！",
+        icon: "success",
+        confirmButtonText: "確定"
+      }).then(() => router.push('/user'))
     }
   };
 
@@ -96,7 +103,7 @@ export default function Interview() {
       recorderRef.current.stopRecording();
     }
 
-    await fetchQuestion();
+    await fetchQuestion(sessionStorage.getItem('interview_id') || '');
 
     setIsPreparing(true);
     setQuestionNo((prev) => prev + 1);
