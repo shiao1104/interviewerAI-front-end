@@ -181,17 +181,20 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         // 2. 儲存 Django JWT
         sessionStorage.setItem("token", data.access);
 
-        // 3. 儲存使用者資訊 (只使用後端回傳的)
         sessionStorage.setItem("user_id", String(data.user.id)); // 假設後端回傳 user 物件
         sessionStorage.setItem("user_name", data.user.full_name || data.user.username); // 假設後端回傳 user 物件
         sessionStorage.setItem("user_role", data.user.role); // 假設後端回傳 user 物件
         sessionStorage.setItem("email", decoded.email); // 保留 google email
 
-        // 4. 根據 is_superuser 和 is_staff 重新導向
-        if (data.user.is_superuser || data.user.is_staff) {
-          router.push("/manage"); // 管理者頁面
+        if (data.user.is_staff) {
+          sessionStorage.setItem("user_role", "manage");
+          router.push("/manage");
+        } else if (data.user.is_superuser) {
+          sessionStorage.setItem("user_role", "admin");
+          router.push("/admin");
         } else {
-          router.push("/user"); // 一般使用者頁面
+          sessionStorage.setItem("user_role", "user");
+          router.push("/user");
         }
       } catch (error: any) {
         console.error("Google 登入失敗:", error);
