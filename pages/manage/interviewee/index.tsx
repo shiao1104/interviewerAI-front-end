@@ -1,10 +1,8 @@
 import Layout from "@/components/Layout/ManageLayout";
-import { JSXElementConstructor, ReactElement, ReactNode, ReactPortal, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Typography, Box, Chip, IconButton, Button } from "@mui/material";
-import { intervieweeSearchData } from "@/lib/data/intervieweeSearchData";
 import { SearchType } from "@/lib/types/searchTypes";
 import { useForm } from "react-hook-form";
-import SearchBar from "@/components/common/searchBar";
 import DataTable from "@/components/common/DataTables";
 import { AccountCircle, Add, Edit, MoreHoriz, Search } from "@mui/icons-material";
 import { useRouter } from "next/router";
@@ -158,14 +156,14 @@ export default function Interviewee() {
     {
       id: "interview_status",
       label: "面試狀態",
-      render: (value: any) => (
-        <Chip
-          label={value}
-          color={getDifficultyColor(value)}
-          size="small"
-          variant="outlined"
-        />
-      ),
+      render: (value: string, row: any) => {
+        if (value === "已完成") {
+          return <Chip label={value} variant="outlined" color="success" size="small" />;
+        } else if (value === "已排定") {
+          return <Chip label={value} variant="outlined" color="warning" size="small" />;
+        }
+        return <Chip label={value} variant="outlined" size="small" />;
+      },
       textAlign: "center",
       sortable: true,
     },
@@ -173,18 +171,14 @@ export default function Interviewee() {
       id: "interview_result",
       label: "面試結果",
       render: (value: string, row: any) => {
-        if (value === "第二階段通過") {
-          return <Chip label="第二階段通過" color="success" size="small" />;
-        } else if (value === "第二階段未通過") {
-          return <Chip label="第二階段未通過" color="error" size="small" />;
-        } else if (value === "第一階段通過") {
-          return <Chip label="第一階段通過" variant="outlined" color="success" size="small" />;
-        } else if (value === "第一階段未通過") {
-          return <Chip label="第一階段未通過" variant="outlined" color="error" size="small" />;
+        if (value === "第二階段通過" || value === "第一階段通過" || value === "錄取") {
+          return <Chip label={value} variant="outlined" color="success" size="small" />;
+        } else if (value === "第一階段未通過" || value === "第二階段未通過") {
+          return <Chip label={value} variant="outlined" color="error" size="small" />;
         } else if (value === "尚未面試") {
-          return <Chip label="尚未面試" color="warning" size="small" />;
+          return <Chip label="尚未面試" variant="outlined" color="warning" size="small" />;
         }
-        return "-";
+        return <Chip label={value} variant="outlined" size="small" />;
       },
       textAlign: "center",
       sortable: true,
@@ -269,7 +263,7 @@ export default function Interviewee() {
           </Button>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'end', alignItems: 'center'}}>
+        <Box sx={{ display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
           {/* 搜尋欄 */}
           <Box sx={{ display: 'grid', gap: '1rem', gridTemplateColumns: '200px 200px 200px 100px 100px', alignItems: 'center', mb: 3 }}>
             <InputField

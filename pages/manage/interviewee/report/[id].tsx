@@ -16,15 +16,10 @@ import {
   Tab,
   Tabs,
   Paper,
-  IconButton,
   Radio,
   FormControlLabel,
   FormControl,
-  FormLabel,
   RadioGroup,
-  InputLabel,
-  Select,
-  MenuItem,
   TextField,
   Alert,
   Snackbar,
@@ -32,21 +27,16 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  alpha,
 } from "@mui/material";
 import {
-  Analytics,
-  DocumentScanner,
-  VideoCall,
-  VolumeUp,
   Description,
   AccessTime,
-  Person,
   InfoOutline,
   DateRange,
   ExpandMore,
   KeyboardBackspace,
   Check,
-  Cancel,
   Phone,
   Email,
   Work,
@@ -54,11 +44,9 @@ import {
 } from "@mui/icons-material";
 import CircleProgress from "@/components/common/manage/CircleProgress";
 import Layout from "@/components/Layout/ManageLayout";
-import Image from "next/image";
-import pic from "@/public/image/pic.jpg";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 import { useRef } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -216,7 +204,11 @@ export default function IntervieweeDetail() {
 
   const handleSave = async () => {
     try {
-      await InterviewAPI.updateScore(Number(id), quesId, {human_score: editScore, human_comments: editComment});
+      await InterviewAPI.updateScore(Number(id), quesId, { human_score: editScore, human_comments: editComment });
+      await Promise.all([
+        fetchData(),
+        fetchAnswers()
+      ]);
       Swal.fire({
         icon: 'success',
         title: '更新成功',
@@ -715,47 +707,6 @@ export default function IntervieweeDetail() {
                             </Typography>
                           </Box>
 
-                          <Box>
-                            <Typography
-                              variant="subtitle2"
-                              fontWeight="600"
-                              sx={{
-                                mb: 1.5,
-                                color: theme.palette.text.primary,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1
-                              }}
-                            >
-                              <Check sx={{ color: theme.palette.success.main }} />
-                              AI評分：
-                              {item.ai_score}
-                            </Typography>
-                          </Box>
-
-                          <Box sx={{ mb: 3 }}>
-                            <Typography
-                              variant="subtitle2"
-                              fontWeight="600"
-                              sx={{
-                                mb: 1.5,
-                                color: theme.palette.text.primary,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1
-                              }}
-                            >
-                              <Check sx={{ color: theme.palette.success.main }} />
-                              人工評分：
-                              {item.human_score || '尚未評分'}
-                              <Edit
-                                fontSize="small"
-                                sx={{ ml: 1, cursor: 'pointer' }}
-                                onClick={() => { setIsEdit(true); setEditScore(item.human_score || 0); setEditComment(item.human_comments || ''); setQuesId(item.question) }}
-                              />
-                            </Typography>
-                          </Box>
-
                           {/* 面試者回答 */}
                           <Box sx={{ mb: 3 }}>
                             <Typography
@@ -788,46 +739,134 @@ export default function IntervieweeDetail() {
                                   color: theme.palette.text.primary
                                 }}
                               >
-                                {item.answer_text}
+                                {item.answer_text ? item.answer_text : '(無回答)'}
                               </Typography>
                             </Paper>
                           </Box>
 
                           {/* AI評論 */}
-                          <Box>
-                            <Typography
-                              variant="subtitle2"
-                              fontWeight="600"
-                              sx={{
-                                mb: 1.5,
-                                color: theme.palette.text.primary,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1
-                              }}
-                            >
-                              AI 評論與建議
-                            </Typography>
-                            <Paper
-                              elevation={0}
-                              sx={{
-                                p: 2.5,
-                                bgcolor: theme.palette.success.light + '08',
-                                borderRadius: 2,
-                                border: `1px solid ${theme.palette.success.light}`,
-                                borderLeft: `4px solid ${theme.palette.success.main}`,
-                              }}
-                            >
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                            {/* AI 評論卡片 */}
+                            <Box>
                               <Typography
-                                variant="body1"
+                                variant="subtitle2"
+                                fontWeight="600"
+                                sx={{ mb: 1.5, color: 'text.primary' }}
+                              >
+                                AI 評分與建議
+                              </Typography>
+                              <Paper
+                                elevation={0}
                                 sx={{
-                                  lineHeight: 1,
-                                  color: theme.palette.text.primary
+                                  p: 2.5,
+                                  bgcolor: alpha(theme.palette.success.main, 0.04),
+                                  borderRadius: 2,
+                                  border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                                  borderLeft: `4px solid ${theme.palette.success.main}`,
+                                  display: 'flex',
+                                  alignItems: 'center',
                                 }}
                               >
-                                {item.ai_comments}
+                                <Box
+                                  sx={{
+                                    minWidth: 60,
+                                    height: 60,
+                                    borderRadius: '50%',
+                                    bgcolor: '#4caf50',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '1.5rem',
+                                    fontWeight: 700,
+                                    color: 'white',
+                                    mr: 3
+                                  }}
+                                >
+                                  {item.ai_score || '-'}
+                                </Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    lineHeight: 1.7,
+                                    color: 'text.primary',
+                                    whiteSpace: 'pre-wrap'
+                                  }}
+                                >
+                                  {item.ai_comments || '無評論'}
+                                </Typography>
+                              </Paper>
+                            </Box>
+                          </Box>
+
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2.5 }}>
+                            <Box>
+                              <Typography
+                                variant="subtitle2"
+                                fontWeight="600"
+                                sx={{ mb: 1.5, color: 'text.primary', display: 'flex', alignItems: 'center' }}
+                              >
+                                人工評分與建議
+                                <Edit
+                                  fontSize="small"
+                                  sx={{
+                                    ml: 2,
+                                    cursor: 'pointer',
+                                    color: 'text.secondary',
+                                    transition: 'all 0.2s',
+                                    ":hover": {
+                                      color: theme.palette.primary.main,
+                                      transform: 'scale(1.1)'
+                                    }
+                                  }}
+                                  onClick={() => {
+                                    setQuesId(item.question);
+                                    setEditScore(item.human_score);
+                                    setEditComment(item.human_comments);
+                                    setIsEdit(true);
+                                  }}
+                                />
                               </Typography>
-                            </Paper>
+                              <Paper
+                                elevation={0}
+                                sx={{
+                                  p: 2.5,
+                                  bgcolor: alpha(theme.palette.warning.main, 0.04),
+                                  borderRadius: 2,
+                                  border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+                                  borderLeft: `4px solid ${theme.palette.warning.main}`,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    minWidth: 60,
+                                    height: 60,
+                                    borderRadius: '50%',
+                                    bgcolor: theme.palette.warning.main,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '1.5rem',
+                                    fontWeight: 700,
+                                    color: 'white',
+                                    mr: 3
+                                  }}
+                                >
+                                  {item.human_score || '-'}
+                                </Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    lineHeight: 1.7,
+                                    color: 'text.primary',
+                                    whiteSpace: 'pre-wrap'
+                                  }}
+                                >
+                                  {item.human_comments || '尚未評分'}
+                                </Typography>
+                              </Paper>
+                            </Box>
                           </Box>
                         </Card>
                       ))}
