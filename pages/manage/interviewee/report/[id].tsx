@@ -28,6 +28,10 @@ import {
   TextField,
   Alert,
   Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   Analytics,
@@ -46,6 +50,7 @@ import {
   Phone,
   Email,
   Work,
+  Edit,
 } from "@mui/icons-material";
 import CircleProgress from "@/components/common/manage/CircleProgress";
 import Layout from "@/components/Layout/ManageLayout";
@@ -59,7 +64,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import InterviewAPI from "@/lib/api/InterviewAPI";
 import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
-import { useForm } from "react-hook-form";
+import Swal from "sweetalert2";
 
 export default function IntervieweeDetail() {
   const router = useRouter();
@@ -74,6 +79,9 @@ export default function IntervieweeDetail() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const aiReportRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isInterviewing, setIsInterviewing] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [quesId, setQuesId] = useState(0);
 
   const [intervieweeData, setIntervieweeData] = useState({
     name: '',
@@ -169,6 +177,8 @@ export default function IntervieweeDetail() {
           teamwork: '具有良好的溝通協調能力，能與團隊成員有效配合。',
         }
       });
+
+      setIsInterviewing((data.interview_result === "尚未面試") ? false : true);
     } catch (error) {
       console.error('獲取數據失敗:', error);
       setSnackbar({ open: true, message: '獲取數據失敗', severity: 'error' });
@@ -199,6 +209,29 @@ export default function IntervieweeDetail() {
 
   const handleTabChange = (event: any, newValue: any) => {
     setTabValue(newValue);
+  };
+
+  const [editScore, setEditScore] = useState(intervieweeData.scores.overall);
+  const [editComment, setEditComment] = useState(intervieweeData.comments.overall);
+
+  const handleSave = async () => {
+    try {
+      await InterviewAPI.updateScore(Number(id), quesId, {human_score: editScore, human_comments: editComment});
+      Swal.fire({
+        icon: 'success',
+        title: '更新成功',
+        showConfirmButton: false,
+        timer: 1500
+      });
+      setIsEdit(false);
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: 'error',
+        title: '更新失敗',
+        text: '請稍後再試'
+      });
+    }
   };
 
   const handleExportAIReport = async () => {
@@ -268,6 +301,7 @@ export default function IntervieweeDetail() {
     setInterviewTime(null);
     setRejectionReason('');
   };
+
 
   return (
     <Layout>
@@ -389,20 +423,6 @@ export default function IntervieweeDetail() {
                         </Typography>
                       </Box>
                     </Stack>
-
-                    {/* <Button
-                      variant="outlined"
-                      fullWidth
-                      href={intervieweeData.resumeUrl}
-                      target="_blank"
-                      startIcon={<Description />}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: "none",
-                      }}
-                    >
-                      查看履歷
-                    </Button> */}
                   </Box>
                 </Grid>
 
@@ -461,7 +481,7 @@ export default function IntervieweeDetail() {
             </CardContent>
           </Card>
 
-          {(intervieweeData.interview_result !== "尚未面試") ? (
+          {isInterviewing ? (
             <>
               {/* AI 面試分析報告 */}
               <div ref={aiReportRef}>
@@ -524,24 +544,20 @@ export default function IntervieweeDetail() {
                             }}
                           >
                             <CircleProgress
-                              score={intervieweeData.scores.overall}
+                              score={isEdit ? editScore : intervieweeData.scores.overall}
                               label="總體評分"
                               color={theme.palette.primary.main}
                               size={160}
                             />
                           </Box>
+
                           <Box sx={{ flex: 1 }}>
-                            <Typography
-                              variant="h6"
-                              sx={{ mb: 2, fontWeight: 'medium' }}
-                            >
+                            <Typography variant="h6" sx={{ mb: 2, fontWeight: "medium" }}>
                               總體評價
                             </Typography>
-                            <Typography
-                              variant="body1"
-                              sx={{ lineHeight: 1.6 }}
-                            >
-                              {intervieweeData.comments.overall || '該應徵者在面試中表現良好，展現出積極的態度和良好的溝通能力。技術能力符合職位要求，具備團隊合作精神。建議進入下一輪面試。'}
+
+                            <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+                              {intervieweeData.comments.overall}
                             </Typography>
                           </Box>
                         </Box>
@@ -699,6 +715,47 @@ export default function IntervieweeDetail() {
                             </Typography>
                           </Box>
 
+                          <Box>
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="600"
+                              sx={{
+                                mb: 1.5,
+                                color: theme.palette.text.primary,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                              }}
+                            >
+                              <Check sx={{ color: theme.palette.success.main }} />
+                              AI評分：
+                              {item.ai_score}
+                            </Typography>
+                          </Box>
+
+                          <Box sx={{ mb: 3 }}>
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="600"
+                              sx={{
+                                mb: 1.5,
+                                color: theme.palette.text.primary,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                              }}
+                            >
+                              <Check sx={{ color: theme.palette.success.main }} />
+                              人工評分：
+                              {item.human_score || '尚未評分'}
+                              <Edit
+                                fontSize="small"
+                                sx={{ ml: 1, cursor: 'pointer' }}
+                                onClick={() => { setIsEdit(true); setEditScore(item.human_score || 0); setEditComment(item.human_comments || ''); setQuesId(item.question) }}
+                              />
+                            </Typography>
+                          </Box>
+
                           {/* 面試者回答 */}
                           <Box sx={{ mb: 3 }}>
                             <Typography
@@ -774,6 +831,35 @@ export default function IntervieweeDetail() {
                           </Box>
                         </Card>
                       ))}
+                      {isEdit && (
+                        <Dialog open={isEdit} onClose={() => setIsEdit(false)}>
+                          <DialogTitle>編輯人工評分</DialogTitle>
+                          <DialogContent>
+                            <TextField
+                              label="分數"
+                              type="number"
+                              value={editScore ?? ''}
+                              onChange={(e) => setEditScore(Number(e.target.value))}
+                              fullWidth
+                              sx={{ mt: 2 }}
+                            />
+                            <TextField
+                              label="評論"
+                              multiline
+                              rows={4}
+                              value={editComment}
+                              onChange={(e) => setEditComment(e.target.value)}
+                              fullWidth
+                              sx={{ mt: 2 }}
+                            />
+                          </DialogContent>
+                          <DialogActions>
+                            <Button onClick={() => setIsEdit(false)}>取消</Button>
+                            <Button variant="contained" onClick={handleSave}>儲存</Button>
+                          </DialogActions>
+                        </Dialog>
+                      )}
+
 
                       {/* 展開按鈕 */}
                       {answerList.length > 1 && (

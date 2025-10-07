@@ -61,7 +61,7 @@ const InfoSection = styled(Box)(({ theme }) => ({
 const InfoGrid = styled(Grid)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   display: "grid",
-  gridTemplateColumns: "1fr 1fr",
+  gridTemplateColumns: "1fr 1fr 1fr",
   gap: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
     gridTemplateColumns: "1fr",
@@ -352,9 +352,7 @@ export default function ProfilePage() {
                     </Typography>
                   )}
                 </Grid>
-              </InfoGrid>
 
-              <InfoGrid container>
                 <Grid>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     <PhoneIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
@@ -372,26 +370,6 @@ export default function ProfilePage() {
                   ) : (
                     <Typography variant="body1" sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
                       {profile.phone_number}
-                    </Typography>
-                  )}
-                </Grid>
-                <Grid>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    <LocationIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
-                    地址
-                  </Typography>
-                  {isEditing ? (
-                    <TextField
-                      fullWidth
-                      value={editProfile.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
-                      placeholder="請輸入地址"
-                      variant="outlined"
-                      size="small"
-                    />
-                  ) : (
-                    <Typography variant="body1" sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                      {profile.location}
                     </Typography>
                   )}
                 </Grid>

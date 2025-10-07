@@ -32,7 +32,6 @@ import { NonRecordingUI } from "@/components/common/user/NonRecordingUI";
 import VideoRecorder, {
   VideoRecorderRef,
 } from "@/components/common/user/VideoRecorder";
-import QuestionAPI from "@/lib/api/QuestionAPI";
 import QuestionTempAPI from "@/lib/api/QuestionTempAPI";
 import AnalyzeAPI from "@/lib/api/AnalyzeAPI";
 import CountdownTimer from "@/lib/hook/countdownTimer";
@@ -63,30 +62,33 @@ export default function Interview() {
   const [isPreparing, setIsPreparing] = useState(false);
   const [questionNo, setQuestionNo] = useState(1);
   const [canSkip, setCanSkip] = useState<boolean>(false);
-  const interviewId = sessionStorage.getItem('interview_id');
+  const [companyName, setCompanyName] = useState('');
+  const [openingName, setOpeningName] = useState('');
 
   const recorderRef = useRef<VideoRecorderRef>(null);
 
-  const fetchQuestion = async () => {
+  const fetchQuestion = async (id: string) => {
     try {
-      const response = await QuestionTempAPI.getNextQuestion(Number(interviewId));
+      const response = await QuestionTempAPI.getNextQuestion(Number(id));
       if (response?.data && response.data as Question) {
         const questionData = response.data as Question;
         setQuestion(questionData);
+      } else {
+        Swal.fire({
+          title: "面試結束",
+          text: "所有問題已完成，感謝您的參與！",
+          icon: "success",
+          confirmButtonText: "確定"
+        }).then(() => router.push('/user'))
       }
     } catch (error) {
-      sessionStorage.removeItem('interview_id');
-      Swal.fire({
-        title: "面試結束",
-        text: "所有問題已完成，感謝您的參與！",
-        icon: "success",
-        confirmButtonText: "確定"
-      }).then(() => router.push('/user'))
     }
   };
 
   useEffect(() => {
-    fetchQuestion();
+    fetchQuestion(sessionStorage.getItem('interview_id') || '');
+    setCompanyName(sessionStorage.getItem('company_name') || '');
+    setOpeningName(sessionStorage.getItem('opening_name') || '');
   }, []);
 
   const finishAnswer = async () => {
@@ -205,10 +207,10 @@ export default function Interview() {
 
       <Box className={styles.header}>
         <Typography variant="h4" className={styles.title}>
-          面試公司: 科技未來有限公司
+          面試公司: {companyName}
         </Typography>
         <Typography variant="subtitle1" className={styles.subtitle}>
-          面試職位: 資深前端工程師
+          面試職位: {openingName}
         </Typography>
       </Box>
 

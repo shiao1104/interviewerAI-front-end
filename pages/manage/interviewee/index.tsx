@@ -56,7 +56,7 @@ export default function Interviewee() {
           name: item.candidate_detail?.username || '',
           type: item.opening_detail?.opening_name || "-",
           company: item.opening_detail?.company_name,
-          interview_status: getInterviewStatus(item.interview_status, item.interview_datetime),
+          interview_status: item.interview_status,
           createDate: formatDate(item.interview_datetime),
           interview_result: item.interview_result,
           total_score: item.total_score,
@@ -78,24 +78,6 @@ export default function Interviewee() {
       month: '2-digit',
       day: '2-digit'
     });
-  };
-
-  const getInterviewStatus = (status: any, datetime: string | number | Date) => {
-    const now = new Date();
-    const interviewDate = new Date(datetime);
-
-    switch (status) {
-      case "已完成":
-        return "已完成";
-      case "已排定":
-        if (interviewDate < now) {
-          return "未到場";
-        } else {
-          return `預計 ${formatDate(datetime)}`;
-        }
-      default:
-        return "待安排";
-    }
   };
 
   const filterData = (params: SearchType | undefined) => {

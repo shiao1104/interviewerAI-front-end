@@ -20,6 +20,9 @@ const InterviewAPI = {
   getAnswers: (interview_id?: number): Promise<Response<QuestionsTypes[]>> =>
     API.get(`/interview/answers/${interview_id}/`),
 
+  updateScore: (interview_id: number, question_id: number, data: { human_score: number, human_comments: string }): Promise<Response<never>> =>
+    API.patch(`/interview/answers/update/${interview_id}/${question_id}/`, data),
+
   create: (data: IntervieweeTypes): Promise<Response<never>> =>
     API.post(`${BASE_URL}/`, data),
 

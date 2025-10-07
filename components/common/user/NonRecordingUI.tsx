@@ -52,7 +52,7 @@ export const NonRecordingUI: React.FC<NonRecordingUIProps> = ({
             <>
               <VideocamOff className={styles.statusIcon} />
               <Typography variant="body2">
-                需要攝像頭權限
+                需要鏡頭權限
               </Typography>
             </>
           )}

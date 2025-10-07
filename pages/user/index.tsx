@@ -83,6 +83,9 @@ export default function InterviewerDashboard() {
   };
 
   useEffect(() => {
+    sessionStorage.removeItem('interview_id');
+    sessionStorage.removeItem('opening_name');
+    sessionStorage.removeItem('company_name');
     setAnimateIn(true);
     (async () => {
       try {
@@ -123,6 +126,8 @@ export default function InterviewerDashboard() {
 
   const handleStartInterview = () => {
     sessionStorage.setItem('interview_id', selectedInterview?.interview_id.toString() || '');
+    sessionStorage.setItem('opening_name', selectedInterview?.opening_name || '');
+    sessionStorage.setItem('company_name', selectedInterview?.company.company_name || '');
     router.push("/user/interview");
   };
 
@@ -256,61 +261,6 @@ export default function InterviewerDashboard() {
             </div>
           </div>
         </section>
-
-        {/* <Grid container spacing={3} className={styles.dashboardGrid}>
-          <Grid className={styles.gridItem}>
-            <section className={styles.section}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.sectionTitleWrapper}>
-                  <div className={styles.iconBackground}>
-                    <Person className={styles.sectionIcon} />
-                  </div>
-                  <Typography variant="h5" className={styles.sectionTitle}>
-                    面試準備工具
-                  </Typography>
-                </div>
-              </div>
-              <div className={styles.toolsGrid}>
-                <div className={styles.toolCard}>
-                  <div className={styles.toolIconContainer}>
-                    <Videocam className={styles.toolIcon} />
-                  </div>
-                  <Typography variant="h6">模擬面試練習</Typography>
-                  <Typography variant="body2">
-                    透過AI模擬真實面試，獲得實時反饋
-                  </Typography>
-                  <Button variant="outlined" className={styles.toolButton} component="a" href="/student-try/interview-home.html">
-                    開始練習
-                  </Button>
-                </div>
-                <div className={styles.toolCard}>
-                  <div className={styles.toolIconContainer}>
-                    <Description className={styles.toolIcon} />
-                  </div>
-                  <Typography variant="h6">履歷上傳與管理</Typography>
-                  <Typography variant="body2">
-                    管理您的多個履歷版本，根據職位量身定制
-                  </Typography>
-                  <Button variant="outlined" className={styles.toolButton}>
-                    管理履歷
-                  </Button>
-                </div>
-                <div className={styles.toolCard}>
-                  <div className={styles.toolIconContainer}>
-                    <Lightbulb className={styles.toolIcon} />
-                  </div>
-                  <Typography variant="h6">面試建議閱讀</Typography>
-                  <Typography variant="body2">
-                    閱讀行業專家提供的面試技巧與建議
-                  </Typography>
-                  <Button variant="outlined" className={styles.toolButton}>
-                    查看建議
-                  </Button>
-                </div>
-              </div>
-            </section>
-          </Grid>
-        </Grid> */}
       </div>
 
       {/* 使用單獨的關閉函數 */}

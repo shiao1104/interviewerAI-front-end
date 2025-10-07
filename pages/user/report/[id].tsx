@@ -385,11 +385,15 @@ export default function Report() {
               )}
 
               {tabValue === 1 && (
-                <Grid container spacing={3} sx={{ mt: 0 }}>
+                <Grid container sx={{
+                  mt: 0,
+                  display: "grid",
+                  templateColumns: "1fr",
+                  gap: 2
+                }}>
                   {scoreItems.map((item) => {
                     const key = item.key as keyof Pick<InterviewData, 'score_expression' | 'score_attitude' | 'score_technical' | 'score_collaboration'>;
                     const score = interviewData[key] || 0;
-                    const scaledScore = Math.round((score / 25) * 100);
 
                     return (
                       <Grid key={item.key}>
@@ -399,6 +403,7 @@ export default function Report() {
                             borderRadius: 2,
                             border: `1px solid ${customColors.borderLight}`,
                             boxShadow: "none",
+                            gap: 2,
                           }}
                         >
                           <Typography
@@ -429,12 +434,12 @@ export default function Report() {
                                 fontWeight="medium"
                                 color={customColors.text}
                               >
-                                {score}/25 ({scaledScore}/100)
+                                {score}/100
                               </Typography>
                             </Box>
                             <LinearProgress
                               variant="determinate"
-                              value={scaledScore}
+                              value={score}
                               sx={{
                                 mt: 0.5,
                                 height: 8,
@@ -452,7 +457,7 @@ export default function Report() {
                             color={customColors.textSecondary}
                             sx={{ mt: 2, lineHeight: 1.6 }}
                           >
-                            {generateScoreComment(scaledScore, item.key as ScoreType)}
+                            {generateScoreComment(score, item.key as ScoreType)}
                           </Typography>
                         </Card>
                       </Grid>

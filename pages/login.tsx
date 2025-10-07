@@ -130,19 +130,19 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               sessionStorage.setItem("user_role", "user");
               router.push("/user");
             }
+
+            toast.success("登入成功", {
+              position: "top-center",
+              autoClose: 1500,
+              hideProgressBar: true,
+              closeOnClick: false,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            });
           }
         } catch { }
-
-        toast.success("登入成功", {
-          position: "top-center",
-          autoClose: 1500,
-          hideProgressBar: true,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
       } else {
         toast.error("登入失敗：無法取得存取權杖", {
           position: "top-center",
