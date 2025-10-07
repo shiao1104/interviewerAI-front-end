@@ -124,6 +124,62 @@ export default function IntervieweeDetail() {
     },
   ];
 
+  const getCommentByScore = (score: number, type: string) => {
+    if (score <= 25) {
+      switch (type) {
+        case 'language':
+          return '面試表達不夠清晰，需要加強溝通能力，較難準確傳達想法。';
+        case 'attitude':
+          return '對工作熱忱和學習意願表現不足，較被動且缺乏主動性。';
+        case 'technical':
+          return '技術基礎較弱，對相關技術了解有限，需要大量培訓。';
+        case 'teamwork':
+          return '團隊合作意識薄弱，溝通協調能力需要提升。';
+        default:
+          return '';
+      }
+    } else if (score <= 50) {
+      switch (type) {
+        case 'language':
+          return '表達尚可但不夠流暢，邏輯性時有不足，可再加強。';
+        case 'attitude':
+          return '展現基本工作熱忱，但主動性和積極性有待提升。';
+        case 'technical':
+          return '具備基本技術知識，但深度和廣度都需要加強。';
+        case 'teamwork':
+          return '基本具備團隊合作意識，但溝通效果仍有改進空間。';
+        default:
+          return '';
+      }
+    } else if (score <= 75) {
+      switch (type) {
+        case 'language':
+          return '表達大致清晰流暢，能較好地傳達自己的想法。';
+        case 'attitude':
+          return '展現較好的學習態度和工作熱忱，具有一定主動性。';
+        case 'technical':
+          return '技術基礎紮實，對相關領域有不錯的理解。';
+        case 'teamwork':
+          return '展現良好的團隊合作精神，溝通協調能力不錯。';
+        default:
+          return '';
+      }
+    } else {
+      switch (type) {
+        case 'language':
+          return '表達非常清晰流暢，邏輯性強，能準確有效地傳達想法。';
+        case 'attitude':
+          return '展現高度積極性和主動性，對工作充滿熱忱，樂於接受挑戰。';
+        case 'technical':
+          return '技術能力優秀，知識面廣泛，具備獨立解決問題的能力。';
+        case 'teamwork':
+          return '極具團隊合作精神，溝通協調能力強，能有效促進團隊協作。';
+        default:
+          return '';
+      }
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -159,10 +215,10 @@ export default function IntervieweeDetail() {
         },
         comments: {
           overall: data.result_abstract || '',
-          language: '候選人在回答問題時表達清晰，邏輯性強，能夠準確傳達自己的想法。',
-          attitude: '展現出積極的學習態度和對工作的熱忱，願意接受挑戰。',
-          technical: '具備紮實的技術基礎，對新技術有一定的了解和學習能力。',
-          teamwork: '具有良好的溝通協調能力，能與團隊成員有效配合。',
+          language: getCommentByScore(data.score_expression || 0, 'language'),
+          attitude: getCommentByScore(data.score_attitude || 0, 'attitude'),
+          technical: getCommentByScore(data.score_technical || 0, 'technical'),
+          teamwork: getCommentByScore(data.score_collaboration || 0, 'teamwork'),
         }
       });
 
