@@ -1,3 +1,7 @@
+export interface ReportTypes {
+  answers: QuestionsTypes[];
+}
+
 export type QuestionsTypes = {
   question_type?: number;
   question?: string;

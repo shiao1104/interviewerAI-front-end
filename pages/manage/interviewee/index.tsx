@@ -44,29 +44,29 @@ export default function Interviewee() {
     }
   };
 
-  const fetchData = async () => {
-    try {
-      const response = await InterviewAPI.getData();
+    const fetchData = async () => {
+      try {
+        const response = await InterviewAPI.getData();
 
-      if (response.data && Array.isArray(response.data)) {
-        const transformedData = response.data.map((item: IntervieweeTypes) => ({
-          id: item.interview_id,
-          name: item.candidate_detail?.username || '',
-          type: item.opening_detail?.opening_name || "-",
-          company: item.opening_detail?.company_name,
-          interview_status: item.interview_status,
-          createDate: formatDate(item.interview_datetime),
-          interview_result: item.interview_result,
-          total_score: item.total_score,
-          originalData: item
-        }));
-        setIntervieweeData(transformedData);
+        if (response.data && Array.isArray(response.data)) {
+          const transformedData = response.data?.map((item: IntervieweeTypes) => ({
+            id: item.interview_id,
+            name: item.candidate_detail?.username || '',
+            type: item.opening_detail?.opening_name || "-",
+            company: item.opening_detail?.company_name,
+            interview_status: item.interview_status,
+            createDate: formatDate(item.interview_datetime),
+            interview_result: item.interview_result,
+            total_score: item.total_score,
+            originalData: item
+          }));
+          setIntervieweeData(transformedData);
+        }
+      } catch (err) {
+        console.error("獲取面試者資料失敗:", err);
+        toast.error("無法獲取面試者資料，請稍後再試。");
       }
-    } catch (err) {
-      console.error("獲取面試者資料失敗:", err);
-      toast.error("無法獲取面試者資料，請稍後再試。");
-    }
-  };
+    };
 
   const formatDate = (dateString: string | number | Date) => {
     if (!dateString) return "-";

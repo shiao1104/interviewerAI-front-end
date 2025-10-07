@@ -1,5 +1,5 @@
 import { IntervieweeTypes } from "../types/intervieweeTypes";
-import { QuestionsTypes } from "../types/questionsTypes";
+import { ReportTypes } from "../types/questionsTypes";
 import API from "./api";
 import { Response } from "@/lib/types/requestType";
 
@@ -17,8 +17,8 @@ const InterviewAPI = {
   getRecord: (interview_id?: number): Promise<Response<never>> =>
     API.get(`${BASE_URL}/${interview_id}/`),
 
-  getAnswers: (interview_id?: number): Promise<Response<QuestionsTypes[]>> =>
-    API.get(`/interview/answers/${interview_id}/`),
+  getAnswers: (interview_id?: number): Promise<Response<ReportTypes>> =>
+    API.get(`/interview/interviews/${interview_id}/report/`),
 
   updateScore: (interview_id: number, question_id: number, data: { human_score: number, human_comments: string }): Promise<Response<never>> =>
     API.patch(`/interview/answers/update/${interview_id}/${question_id}/`, data),

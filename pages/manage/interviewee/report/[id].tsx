@@ -235,7 +235,7 @@ export default function IntervieweeDetail() {
     try {
       setLoading(true);
       const response = await InterviewAPI.getAnswers(Number(id));
-      setAnswerList(response.data || []);
+      setAnswerList(response.data ? response.data.answers : []);
     } catch (error) {
       console.error('獲取答案失敗:', error);
       setSnackbar({ open: true, message: '獲取答案失敗', severity: 'error' });
@@ -284,21 +284,46 @@ export default function IntervieweeDetail() {
 
   const handleExportAIReport = async () => {
     if (!aiReportRef.current) return;
+    setIsExpanded(true);
 
     try {
+      // Wait for expansion animation to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const canvas = await html2canvas(aiReportRef.current, {
         scale: 2,
         useCORS: true,
       });
 
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // 第一頁
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // 如果內容超過一頁，添加新頁面
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
       pdf.save(`AI面試分析報告_${intervieweeData.name}.pdf`);
-
       setSnackbar({ open: true, message: 'PDF 導出成功', severity: 'success' });
     } catch (error) {
       console.error('導出PDF失敗:', error);
@@ -791,7 +816,6 @@ export default function IntervieweeDetail() {
                               <Typography
                                 variant="body1"
                                 sx={{
-                                  lineHeight: 1,
                                   color: theme.palette.text.primary
                                 }}
                               >
@@ -800,130 +824,135 @@ export default function IntervieweeDetail() {
                             </Paper>
                           </Box>
 
-                          {/* AI評論 */}
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                            {/* AI 評論卡片 */}
-                            <Box>
-                              <Typography
-                                variant="subtitle2"
-                                fontWeight="600"
-                                sx={{ mb: 1.5, color: 'text.primary' }}
-                              >
-                                AI 評分與建議
-                              </Typography>
-                              <Paper
-                                elevation={0}
-                                sx={{
-                                  p: 2.5,
-                                  bgcolor: alpha(theme.palette.success.main, 0.04),
-                                  borderRadius: 2,
-                                  border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-                                  borderLeft: `4px solid ${theme.palette.success.main}`,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    minWidth: 60,
-                                    height: 60,
-                                    borderRadius: '50%',
-                                    bgcolor: '#4caf50',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '1.5rem',
-                                    fontWeight: 700,
-                                    color: 'white',
-                                    mr: 3
-                                  }}
-                                >
-                                  {item.ai_score || '-'}
-                                </Box>
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    lineHeight: 1.7,
-                                    color: 'text.primary',
-                                    whiteSpace: 'pre-wrap'
-                                  }}
-                                >
-                                  {item.ai_comments || '無評論'}
-                                </Typography>
-                              </Paper>
-                            </Box>
-                          </Box>
+                          {item.answer_text && (
+                            <>
 
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2.5 }}>
-                            <Box>
-                              <Typography
-                                variant="subtitle2"
-                                fontWeight="600"
-                                sx={{ mb: 1.5, color: 'text.primary', display: 'flex', alignItems: 'center' }}
-                              >
-                                人工評分與建議
-                                <Edit
-                                  fontSize="small"
-                                  sx={{
-                                    ml: 2,
-                                    cursor: 'pointer',
-                                    color: 'text.secondary',
-                                    transition: 'all 0.2s',
-                                    ":hover": {
-                                      color: theme.palette.primary.main,
-                                      transform: 'scale(1.1)'
-                                    }
-                                  }}
-                                  onClick={() => {
-                                    setQuesId(item.question);
-                                    setEditScore(item.human_score);
-                                    setEditComment(item.human_comments);
-                                    setIsEdit(true);
-                                  }}
-                                />
-                              </Typography>
-                              <Paper
-                                elevation={0}
-                                sx={{
-                                  p: 2.5,
-                                  bgcolor: alpha(theme.palette.warning.main, 0.04),
-                                  borderRadius: 2,
-                                  border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
-                                  borderLeft: `4px solid ${theme.palette.warning.main}`,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    minWidth: 60,
-                                    height: 60,
-                                    borderRadius: '50%',
-                                    bgcolor: theme.palette.warning.main,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '1.5rem',
-                                    fontWeight: 700,
-                                    color: 'white',
-                                    mr: 3
-                                  }}
-                                >
-                                  {item.human_score || '-'}
+                              {/* AI評論 */}
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                                {/* AI 評論卡片 */}
+                                <Box>
+                                  <Typography
+                                    variant="subtitle2"
+                                    fontWeight="600"
+                                    sx={{ mb: 1.5, color: 'text.primary' }}
+                                  >
+                                    AI 評分與建議
+                                  </Typography>
+                                  <Paper
+                                    elevation={0}
+                                    sx={{
+                                      p: 2.5,
+                                      bgcolor: alpha(theme.palette.success.main, 0.04),
+                                      borderRadius: 2,
+                                      border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                                      borderLeft: `4px solid ${theme.palette.success.main}`,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                    }}
+                                  >
+                                    <Box
+                                      sx={{
+                                        minWidth: 60,
+                                        height: 60,
+                                        borderRadius: '50%',
+                                        bgcolor: '#4caf50',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '1.5rem',
+                                        fontWeight: 700,
+                                        color: 'white',
+                                        mr: 3
+                                      }}
+                                    >
+                                      {item.ai_score || '-'}
+                                    </Box>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{
+                                        lineHeight: 1.7,
+                                        color: 'text.primary',
+                                        whiteSpace: 'pre-wrap'
+                                      }}
+                                    >
+                                      {item.ai_comments || '無評論'}
+                                    </Typography>
+                                  </Paper>
                                 </Box>
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    lineHeight: 1.7,
-                                    color: 'text.primary',
-                                    whiteSpace: 'pre-wrap'
-                                  }}
-                                >
-                                  {item.human_comments || '尚未評分'}
-                                </Typography>
-                              </Paper>
-                            </Box>
-                          </Box>
+                              </Box>
+
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2.5 }}>
+                                <Box>
+                                  <Typography
+                                    variant="subtitle2"
+                                    fontWeight="600"
+                                    sx={{ mb: 1.5, color: 'text.primary', display: 'flex', alignItems: 'center' }}
+                                  >
+                                    人工評分與建議
+                                    <Edit
+                                      fontSize="small"
+                                      sx={{
+                                        ml: 2,
+                                        cursor: 'pointer',
+                                        color: 'text.secondary',
+                                        transition: 'all 0.2s',
+                                        ":hover": {
+                                          color: theme.palette.primary.main,
+                                          transform: 'scale(1.1)'
+                                        }
+                                      }}
+                                      onClick={() => {
+                                        setQuesId(item.question);
+                                        setEditScore(item.human_score);
+                                        setEditComment(item.human_comments);
+                                        setIsEdit(true);
+                                      }}
+                                    />
+                                  </Typography>
+                                  <Paper
+                                    elevation={0}
+                                    sx={{
+                                      p: 2.5,
+                                      bgcolor: alpha(theme.palette.warning.main, 0.04),
+                                      borderRadius: 2,
+                                      border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+                                      borderLeft: `4px solid ${theme.palette.warning.main}`,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                    }}
+                                  >
+                                    <Box
+                                      sx={{
+                                        minWidth: 60,
+                                        height: 60,
+                                        borderRadius: '50%',
+                                        bgcolor: theme.palette.warning.main,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '1.5rem',
+                                        fontWeight: 700,
+                                        color: 'white',
+                                        mr: 3
+                                      }}
+                                    >
+                                      {item.human_score || '-'}
+                                    </Box>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{
+                                        lineHeight: 1.7,
+                                        color: 'text.primary',
+                                        whiteSpace: 'pre-wrap'
+                                      }}
+                                    >
+                                      {item.human_comments || '尚未評分'}
+                                    </Typography>
+                                  </Paper>
+                                </Box>
+                              </Box>
+                            </>
+                          )}
                         </Card>
                       ))}
                       {isEdit && (
