@@ -10,6 +10,7 @@ import {
   Switch,
   TextField,
   Typography,
+  FormHelperText,
 } from "@mui/material";
 import Textarea from "@mui/joy/Textarea";
 import FileUploadField from "../FileUploadField";
@@ -23,9 +24,15 @@ export default function InputField({
   dropdownData,
   formProps,
   textClassName,
+  rules,
 }: InputFieldTypes) {
-  const { register, control } = formProps;
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = formProps;
   const today = new Date().toISOString().split("T")[0];
+  const error = errors[name];
 
   const renderField = () => {
     switch (type) {
@@ -37,11 +44,17 @@ export default function InputField({
         return (
           <Box>
             <Typography className={textClassName} variant="subtitle1">
+              {rules?.required && (
+                <Typography component="span" color="error" fontSize="0.75rem">
+                  *{" "}
+                </Typography>
+              )}
               {label}
             </Typography>
             <TextField
               fullWidth
-              required
+              error={!!error}
+              helperText={error?.message as string}
               placeholder={placeholder ? placeholder : label}
               type={type}
               sx={{
@@ -50,7 +63,7 @@ export default function InputField({
                   padding: "10px 14px",
                 },
               }}
-              {...register(name)}
+              {...register(name, rules)}
             />
           </Box>
         );
@@ -80,53 +93,62 @@ export default function InputField({
         return (
           <Box>
             <Typography className={textClassName} variant="subtitle1">
+              {rules?.required && (
+                <Typography component="span" color="error" fontSize="0.75rem">
+                  *{" "}
+                </Typography>
+              )}
               {label}
             </Typography>
             <Controller
               name={name}
               control={control}
               defaultValue=""
-              render={({ field }) => (
-                <TextField
-                  select
-                  fullWidth
-                  required
-                  value={field.value}
-                  onChange={field.onChange}
-                  SelectProps={{
-                    displayEmpty: true,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    renderValue: (selected: any) => {
-                      if (selected === "") {
-                        return (
-                          <em style={{ color: "#757575" }}>
-                            {placeholder || label}
-                          </em>
+              rules={rules}
+              render={({ field, fieldState: { error } }) => (
+                <FormControl fullWidth error={!!error}>
+                  <TextField
+                    select
+                    fullWidth
+                    error={!!error}
+                    value={field.value}
+                    onChange={field.onChange}
+                    SelectProps={{
+                      displayEmpty: true,
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      renderValue: (selected: any) => {
+                        if (selected === "") {
+                          return (
+                            <em style={{ color: "#757575" }}>
+                              {placeholder || label}
+                            </em>
+                          );
+                        }
+                        const matched = dropdownData?.find(
+                          (item) => item.key === selected
                         );
-                      }
-                      const matched = dropdownData?.find(
-                        (item) => item.key === selected
-                      );
-                      return matched ? matched.value : selected;
-                    },
-                  }}
-                  sx={{
-                    minWidth: "150px",
-                    borderRadius: "5px",
-                    "& .MuiOutlinedInput-input": {
-                      padding: "10px 14px",
-                    },
-                  }}
-                >
-                  <MenuItem disabled value="">
-                    <em>{placeholder || label}</em>
-                  </MenuItem>
-                  {dropdownData?.map((option) => (
-                    <MenuItem key={option.key} value={option.key}>
-                      {option.value}
+                        return matched ? matched.value : selected;
+                      },
+                    }}
+                    sx={{
+                      minWidth: "150px",
+                      borderRadius: "5px",
+                      "& .MuiOutlinedInput-input": {
+                        padding: "10px 14px",
+                      },
+                    }}
+                  >
+                    <MenuItem disabled value="">
+                      <em>{placeholder || label}</em>
                     </MenuItem>
-                  ))}
-                </TextField>
+                    {dropdownData?.map((option) => (
+                      <MenuItem key={option.key} value={option.key}>
+                        {option.value}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  {error && <FormHelperText>{error.message}</FormHelperText>}
+                </FormControl>
               )}
             />
           </Box>
@@ -148,14 +170,23 @@ export default function InputField({
         return (
           <Box>
             <Typography className={textClassName} variant="subtitle1">
+              {rules?.required && (
+                <Typography component="span" color="error" fontSize="0.75rem">
+                  *{" "}
+                </Typography>
+              )}
               {label}
             </Typography>
             <Textarea
               fullWidth
               minRows={3}
-              {...register(name)}
+              error={!!error}
+              {...register(name, rules)}
               placeholder={placeholder ? placeholder : label}
             />
+            {error && (
+              <FormHelperText error>{error.message as string}</FormHelperText>
+            )}
           </Box>
         );
       case "multiselect":

@@ -18,6 +18,12 @@ import {
   Typography,
   IconButton,
   Paper,
+  Chip,
+  MenuItem,
+  OutlinedInput,
+  Select,
+  SelectChangeEvent,
+  useTheme,
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -27,6 +33,7 @@ import { toast } from "react-toastify";
 
 export default function Create() {
   const router = useRouter();
+  const [openingList, setOpeningList] = useState<DropdownTypes[]>([]);
   const [dropdownOptions, setDropdownOptions] = useState<{
     opening_jobs: DropdownTypes[];
     question_type: DropdownTypes[];
@@ -38,12 +45,38 @@ export default function Create() {
     defaultValues: {
       questions: [{}],
     },
+    mode: "onBlur",
   });
 
   const { fields, append, remove } = useFieldArray({
     control: formProps.control,
     name: "questions",
   });
+
+  const [selectedOpenings, setSelectedOpenings] = useState<{ [key: number]: string[] }>({});
+
+  const handleOpeningsChange = (questionIndex: number) => (event: SelectChangeEvent<string[]>) => {
+    const {
+      target: { value },
+    } = event;
+    const newValue = typeof value === 'string' ? value.split(',') : value;
+    setSelectedOpenings(prev => ({
+      ...prev,
+      [questionIndex]: newValue
+    }));
+
+    formProps.setValue(`questions.${questionIndex}.opening_id`, newValue);
+  };
+
+  const fetchOpeningJobs = async () => {
+    try {
+      const response = await QuestionAPI.getOpeningJobs();
+      setOpeningList(response.data || []);
+
+    } catch (error) {
+      toast.error("無法取得職缺列表，請稍後再試");
+    }
+  };
 
   useEffect(() => {
     const fetch = async () => {
@@ -57,16 +90,28 @@ export default function Create() {
       });
     };
     fetch();
+    fetchOpeningJobs();
   }, []);
 
   const handleSubmit = async () => {
-    const { questions } = formProps.getValues();
-    if (questions.length === 0) {
-      toast.error("請至少新增一個問題");
-      return;
-    }
-
     try {
+      const result = await formProps.trigger();
+      if (!result) {
+        toast.error("請填寫所有必填欄位");
+        return;
+      }
+
+      const { questions } = formProps.getValues();
+      // 檢查每個問題的適用職缺是否已選擇
+      const hasEmptyOpenings = questions.some(
+        (q, index) => !selectedOpenings[index]?.length
+      );
+
+      if (hasEmptyOpenings) {
+        toast.error("請為每個問題選擇適用職缺");
+        return;
+      }
+
       await QuestionAPI.create(questions);
       toast.success("問題新增成功");
       router.push("/manage/questions");
@@ -172,6 +217,7 @@ export default function Create() {
                       ] || item.dropdownData
                     }
                     formProps={formProps}
+                    rules={{ required: true }}
                   />
                 </Grid>
               ))}
@@ -186,9 +232,55 @@ export default function Create() {
                   placeholder={item.placeholder}
                   dropdownData={item.dropdownData}
                   formProps={formProps}
+                  rules={{ required: true }}
                 />
               </Grid>
             ))}
+
+            <Grid sx={{ mt: 2 }}>
+              <Typography variant="subtitle1">
+                <Typography component="span" color="error" fontSize="0.75rem">
+                  *{" "}
+                </Typography>
+                適用職缺
+              </Typography>
+              <Select
+                fullWidth
+                multiple
+                sx={{
+                  borderRadius: "5px",
+                  "& .MuiOutlinedInput-input": {
+                    padding: "10px 14px",
+                  },
+                }}
+                value={selectedOpenings[questionIndex] || []}
+                onChange={handleOpeningsChange(questionIndex)}
+                input={<OutlinedInput />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip
+                        key={value}
+                        label={openingList.find((item: { key: any }) => item.key === value)?.value || value}
+                      />
+                    ))}
+                  </Box>
+                )}
+                error={!selectedOpenings[questionIndex]?.length}
+              >
+                <MenuItem disabled value="">
+                  請選擇適用職缺
+                </MenuItem>
+                {openingList.map((name) => (
+                  <MenuItem
+                    key={name.key}
+                    value={name.key}
+                  >
+                    {name.value}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
           </Paper>
         ))}
 

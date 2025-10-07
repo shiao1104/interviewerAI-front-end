@@ -10,4 +10,20 @@ export type InputFieldTypes = {
     formProps?: any;
     textClassName?: string;
     optionsKey?: string;
+    rules?: {
+      required?: string | boolean;
+      minLength?: {
+        value: number;
+        message: string;
+      };
+      maxLength?: {
+        value: number;
+        message: string;
+      };
+      pattern?: {
+        value: RegExp;
+        message: string;
+      };
+      validate?: (value: any) => boolean | string;
+    };
   };

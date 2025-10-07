@@ -39,7 +39,8 @@ export default function Questions() {
         typeof item === "object" && item !== null
           ? {
             ...item,
-            question_type: item.question_type_detail?.question_type || ''
+            question_type: item.question_type_detail?.question_type || '',
+            created_time: item.created_time.split("Z")[0]
           }
           : {}
       );

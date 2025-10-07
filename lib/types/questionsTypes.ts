@@ -3,7 +3,7 @@ export type QuestionsTypes = {
   question?: string;
   time_allowed?: number;
   difficulty?: string;
-  opening_name?: string;
+  opening_id?: string[];
 };
 
 export type QuestionDataType = {
