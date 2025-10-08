@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout/ManageLayout";
 import CompanyAPI from "@/lib/api/CompanyAPI";
 import { companyInfo } from "@/lib/data/testData";
+import { useLoading } from "@/lib/hook/loading";
 import { CompanyTypes } from "@/lib/types/companyTypes";
 import { Business, Language, LocationOn, Edit, LocalPhone } from "@mui/icons-material";
 import {
@@ -16,20 +17,31 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function Home() {
   const router = useRouter();
+  const { showLoading, hideLoading } = useLoading();
   const [dataList, setDataList] = useState<CompanyTypes>();
   const [benefitList, setBenefitList] = useState<string[]>([]);
 
-  useEffect(() => {
-    const fetch = async () => {
+  const fetch = async () => {
+    showLoading();
+    
+    try {
+      // TODO: 這裡的 company_id 先寫死，之後要改成動態抓取
       const response = await CompanyAPI.getData(11);
       const data = response.data as unknown as CompanyTypes;
       setDataList(data);
       setBenefitList(data.company_benefits?.split('、') || []);
+    } catch (err) {
+      toast.error("無法獲取公司資訊，請稍後再試。");
+    } finally {
+      hideLoading();
     }
+  }
 
+  useEffect(() => {
     fetch();
   }, []);
 
@@ -77,7 +89,6 @@ export default function Home() {
             backgroundColor: "#fff",
           }}
         >
-          {/* 公司基本資訊 */}
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <Avatar
               src={companyInfo.logo}
@@ -98,7 +109,6 @@ export default function Home() {
 
           <Divider sx={{ my: 3 }} />
 
-          {/* 聯絡資訊區塊 */}
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
             基本聯絡資訊
           </Typography>
@@ -150,7 +160,6 @@ export default function Home() {
 
           <Divider sx={{ my: 3 }} />
 
-          {/* 公司簡介區塊 */}
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
             公司簡介
           </Typography>
@@ -160,7 +169,6 @@ export default function Home() {
 
           <Divider sx={{ my: 3 }} />
 
-          {/* 員工福利區塊 */}
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
             員工福利
           </Typography>
