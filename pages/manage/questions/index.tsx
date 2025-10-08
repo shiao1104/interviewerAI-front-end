@@ -20,15 +20,18 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { getDifficultyColor } from "@/lib/hook/getDifficultyColor";
+import { useLoading } from "@/lib/hook/loading";
 
 export default function Questions() {
   const router = useRouter();
   const formProps = useForm();
+  const { showLoading, hideLoading } = useLoading();
   const [searchParams, setSearchParams] = useState<SearchType>();
   const [dataList, setDataList] = useState<QuestionsTypes[]>([]);
   const [filteredDataList, setFilteredDataList] = useState<QuestionsTypes[]>([]);
 
   const fetchData = async () => {
+    showLoading();
     try {
       const response = await axios.all([
         QuestionAPI.getData(),
@@ -40,7 +43,7 @@ export default function Questions() {
           ? {
             ...item,
             question_type: item.question_type_detail?.question_type || '',
-            created_time: item.created_time.split("Z")[0]
+            created_time: item.created_time.split(" ")[0]
           }
           : {}
       );
@@ -49,6 +52,8 @@ export default function Questions() {
       setFilteredDataList(processedData || []);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "取得資料失敗，請稍後再試");
+    } finally {
+      hideLoading();
     }
   };
 
@@ -98,7 +103,7 @@ export default function Questions() {
   const columns = [
     { id: "question_type", label: "問題類型", sortable: true },
     { id: "question", label: "問題內容" },
-    { id: "time_allowed", label: "時間限制", sortable: true },
+    { id: "time_allowed", label: "時間限制(秒)", sortable: true },
     {
       id: "difficulty",
       label: "難度等級",
@@ -156,6 +161,7 @@ export default function Questions() {
   };
 
   const handleResetFilter = () => {
+    window.location.reload();
     formProps.reset();
     setSearchParams(undefined);
     setFilteredDataList(dataList);
@@ -224,6 +230,7 @@ export default function Questions() {
             borderRadius: 2,
             backgroundColor: "#f9f9f9",
             border: "1px solid #e0e0e0",
+            minWidth: '1100px',
           }}
         >
           <DataTable columns={columns} data={filteredDataList} />

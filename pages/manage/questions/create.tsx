@@ -23,7 +23,6 @@ import {
   OutlinedInput,
   Select,
   SelectChangeEvent,
-  useTheme,
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -78,32 +77,25 @@ export default function Create() {
     }
   };
 
+  const fetch = async () => {
+    const response = await axios.all([
+      QuestionAPI.getQuestionType(),
+      QuestionAPI.getOpeningJobs(),
+    ]);
+    setDropdownOptions({
+      opening_jobs: response[1].data || [],
+      question_type: response[0].data || [],
+    });
+  };
+
   useEffect(() => {
-    const fetch = async () => {
-      const response = await axios.all([
-        QuestionAPI.getQuestionType(),
-        QuestionAPI.getOpeningJobs(),
-      ]);
-      setDropdownOptions({
-        opening_jobs: response[1].data || [],
-        question_type: response[0].data || [],
-      });
-    };
     fetch();
     fetchOpeningJobs();
   }, []);
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data: { questions: QuestionsTypes[] }) => {
     try {
-      const result = await formProps.trigger();
-      if (!result) {
-        toast.error("請填寫所有必填欄位");
-        return;
-      }
-
-      const { questions } = formProps.getValues();
-      // 檢查每個問題的適用職缺是否已選擇
-      const hasEmptyOpenings = questions.some(
+      const hasEmptyOpenings = data.questions.some(
         (q, index) => !selectedOpenings[index]?.length
       );
 
@@ -112,13 +104,15 @@ export default function Create() {
         return;
       }
 
-      await QuestionAPI.create(questions);
+      await QuestionAPI.create(data.questions);
       toast.success("問題新增成功");
       router.push("/manage/questions");
     } catch (error) {
       toast.error("新增問題失敗，請稍後再試");
     }
   };
+
+  const handleSubmit = formProps.handleSubmit(onSubmit);
 
   const addNewQuestion = () => {
     append({});

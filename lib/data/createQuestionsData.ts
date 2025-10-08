@@ -16,7 +16,7 @@ export const createQuestionData: InputFieldTypes[] = [
     dropdownData: questionLevelData,
   },
   {
-    label: "回答時間上限",
+    label: "回答時間上限（秒）",
     name: "time_allowed",
     type: "number",
     placeholder: "請輸入回答時間上限（秒）",

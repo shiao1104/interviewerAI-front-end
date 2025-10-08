@@ -3,9 +3,9 @@ import Layout from "@/components/Layout/ManageLayout";
 import QuestionAPI from "@/lib/api/QuestionAPI";
 import { createQuestionData } from "@/lib/data/createQuestionsData";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
-import { QuestionDataType, QuestionsTypes } from "@/lib/types/questionsTypes";
+import { QuestionDataType, QuestionsTypes, ReportTypes } from "@/lib/types/questionsTypes";
 import { Edit as EditIcon, KeyboardBackspace, Save } from "@mui/icons-material";
-import { Box, Button, Grid, Typography, Paper, Divider } from "@mui/material";
+import { Box, Button, Grid, Typography, Paper, Divider, Chip, MenuItem, OutlinedInput, Select, SelectChangeEvent } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -22,39 +22,65 @@ export default function Edit() {
     company_id: [],
     question_type: [],
   });
-  const formProps = useForm<QuestionsTypes>();
+  const formProps = useForm<ReportTypes>();
   const { handleSubmit: handleFormSubmit, getValues } = formProps;
+  const [openingList, setOpeningList] = useState<DropdownTypes[]>([]);
+  const [selectedOpenings, setSelectedOpenings] = useState<{ [key: number]: string[] }>({});
+
+  const handleOpeningsChange = (questionIndex: number) => (event: SelectChangeEvent<string[]>) => {
+    const {
+      target: { value },
+    } = event;
+    const newValue = typeof value === 'string' ? value.split(',') : value;
+    // setSelectedOpenings(prev => ({
+    //   ...prev,
+    //   [questionIndex]: newValue
+    // }));
+
+    // formProps.setValue(`questions.opening_id`, newValue);
+  };
+
+  const fetchOpeningJobs = async () => {
+    try {
+      const response = await QuestionAPI.getOpeningJobs();
+      setOpeningList(response.data || []);
+
+    } catch (error) {
+      toast.error("無法取得職缺列表，請稍後再試");
+    }
+  };
+
+  const fetch = async () => {
+    try {
+      const response = await axios.all([
+        QuestionAPI.getRecord(id as unknown as number),
+        QuestionAPI.getOpeningJobs(),
+        QuestionAPI.getQuestionType(),
+      ]);
+
+      const questionData = response[0].data as unknown as QuestionsTypes;
+
+      formProps.reset({
+        question_type: questionData?.question_type,
+        question: questionData.question,
+        time_allowed: questionData.time_allowed,
+        difficulty: questionData.difficulty
+      });
+
+      setDropdownOptions({
+        company_id: response[1].data || [],
+        question_type: response[2].data || [],
+      });
+    } catch (error) {
+      console.error("載入資料失敗:", error);
+      toast.error("載入資料失敗");
+    }
+  };
 
   useEffect(() => {
     if (id) {
-      const fetch = async () => {
-        try {
-          const response = await axios.all([
-            QuestionAPI.getRecord(id as unknown as number),
-            QuestionAPI.getOpeningJobs(),
-            QuestionAPI.getQuestionType(),
-          ]);
-
-          const questionData = response[0].data as unknown as QuestionsTypes;
-
-          formProps.reset({
-            question_type: questionData?.question_type,
-            question: questionData.question,
-            time_allowed: questionData.time_allowed,
-            difficulty: questionData.difficulty
-          });
-
-          setDropdownOptions({
-            company_id: response[1].data || [],
-            question_type: response[2].data || [],
-          });
-        } catch (error) {
-          console.error("載入資料失敗:", error);
-          toast.error("載入資料失敗");
-        }
-      };
-
       fetch();
+      fetchOpeningJobs();
     }
   }, [id, formProps]);
 
@@ -70,7 +96,6 @@ export default function Edit() {
     }
   };
 
-  // 手動觸發表單提交的函數
   const handleManualSubmit = () => {
     const formData = getValues();
     onSubmit(formData as QuestionsTypes);
@@ -168,10 +193,50 @@ export default function Edit() {
             </Grid>
           ))}
 
-          {/* 隱藏的提交按鈕，用於鍵盤 Enter 提交 */}
-          <Button type="submit" sx={{ display: "none" }}>
-            Submit
-          </Button>
+          {/* <Grid sx={{ mt: 2 }}>
+            <Typography variant="subtitle1">
+              <Typography component="span" color="error" fontSize="0.75rem">
+                *{" "}
+              </Typography>
+              適用職缺
+            </Typography>
+            <Select
+              fullWidth
+              multiple
+              sx={{
+                borderRadius: "5px",
+                "& .MuiOutlinedInput-input": {
+                  padding: "10px 14px",
+                },
+              }}
+              value={selectedOpenings || []}
+              onChange={handleOpeningsChange()}
+              input={<OutlinedInput />}
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((value) => (
+                    <Chip
+                      key={value}
+                      label={openingList.find((item: { key: any }) => item.key === value)?.value || value}
+                    />
+                  ))}
+                </Box>
+              )}
+              error={!selectedOpenings?.length}
+            >
+              <MenuItem disabled value="">
+                請選擇適用職缺
+              </MenuItem>
+              {openingList.map((name) => (
+                <MenuItem
+                  key={name.key}
+                  value={name.key}
+                >
+                  {name.value}
+                </MenuItem>
+              ))}
+            </Select>
+          </Grid> */}
         </Paper>
       </Box>
     </Layout>
