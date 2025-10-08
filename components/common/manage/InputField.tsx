@@ -51,20 +51,23 @@ export default function InputField({
               )}
               {label}
             </Typography>
-            <TextField
-              fullWidth
-              error={!!error}
-              helperText={error?.message as string}
-              placeholder={placeholder ? placeholder : label}
-              type={type}
-              sx={{
-                borderRadius: "5px",
-                "& .MuiOutlinedInput-input": {
-                  padding: "10px 14px",
-                },
-              }}
-              {...register(name, rules)}
-            />
+            <FormControl fullWidth error={!!error}>
+              <TextField
+                required={rules?.required}
+                fullWidth
+                error={!!error}
+                helperText={error?.message as string}
+                placeholder={placeholder ? placeholder : label}
+                type={type}
+                sx={{
+                  borderRadius: "5px",
+                  "& .MuiOutlinedInput-input": {
+                    padding: "10px 14px",
+                  },
+                }}
+                {...register(name, rules)}
+              />
+            </FormControl>
           </Box>
         );
       case "date":
@@ -177,16 +180,18 @@ export default function InputField({
               )}
               {label}
             </Typography>
-            <Textarea
-              fullWidth
-              minRows={3}
-              error={!!error}
-              {...register(name, rules)}
-              placeholder={placeholder ? placeholder : label}
-            />
-            {error && (
-              <FormHelperText error>{error.message as string}</FormHelperText>
-            )}
+            <FormControl fullWidth error={!!error}>
+              <Textarea
+                fullWidth
+                minRows={3}
+                error={!!error}
+                {...register(name, rules)}
+                placeholder={placeholder ? placeholder : label}
+              />
+              {error && (
+                <FormHelperText error>{error.message as string}</FormHelperText>
+              )}
+            </FormControl>
           </Box>
         );
       case "multiselect":
