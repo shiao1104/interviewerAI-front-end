@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { ToastContainer } from "react-toastify";
 import { Authority } from "@/lib/hook/authority";
 import Swal from "sweetalert2";
+import { LoadingProvider } from "@/lib/hook/loading";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -49,13 +50,15 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [pathname, router]);
 
   return (
-    <SessionProvider>
-      <GoogleOAuthProvider
-        clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string}
-      >
-        <Component {...pageProps} />
-        <ToastContainer />
-      </GoogleOAuthProvider>
-    </SessionProvider>
+    <LoadingProvider>
+      <SessionProvider>
+        <GoogleOAuthProvider
+          clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string}
+        >
+          <Component {...pageProps} />
+          <ToastContainer />
+        </GoogleOAuthProvider>
+      </SessionProvider>
+    </LoadingProvider>
   );
 }
