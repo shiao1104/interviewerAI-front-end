@@ -9,7 +9,6 @@ import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import InterviewAPI from "@/lib/api/InterviewAPI";
 import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
-import { getDifficultyColor } from "@/lib/hook/getDifficultyColor";
 import InputField from "@/components/common/InputField";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
 import OpeningAPI from "@/lib/api/OpeningAPI";
@@ -56,7 +55,7 @@ export default function Interviewee() {
       const response = await InterviewAPI.getData();
 
       if (response.data && Array.isArray(response.data)) {
-        const transformedData = response.data?.map((item: IntervieweeTypes) => ({
+        const transformedData = response.data.map((item: IntervieweeTypes) => ({
           id: item.interview_id,
           name: item.candidate_detail?.username || '',
           type: item.opening_detail?.opening_name || "-",

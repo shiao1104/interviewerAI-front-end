@@ -17,7 +17,7 @@ const InterviewAPI = {
   getRecord: (interview_id?: number): Promise<Response<never>> =>
     API.get(`${BASE_URL}/${interview_id}/`),
 
-  getAnswers: (interview_id?: number): Promise<Response<ReportTypes>> =>
+  getRepert: (interview_id?: number): Promise<Response<ReportTypes>> =>
     API.get(`/interview/interviews/${interview_id}/report/`),
 
   updateScore: (interview_id: number, question_id: number, data: { human_score: number, human_comments: string }): Promise<Response<never>> =>

@@ -21,13 +21,12 @@ import {
   FormControl,
   RadioGroup,
   TextField,
-  Alert,
-  Snackbar,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   alpha,
+  Link,
 } from "@mui/material";
 import {
   Description,
@@ -36,7 +35,6 @@ import {
   DateRange,
   ExpandMore,
   KeyboardBackspace,
-  Check,
   Phone,
   Email,
   Work,
@@ -51,11 +49,11 @@ import { useRef } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import InterviewAPI from "@/lib/api/InterviewAPI";
-import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
 import Swal from "sweetalert2";
 import { useLoading } from "@/lib/hook/loading";
 import { toast } from "react-toastify";
 import { InfoTypes } from "@/lib/types/questionsTypes";
+import MediaAPI from "@/lib/api/MediaAPI";
 
 export default function IntervieweeDetail() {
   const router = useRouter();
@@ -67,7 +65,6 @@ export default function IntervieweeDetail() {
   const [interviewTime, setInterviewTime] = useState<Dayjs | null>(null);
   const [answerList, setAnswerList] = useState<any[]>([]);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const aiReportRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isInterviewing, setIsInterviewing] = useState(false);
@@ -163,7 +160,7 @@ export default function IntervieweeDetail() {
     showLoading();
 
     try {
-      const response = await InterviewAPI.getAnswers(Number(id));
+      const response = await InterviewAPI.getRepert(Number(id));
       setAnswerList(response.data ? response.data.answers : []);
       if (!response.data) return;
       const data = response.data.interview_info as InfoTypes;
@@ -211,9 +208,21 @@ export default function IntervieweeDetail() {
     }
   };
 
+  const fetchMedia = async () => {
+    showLoading();
+    try {
+      const response = await MediaAPI.getData();
+    } catch (error) {
+      toast.error("無法獲取媒體檔案，請稍後再試。");
+    } finally {
+      hideLoading();
+    }
+  };
+
   useEffect(() => {
     if (router.isReady && id) {
       fetchData();
+      fetchMedia();
     }
   }, [id]);
 
@@ -225,6 +234,8 @@ export default function IntervieweeDetail() {
   const [editComment, setEditComment] = useState(intervieweeData?.comments.overall);
 
   const handleSave = async () => {
+    showLoading();
+
     try {
       await InterviewAPI.updateScore(Number(id), quesId, { human_score: Number(editScore), human_comments: String(editComment) });
       await fetchData();
@@ -237,21 +248,22 @@ export default function IntervieweeDetail() {
       });
       setIsEdit(false);
     } catch (error) {
-      console.error(error);
       Swal.fire({
         icon: 'error',
         title: '更新失敗',
         text: '請稍後再試'
       });
+    } finally {
+      hideLoading();
     }
   };
 
   const handleExportAIReport = async () => {
+    showLoading();
     if (!aiReportRef.current) return;
     setIsExpanded(true);
 
     try {
-      // Wait for expansion animation to complete
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const canvas = await html2canvas(aiReportRef.current, {
@@ -275,11 +287,9 @@ export default function IntervieweeDetail() {
       let heightLeft = imgHeight;
       let position = 0;
 
-      // 第一頁
       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      // 如果內容超過一頁，添加新頁面
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
@@ -287,22 +297,29 @@ export default function IntervieweeDetail() {
         heightLeft -= pageHeight;
       }
 
-      pdf.save(`AI面試分析報告_${intervieweeData?.name}.pdf`);
-      setSnackbar({ open: true, message: 'PDF 導出成功', severity: 'success' });
+      pdf.save(`面試分析報告_${intervieweeData?.name}.pdf`);
+      Swal.fire({
+        icon: 'success',
+        title: 'PDF 導出成功',
+      })
     } catch (error) {
-      console.error('導出PDF失敗:', error);
-      setSnackbar({ open: true, message: 'PDF 導出失敗', severity: 'error' });
+      Swal.fire({
+        icon: 'error',
+        title: 'PDF 導出失敗',
+      })
+    } finally {
+      hideLoading();
     }
   };
 
   const handleSubmitResult = async () => {
     if (!passed) {
-      setSnackbar({ open: true, message: '請選擇面試結果', severity: 'error' });
+      toast.error('請選擇面試結果');
       return;
     }
 
     if (passed === '通過' && (!interviewTime)) {
-      setSnackbar({ open: true, message: '通過面試需要設定下次面試時間和方式', severity: 'error' });
+      toast.error('請選擇下一階段面試時間');
       return;
     }
 
@@ -320,14 +337,19 @@ export default function IntervieweeDetail() {
         });
       }
 
-      setSnackbar({
-        open: true,
-        message: `面試結果已${passed === '通過' ? '通過' : '未通過'}`,
-        severity: 'success'
+      Swal.fire({
+        icon: 'success',
+        title: '提交成功',
+        text: `面試結果已${passed === '通過' ? '通過' : '未通過'}`,
+        showConfirmButton: false,
       });
 
     } catch (error) {
-      setSnackbar({ open: true, message: '提交失敗', severity: 'error' });
+      Swal.fire({
+        icon: 'error',
+        title: '提交失敗',
+        text: '請稍後再試',
+      });
     } finally {
       hideLoading();
     }
@@ -343,7 +365,6 @@ export default function IntervieweeDetail() {
   return (
     <Layout>
       <Box sx={{ maxWidth: "1200px", margin: "0 auto", p: 3 }}>
-        {/* Header with back button */}
         <Button
           startIcon={<KeyboardBackspace />}
           onClick={() => router.push("/manage/interviewee")}
@@ -399,7 +420,6 @@ export default function IntervieweeDetail() {
                   gap: "1rem",
                 }}
               >
-                {/* 資訊區 - 左邊 */}
                 <Grid sx={{ display: "flex", alignItems: "center" }}>
                   <Box>
                     <Box sx={{ mb: 3 }}>
@@ -752,7 +772,6 @@ export default function IntervieweeDetail() {
                             </Typography>
                           </Box>
 
-                          {/* 面試者回答 */}
                           <Box sx={{ mb: 3 }}>
                             <Typography
                               variant="subtitle2"
@@ -766,6 +785,7 @@ export default function IntervieweeDetail() {
                               }}
                             >
                               面試者回答
+                              {item.video_file_path ? <Link target="_blank" href={`http://localhost:8000/media/uploads/${item.video_file_path}`}>影片回顧</Link> : ''}
                             </Typography>
                             <Paper
                               elevation={0}
@@ -1183,22 +1203,6 @@ export default function IntervieweeDetail() {
             </Grid>
           )}
         </Grid>
-
-        {/* Snackbar for notifications */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={3000}
-          onClose={() => setSnackbar({ open: false, message: '', severity: 'success' })}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <Alert
-            onClose={() => setSnackbar({ open: false, message: '', severity: 'success' })}
-            severity={snackbar.severity}
-            sx={{ width: '100%' }}
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
       </Box>
     </Layout>
   );

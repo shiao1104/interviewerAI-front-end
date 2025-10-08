@@ -12,9 +12,13 @@ export interface AnswerType {
   ai_comments: string;
   human_score: number;
   human_comments: string;
+  audio_file_path?: string;
+  video_file_path?: string;
 }
 
 export interface InfoTypes {
+  remark?: string;
+  interview_id: number;
   name: string;
   email: string;
   phone: string;
@@ -31,6 +35,7 @@ export interface InfoTypes {
   };
   opening_detail?: {
     opening_name: string;
+    company_name?: string;
   };
   interview_datetime?: string;
   total_score?: number;
@@ -53,7 +58,6 @@ export interface InfoTypes {
     technical: string;
     teamwork: string;
   };
-  s
 }
 
 export interface ReportTypes {
