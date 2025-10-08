@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout/ManageLayout";
 import { Typography, Box, Button, Grid, Divider, Switch } from "@mui/material";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { CreateNewFolder, KeyboardBackspace, Save } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import { intervieweeInput } from "@/lib/data/createIntervieweeData";
@@ -11,15 +11,17 @@ import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
 import { useEffect, useState } from "react";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
+import { useLoading } from "@/lib/hook/loading";
 
 export default function Edit() {
   const router = useRouter();
   const { id } = router.query;
+  const { showLoading, hideLoading } = useLoading();
   const formProps = useForm<IntervieweeTypes>();
 
   const contactFields = intervieweeInput.slice(0, 3);
-  const applicationFields = intervieweeInput.slice(3, 6);
-  const interviewFields = intervieweeInput.slice(6);
+  const applicationFields = intervieweeInput.slice(3, 5);
+  const interviewFields = intervieweeInput.slice(5);
   const interviewState = formProps.watch("interview_status");
   const [interviewStatus, setInterviewStatus] = useState<boolean>();
 
@@ -30,6 +32,8 @@ export default function Edit() {
   });
 
   const fetchData = async () => {
+    showLoading();
+
     try {
       const [openingListResponse, intervieweeResponse] = await Promise.all([
         OpeningAPI.getData(),
@@ -71,8 +75,9 @@ export default function Edit() {
         formProps.reset(formData);
       }
     } catch (error) {
-      console.error("獲取資料失敗:", error);
       toast.error("無法獲取資料，請稍後再試。");
+    } finally {
+      hideLoading();
     }
   };
 
@@ -83,11 +88,21 @@ export default function Edit() {
   }, [id]);
 
   const handleSubmit = async () => {
+    showLoading();
+
     try {
       const data = formProps.getValues();
 
-      const date = new Date(`${data.interview_date}T${data.interview_time}`);
-      data.interview_datetime = date.toISOString();
+      if (interviewStatus) {
+        if (!data.interview_date || !data.interview_time) {
+          toast.error("請填寫面試日期和時間");
+          hideLoading();
+          return;
+        }
+        const date = new Date(`${data.interview_date}T${data.interview_time}`);
+        data.interview_datetime = date.toISOString();
+
+      }
 
       delete data.interview_date;
       delete data.interview_time;
@@ -100,8 +115,9 @@ export default function Edit() {
       toast.success("面試者資料已更新成功！");
       router.push("/manage/interviewee");
     } catch (error) {
-      console.error("更新面試者資料失敗:", error);
       toast.error("無法更新面試者資料，請稍後再試。");
+    } finally {
+      hideLoading();
     }
   };
 

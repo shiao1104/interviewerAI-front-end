@@ -27,12 +27,6 @@ export const intervieweeInput: InputFieldTypes[] = [
     placeholder: "請輸入應徵職位",
     dropdownData: companyType,
   },
-  // {
-  //   label: "履歷上傳",
-  //   name: "resume",
-  //   type: "file",
-  //   placeholder: "請上傳履歷 (PDF 或 DOCX)",
-  // },
   {
     label: "備註",
     name: "remark",
@@ -43,7 +37,7 @@ export const intervieweeInput: InputFieldTypes[] = [
     label: "面試日期",
     name: "interview_date",
     type: "date",
-    placeholder: "請選擇面試日期",
+    placeholder: "請選擇面試日期"
   },
   {
     label: "面試時間",

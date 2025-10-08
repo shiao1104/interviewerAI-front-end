@@ -11,14 +11,15 @@ import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
 import { useEffect, useState } from "react";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
+import { useLoading } from "@/lib/hook/loading";
 
 export default function Create() {
   const router = useRouter();
   const formProps = useForm<IntervieweeTypes>();
-
+  const { showLoading, hideLoading } = useLoading();
   const contactFields = intervieweeInput.slice(0, 3);
-  const applicationFields = intervieweeInput.slice(3, 6);
-  const interviewFields = intervieweeInput.slice(6);
+  const applicationFields = intervieweeInput.slice(3, 5);
+  const interviewFields = intervieweeInput.slice(5);
   const interviewState = formProps.watch("interviewState", false);
   const [dropdownOptions, setDropdownOptions] = useState<{
     opening: DropdownTypes[];
@@ -27,6 +28,8 @@ export default function Create() {
   });
 
   const fetchData = async () => {
+    showLoading();
+    
     try {
       const response = await OpeningAPI.getData();
       const transformedOpenings = response.data?.map((item: any) => ({
@@ -34,12 +37,13 @@ export default function Create() {
         value: item.opening_name
       })) || [];
 
-      console.log("職缺資料:", transformedOpenings);
-
       setDropdownOptions({
         opening: transformedOpenings,
       });
     } catch (error) {
+      toast.error("無法載入職缺資料，請稍後再試。");
+    } finally {
+      hideLoading();
     }
   }
 
@@ -48,6 +52,7 @@ export default function Create() {
   }, []);
 
   const handleSubmit = async () => {
+    showLoading();
     const data = formProps.getValues();
 
     if (data.interviewState && data.interview_date && data.interview_time) {
@@ -60,6 +65,8 @@ export default function Create() {
       } catch (error) {
         toast.error("請檢查面試日期和時間格式");
         return;
+      } finally {
+        hideLoading();
       }
     }
 
@@ -70,6 +77,8 @@ export default function Create() {
     } catch (error) {
       console.error("儲存面試者資料失敗:", error);
       toast.error("無法儲存面試者資料，請稍後再試。");
+    } finally {
+      hideLoading();
     }
   };
 

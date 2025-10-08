@@ -14,10 +14,12 @@ import InputField from "@/components/common/InputField";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import { interviewStateData } from "@/lib/data/testData";
+import { useLoading } from "@/lib/hook/loading";
 
 export default function Interviewee() {
   const router = useRouter();
   const formProps = useForm();
+  const { showLoading, hideLoading } = useLoading();
   const [intervieweeData, setIntervieweeData] = useState([]);
   const [searchParams, setSearchParams] = useState<SearchType>();
   const [filteredIntervieweeData, setFilteredIntervieweeData] = useState([]);
@@ -28,6 +30,7 @@ export default function Interviewee() {
   });
 
   const fetchOpenings = async () => {
+    showLoading();
     try {
       const response = await OpeningAPI.getData();
       const openingList: any[] = response.data ?? [];
@@ -41,32 +44,37 @@ export default function Interviewee() {
       });
     } catch (err) {
       toast.error("無法獲取職位列表，請稍後再試。");
+    } finally {
+      hideLoading();
     }
   };
 
-    const fetchData = async () => {
-      try {
-        const response = await InterviewAPI.getData();
+  const fetchData = async () => {
+    showLoading();
 
-        if (response.data && Array.isArray(response.data)) {
-          const transformedData = response.data?.map((item: IntervieweeTypes) => ({
-            id: item.interview_id,
-            name: item.candidate_detail?.username || '',
-            type: item.opening_detail?.opening_name || "-",
-            company: item.opening_detail?.company_name,
-            interview_status: item.interview_status,
-            createDate: formatDate(item.interview_datetime),
-            interview_result: item.interview_result,
-            total_score: item.total_score,
-            originalData: item
-          }));
-          setIntervieweeData(transformedData);
-        }
-      } catch (err) {
-        console.error("獲取面試者資料失敗:", err);
-        toast.error("無法獲取面試者資料，請稍後再試。");
+    try {
+      const response = await InterviewAPI.getData();
+
+      if (response.data && Array.isArray(response.data)) {
+        const transformedData = response.data?.map((item: IntervieweeTypes) => ({
+          id: item.interview_id,
+          name: item.candidate_detail?.username || '',
+          type: item.opening_detail?.opening_name || "-",
+          company: item.opening_detail?.company_name,
+          interview_status: item.interview_status,
+          createDate: formatDate(item.interview_datetime),
+          interview_result: item.interview_result,
+          total_score: item.total_score,
+          originalData: item
+        }));
+        setIntervieweeData(transformedData);
       }
-    };
+    } catch (err) {
+      toast.error("無法獲取面試者資料，請稍後再試。");
+    } finally {
+      hideLoading();
+    }
+  };
 
   const formatDate = (dateString: string | number | Date) => {
     if (!dateString) return "-";
@@ -162,7 +170,7 @@ export default function Interviewee() {
         } else if (value === "已排定") {
           return <Chip label={value} variant="outlined" color="warning" size="small" />;
         }
-        return <Chip label={value} variant="outlined" size="small" />;
+        return <Chip label={"尚未安排"} variant="outlined" size="small" />;
       },
       textAlign: "center",
       sortable: true,
@@ -177,8 +185,10 @@ export default function Interviewee() {
           return <Chip label={value} variant="outlined" color="error" size="small" />;
         } else if (value === "尚未面試") {
           return <Chip label="尚未面試" variant="outlined" color="warning" size="small" />;
+        } else if (value === "待處理") {
+          return <Chip label={value} variant="outlined" size="small" />;
         }
-        return <Chip label={value} variant="outlined" size="small" />;
+        return '-';
       },
       textAlign: "center",
       sortable: true,
@@ -231,7 +241,6 @@ export default function Interviewee() {
           borderRadius: "16px",
         }}
       >
-        {/* 標題與按鈕 */}
         <Box
           sx={{
             display: "flex",
@@ -264,7 +273,6 @@ export default function Interviewee() {
         </Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
-          {/* 搜尋欄 */}
           <Box sx={{ display: 'grid', gap: '1rem', gridTemplateColumns: '200px 200px 200px 100px 100px', alignItems: 'center', mb: 3 }}>
             <InputField
               name={'name'}
@@ -308,7 +316,6 @@ export default function Interviewee() {
           </Box>
         </Box>
 
-        {/* 數據表格 */}
         <Box
           sx={{
             p: 2,

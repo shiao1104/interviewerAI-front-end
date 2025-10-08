@@ -53,17 +53,20 @@ import html2canvas from "html2canvas";
 import InterviewAPI from "@/lib/api/InterviewAPI";
 import { IntervieweeTypes } from "@/lib/types/intervieweeTypes";
 import Swal from "sweetalert2";
+import { useLoading } from "@/lib/hook/loading";
+import { toast } from "react-toastify";
+import { InfoTypes } from "@/lib/types/questionsTypes";
 
 export default function IntervieweeDetail() {
   const router = useRouter();
   const { id } = router.query;
+  const { showLoading, hideLoading } = useLoading();
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [passed, setPassed] = useState('');
   const [interviewTime, setInterviewTime] = useState<Dayjs | null>(null);
   const [answerList, setAnswerList] = useState<any[]>([]);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const aiReportRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -71,31 +74,7 @@ export default function IntervieweeDetail() {
   const [isEdit, setIsEdit] = useState(false);
   const [quesId, setQuesId] = useState(0);
 
-  const [intervieweeData, setIntervieweeData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    position: '',
-    interviewDate: '',
-    interviewTime: '',
-    interview_result: '',
-    interview_status: '',
-    resumeUrl: '#',
-    scores: {
-      overall: 0,
-      language: 0,
-      attitude: 0,
-      technical: 0,
-      teamwork: 0,
-    },
-    comments: {
-      overall: '',
-      language: '',
-      attitude: '',
-      technical: '',
-      teamwork: '',
-    }
-  });
+  const [intervieweeData, setIntervieweeData] = useState<InfoTypes>();
 
   const scoreItems = [
     {
@@ -181,12 +160,13 @@ export default function IntervieweeDetail() {
   };
 
   const fetchData = async () => {
-    try {
-      setLoading(true);
-      const response = await InterviewAPI.getRecord(Number(id));
+    showLoading();
 
+    try {
+      const response = await InterviewAPI.getAnswers(Number(id));
+      setAnswerList(response.data ? response.data.answers : []);
       if (!response.data) return;
-      const data = response.data as IntervieweeTypes;
+      const data = response.data.interview_info as InfoTypes;
 
       let interviewDate = '';
       let interviewTime = '';
@@ -220,34 +200,20 @@ export default function IntervieweeDetail() {
           technical: getCommentByScore(data.score_technical || 0, 'technical'),
           teamwork: getCommentByScore(data.score_collaboration || 0, 'teamwork'),
         }
-      });
+      } as InfoTypes);
 
-      setIsInterviewing((data.interview_result === "尚未面試") ? false : true);
-    } catch (error) {
-      console.error('獲取數據失敗:', error);
-      setSnackbar({ open: true, message: '獲取數據失敗', severity: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  };
+      setIsInterviewing((data.interview_result === "尚未面試" || data.interview_result === null) ? false : true);
 
-  const fetchAnswers = async () => {
-    try {
-      setLoading(true);
-      const response = await InterviewAPI.getAnswers(Number(id));
-      setAnswerList(response.data ? response.data.answers : []);
     } catch (error) {
-      console.error('獲取答案失敗:', error);
-      setSnackbar({ open: true, message: '獲取答案失敗', severity: 'error' });
+      toast.error("無法獲取回答，請稍後再試。");
     } finally {
-      setLoading(false);
+      hideLoading();
     }
   };
 
   useEffect(() => {
     if (router.isReady && id) {
       fetchData();
-      fetchAnswers();
     }
   }, [id]);
 
@@ -255,16 +221,14 @@ export default function IntervieweeDetail() {
     setTabValue(newValue);
   };
 
-  const [editScore, setEditScore] = useState(intervieweeData.scores.overall);
-  const [editComment, setEditComment] = useState(intervieweeData.comments.overall);
+  const [editScore, setEditScore] = useState(intervieweeData?.scores.overall);
+  const [editComment, setEditComment] = useState(intervieweeData?.comments.overall);
 
   const handleSave = async () => {
     try {
-      await InterviewAPI.updateScore(Number(id), quesId, { human_score: editScore, human_comments: editComment });
-      await Promise.all([
-        fetchData(),
-        fetchAnswers()
-      ]);
+      await InterviewAPI.updateScore(Number(id), quesId, { human_score: Number(editScore), human_comments: String(editComment) });
+      await fetchData();
+
       Swal.fire({
         icon: 'success',
         title: '更新成功',
@@ -323,7 +287,7 @@ export default function IntervieweeDetail() {
         heightLeft -= pageHeight;
       }
 
-      pdf.save(`AI面試分析報告_${intervieweeData.name}.pdf`);
+      pdf.save(`AI面試分析報告_${intervieweeData?.name}.pdf`);
       setSnackbar({ open: true, message: 'PDF 導出成功', severity: 'success' });
     } catch (error) {
       console.error('導出PDF失敗:', error);
@@ -343,7 +307,7 @@ export default function IntervieweeDetail() {
     }
 
     try {
-      setLoading(true);
+      showLoading();
 
       if (passed === '未通過') {
         await InterviewAPI.result(Number(id), {
@@ -365,7 +329,7 @@ export default function IntervieweeDetail() {
     } catch (error) {
       setSnackbar({ open: true, message: '提交失敗', severity: 'error' });
     } finally {
-      setLoading(false);
+      hideLoading();
     }
   };
 
@@ -401,22 +365,23 @@ export default function IntervieweeDetail() {
             應徵者資訊
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
-          <Chip
-            label={`綜合評分: ${intervieweeData.scores.overall}`}
-            color="primary"
-            size="medium"
-            sx={{
-              fontWeight: "bold",
-              py: 2,
-              px: 1,
-              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-              "& .MuiChip-label": { px: 2 },
-            }}
-          />
+          {isInterviewing && (
+            <Chip
+              label={`綜合評分: ${intervieweeData?.scores.overall}`}
+              color="primary"
+              size="medium"
+              sx={{
+                fontWeight: "bold",
+                py: 2,
+                px: 1,
+                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                "& .MuiChip-label": { px: 2 },
+              }}
+            />
+          )}
         </Box>
 
         <Grid container sx={{ display: "grid", gap: "1rem" }}>
-          {/* 應徵者資訊 */}
           <Card
             elevation={0}
             sx={{
@@ -439,10 +404,10 @@ export default function IntervieweeDetail() {
                   <Box>
                     <Box sx={{ mb: 3 }}>
                       <Typography variant="h6" fontWeight="bold">
-                        {intervieweeData.name || '載入中...'}
+                        {intervieweeData?.name || '載入中...'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {intervieweeData.position}
+                        {intervieweeData?.position}
                       </Typography>
                     </Box>
 
@@ -461,7 +426,7 @@ export default function IntervieweeDetail() {
                         >
                           Email:
                         </Typography>
-                        <Typography variant="body2">{intervieweeData.email}</Typography>
+                        <Typography variant="body2">{intervieweeData?.email}</Typography>
                       </Box>
 
                       <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -476,7 +441,7 @@ export default function IntervieweeDetail() {
                         >
                           電話:
                         </Typography>
-                        <Typography variant="body2">{intervieweeData.phone}</Typography>
+                        <Typography variant="body2">{intervieweeData?.phone}</Typography>
                       </Box>
 
                       <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -492,17 +457,15 @@ export default function IntervieweeDetail() {
                           應徵職位:
                         </Typography>
                         <Typography variant="body2">
-                          {intervieweeData.position}
+                          {intervieweeData?.position}
                         </Typography>
                       </Box>
                     </Stack>
                   </Box>
                 </Grid>
 
-                {/* 分隔線 */}
                 <Divider orientation="vertical" flexItem />
 
-                {/* 面試排程區 - 右邊 */}
                 <Grid>
                   <Typography variant="h6" fontWeight="medium" sx={{ mb: 2 }}>
                     面試排程
@@ -521,7 +484,7 @@ export default function IntervieweeDetail() {
                       日期:
                     </Typography>
                     <Typography variant="body2">
-                      {intervieweeData.interviewDate || '未設定'}
+                      {intervieweeData?.interviewDate || '未設定'}
                     </Typography>
                   </Box>
 
@@ -538,13 +501,16 @@ export default function IntervieweeDetail() {
                       時間:
                     </Typography>
                     <Typography variant="body2">
-                      {intervieweeData.interviewTime || '未設定'}
+                      {intervieweeData?.interviewTime || '未設定'}
                     </Typography>
                   </Box>
 
                   <Chip
-                    label={intervieweeData.interview_result}
-                    color={intervieweeData.interview_result === '已面試' ? 'success' : 'default'}
+                    label={intervieweeData?.interview_result || '尚未面試'}
+                    color={intervieweeData?.interview_result === null ?
+                      'default' : intervieweeData?.interview_result === '待處理' ?
+                        "warning" : (intervieweeData?.interview_result === "第一階段未通過" || intervieweeData?.interview_result === "第二階段未通過") ?
+                          'error' : 'success'}
                     size="small"
                     variant="outlined"
                     sx={{ borderRadius: 1 }}
@@ -556,10 +522,8 @@ export default function IntervieweeDetail() {
 
           {isInterviewing ? (
             <>
-              {/* AI 面試分析報告 */}
               <div ref={aiReportRef}>
                 <Grid>
-                  {/* AI Analysis Tabs */}
                   <Paper
                     elevation={0}
                     sx={{
@@ -617,7 +581,7 @@ export default function IntervieweeDetail() {
                             }}
                           >
                             <CircleProgress
-                              score={isEdit ? editScore : intervieweeData.scores.overall}
+                              score={isEdit ? Number(editScore ?? 0) : (intervieweeData?.scores.overall ?? 0)}
                               label="總體評分"
                               color={theme.palette.primary.main}
                               size={160}
@@ -630,7 +594,7 @@ export default function IntervieweeDetail() {
                             </Typography>
 
                             <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                              {intervieweeData.comments.overall}
+                              {intervieweeData?.comments.overall}
                             </Typography>
                           </Box>
                         </Box>
@@ -676,7 +640,7 @@ export default function IntervieweeDetail() {
                                       fontWeight="medium"
                                     >
                                       {
-                                        intervieweeData.scores[
+                                        intervieweeData?.scores[
                                         item.key as keyof typeof intervieweeData.scores
                                         ]
                                       }
@@ -686,7 +650,7 @@ export default function IntervieweeDetail() {
                                   <LinearProgress
                                     variant="determinate"
                                     value={
-                                      intervieweeData.scores[
+                                      intervieweeData?.scores[
                                       item.key as keyof typeof intervieweeData.scores
                                       ]
                                     }
@@ -707,7 +671,7 @@ export default function IntervieweeDetail() {
                                   sx={{ lineHeight: 1.5 }}
                                 >
                                   {
-                                    intervieweeData.comments[
+                                    intervieweeData?.comments[
                                     item.key as keyof typeof intervieweeData.comments
                                     ]
                                   }
@@ -1028,7 +992,7 @@ export default function IntervieweeDetail() {
               </div>
 
               {/* 面試結果決定 */}
-              {intervieweeData.interview_status == "已完成" && intervieweeData.interview_result === "待處理" && (
+              {intervieweeData?.interview_status == "已完成" && intervieweeData?.interview_result === "待處理" && (
 
                 <Grid>
                   <Paper
@@ -1170,7 +1134,6 @@ export default function IntervieweeDetail() {
                         </Box>
                       )}
 
-                      {/* Action Buttons */}
                       <Box sx={{
                         display: 'flex',
                         justifyContent: 'flex-end',
@@ -1181,7 +1144,6 @@ export default function IntervieweeDetail() {
                           variant="outlined"
                           color="primary"
                           onClick={handleCancel}
-                          disabled={loading}
                           sx={{ height: 40 }}
                         >
                           取消
@@ -1190,10 +1152,9 @@ export default function IntervieweeDetail() {
                           variant="contained"
                           color="primary"
                           onClick={handleSubmitResult}
-                          disabled={loading || !passed}
                           sx={{ height: 40 }}
                         >
-                          {loading ? '處理中...' : '確認送出'}
+                          確認送出
                         </Button>
                       </Box>
                     </Box>
