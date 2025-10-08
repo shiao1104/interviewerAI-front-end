@@ -53,7 +53,6 @@ import Swal from "sweetalert2";
 import { useLoading } from "@/lib/hook/loading";
 import { toast } from "react-toastify";
 import { InfoTypes } from "@/lib/types/questionsTypes";
-import MediaAPI from "@/lib/api/MediaAPI";
 
 export default function IntervieweeDetail() {
   const router = useRouter();
@@ -208,21 +207,9 @@ export default function IntervieweeDetail() {
     }
   };
 
-  const fetchMedia = async () => {
-    showLoading();
-    try {
-      const response = await MediaAPI.getData();
-    } catch (error) {
-      toast.error("無法獲取媒體檔案，請稍後再試。");
-    } finally {
-      hideLoading();
-    }
-  };
-
   useEffect(() => {
     if (router.isReady && id) {
       fetchData();
-      fetchMedia();
     }
   }, [id]);
 
