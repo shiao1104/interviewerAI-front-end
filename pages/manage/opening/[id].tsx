@@ -19,10 +19,12 @@ import OpeningAPI from "@/lib/api/OpeningAPI";
 import { OpeningTypes } from "@/lib/types/openingTypes";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
+import { useLoading } from "@/lib/hook/loading";
 
 export default function Edit() {
   const router = useRouter();
-  const {id} = router.query;
+  const { showLoading, hideLoading } = useLoading();
+  const { id } = router.query;
 
   const formProps = useForm<OpeningTypes>({
     defaultValues: {
@@ -32,13 +34,16 @@ export default function Edit() {
       opening_info: ""
     },
   });
-  
+
   const fetchOpeningData = async () => {
+    showLoading();
     try {
       const response = await OpeningAPI.getRecord(Number(id));
       formProps.reset(response.data);
     } catch (error) {
       toast.error("無法載入職缺資料，請稍後再試。");
+    } finally {
+      hideLoading();
     }
   };
 
@@ -49,9 +54,11 @@ export default function Edit() {
   }, [router.isReady, id]);
 
   const handleSubmit = async () => {
+    showLoading();
     const openings = formProps.getValues();
     const data = {
       ...openings,
+      // TODO: temporarily fix
       company: 11
     }
 
@@ -61,6 +68,8 @@ export default function Edit() {
       router.push("/manage/opening");
     } catch (error) {
       toast.error("儲存職缺資料失敗，請稍後再試。");
+    } finally {
+      hideLoading();
     }
   }
 

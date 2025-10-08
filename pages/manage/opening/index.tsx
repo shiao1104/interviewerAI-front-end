@@ -17,21 +17,26 @@ import OpeningAPI from "@/lib/api/OpeningAPI";
 import { OpeningTypes } from "@/lib/types/openingTypes";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
-import { QuestionsTypes } from "@/lib/types/questionsTypes";
+import { useLoading } from "@/lib/hook/loading";
 
 export default function Opening() {
   const router = useRouter();
   const formProps = useForm();
+  const { showLoading, hideLoading } = useLoading();
   const [searchParams, setSearchParams] = useState<SearchType>();
   const [localOpeningData, setLocalOpeningData] = useState<OpeningTypes[]>([]);
   const [filteredDataList, setFilteredDataList] = useState<OpeningTypes[]>([]);
 
   const fetchData = async () => {
+    showLoading();
+
     try {
       const response = await OpeningAPI.getData();
       setLocalOpeningData(response.data || []);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "取得資料失敗，請稍後再試");
+    } finally {
+      hideLoading();
     }
   };
 
@@ -81,7 +86,7 @@ export default function Opening() {
   const columns = [
     { id: "opening_id", label: "ID", sortable: true },
     { id: "opening_name", label: "職缺名稱", sortable: true },
-    { id: "opening_info", label: "工作內容說明" },
+    { id: "opening_info", label: "工作內容說明", maxWidth: "350px" },
     { id: "update_time", label: "建立日期", sortable: true },
     {
       id: "actions",
@@ -198,6 +203,7 @@ export default function Opening() {
             borderRadius: 2,
             backgroundColor: "#f9f9f9",
             border: "1px solid #e0e0e0",
+            minWidth: "1000px",
           }}
         >
           <DataTable columns={columns} data={filteredDataList} />
