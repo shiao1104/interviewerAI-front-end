@@ -101,7 +101,7 @@ export default function Edit() {
         }
         const date = new Date(`${data.interview_date}T${data.interview_time}`);
         data.interview_datetime = date.toISOString();
-
+        data.interview_status = "已排定"
       }
 
       delete data.interview_date;

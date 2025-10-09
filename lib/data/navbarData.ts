@@ -18,7 +18,7 @@ export const NavbarData = [
 const BASE_ADMIN_PATH = "/admin";
 
 export const AdminNavbarData = [
-  { name: "公司列表", path: `${BASE_ADMIN_PATH}/company`, icon: Business },
+  { name: "公司列表", path: `${BASE_ADMIN_PATH}`, icon: Business },
   { name: "權限管理", path: `${BASE_ADMIN_PATH}/permissions`, icon: LockOpen },
 
 ];

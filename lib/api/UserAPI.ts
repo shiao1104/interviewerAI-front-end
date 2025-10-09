@@ -5,11 +5,13 @@ import axios from 'axios';
 interface Params {
   username: string;
   password: string;
+  company_id?: string;
 }
 
 export type TokenData = {
   access: string;
   refresh: string;
+  company_id?: string;
 };
 
 export interface Profile {

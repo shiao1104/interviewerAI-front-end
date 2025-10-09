@@ -106,6 +106,9 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
       const response = await UserAPI.access(dataList);
       if (response.data && response.data.access) {
         sessionStorage.setItem("token", response.data.access);
+        if (response.data.company_id) {
+          sessionStorage.setItem("companyId", response.data.company_id)
+        }
 
         try {
           const meRes = await UserAPI.me();

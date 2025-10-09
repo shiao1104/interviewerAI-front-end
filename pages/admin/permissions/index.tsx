@@ -2,6 +2,7 @@ import PopupModal from "@/components/common/admin/PopupModal";
 import DataTable from "@/components/common/DataTables";
 import SearchBar from "@/components/common/searchBar";
 import Layout from "@/components/Layout/AdminLayout";
+import AdminAPI from "@/lib/api/AdminAPI";
 import CompanyAPI from "@/lib/api/CompanyAPI";
 import { companyCreateData } from "@/lib/data/admin/companyCreateData";
 import { companySearchData } from "@/lib/data/admin/companySearchData";
@@ -55,8 +56,9 @@ export default function Permissions() {
     };
 
     const columns = [
-        { id: "company_id", label: "公司 ID", sortable: true },
-        { id: "company_name", label: "公司名稱", textAlign: "center" },
+        { id: "id", label: "ID", sortable: true },
+        { id: "username", label: "姓名", textAlign: "center" },
+        { id: "email", label: "email", textAlign: "center" },
         {
             id: "actions",
             label: "操作",
@@ -87,7 +89,7 @@ export default function Permissions() {
 
     const fetchData = async () => {
         try {
-            const response = await CompanyAPI.getData();
+            const response = await AdminAPI.getData();
             setCompanyData(response.data);
             setFilterDataList(response.data);
         } catch (error) {
@@ -179,22 +181,6 @@ export default function Permissions() {
                         sx={{ height: 40 }}
                     >
                         新增人員
-                    </Button>
-                </Box>
-
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'end', gap: 1 }}>
-                    <SearchBar
-                        items={companySearchData}
-                        formProps={formProps}
-                        handleParams={(params) => setSearchParams(params)}
-                    />
-
-                    <Button
-                        variant="text"
-                        onClick={handleResetFilter}
-                        sx={{ minWidth: "auto", marginTop: "12px" }}
-                    >
-                        重置篩選
                     </Button>
                 </Box>
 

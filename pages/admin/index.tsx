@@ -81,14 +81,6 @@ export default function Company() {
                     >
                         <Delete fontSize="small" />
                     </IconButton>
-
-                    <IconButton
-                        onClick={() => router.push(`/admin/permissions/${row.company_id}`)}
-                        size="small"
-                        title="管理權限"
-                    >
-                        <MoreHoriz fontSize="small" />
-                    </IconButton>
                 </Box>
             ),
             textAlign: "center",
@@ -192,7 +184,7 @@ export default function Company() {
                     </Button>
                 </Box>
 
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'end', gap: 1 }}>
+                {/* <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'end', gap: 1 }}>
                     <SearchBar
                         items={companySearchData}
                         formProps={formProps}
@@ -206,7 +198,7 @@ export default function Company() {
                     >
                         重置篩選
                     </Button>
-                </Box>
+                </Box> */}
 
                 <Box
                     sx={{
