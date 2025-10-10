@@ -1,4 +1,4 @@
 export type DropdownTypes = {
-  key: number;
+  key: number | string;
   value: string;
 };

@@ -1,6 +1,9 @@
 import { Box, Button, TextField, Typography, IconButton, MenuItem } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import CompanyAPI from "@/lib/api/CompanyAPI";
+import { DropdownTypes } from "@/lib/types/dropdownTypes";
 
 export default function PopupModal({
     title,
@@ -8,16 +11,52 @@ export default function PopupModal({
     defaultValues,
     onClose,
     onSubmit,
-}: { 
-    title: string, 
-    inputList?: any[], 
-    defaultValues?: any, 
-    onClose: () => void, 
-    onSubmit: (data: any) => void 
+}: {
+    title: string,
+    inputList?: any[],
+    defaultValues?: any,
+    onClose: () => void,
+    onSubmit: (data: any) => void
 }) {
-    const { register, handleSubmit, reset } = useForm({
+    const { register, handleSubmit, reset, watch } = useForm({
         defaultValues,
     });
+    const [companyList, setCompanyList] = useState<DropdownTypes[]>([]);
+    const [typeList, setTypeList] = useState<DropdownTypes[]>([]);
+
+    const fetchDropdown = async () => {
+        try {
+            const companyResponse = await CompanyAPI.getData();
+            const industryResponse = await CompanyAPI.getIndustryList();
+
+            const companyList: any[] = companyResponse.data ?? [];
+            const industryList: any[] = industryResponse.data ?? [];
+            const transformedCompanyList = companyList.map((item: any) => ({
+                key: item.company_id,
+                value: item.company_name
+            }));
+            setCompanyList(transformedCompanyList);
+            setTypeList(industryList);
+        } catch { }
+    }
+
+    useEffect(() => {
+        fetchDropdown();
+
+        if (!defaultValues) { return; }
+        let data;
+        data = {
+            ...defaultValues,
+            'auth': defaultValues.is_staff ? 0 : defaultValues.is_superuser ? 1 : 2,
+            // TODO:companyID
+            'company': 9
+        }
+        data = {
+                ...defaultValues,
+                'industry_name': defaultValues.industry_id
+            }
+        reset(data);
+    }, [])
 
     const handleFormSubmit = (data: any) => {
         onSubmit(data);
@@ -26,7 +65,6 @@ export default function PopupModal({
 
     return (
         <>
-            {/* 背景遮罩 */}
             <Box
                 sx={{
                     position: "fixed",
@@ -40,8 +78,7 @@ export default function PopupModal({
                 }}
                 onClick={onClose}
             />
-            
-            {/* Modal 內容 */}
+
             <Box
                 sx={{
                     position: "fixed",
@@ -61,7 +98,6 @@ export default function PopupModal({
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header */}
                 <Box
                     sx={{
                         display: "flex",
@@ -72,8 +108,8 @@ export default function PopupModal({
                         borderBottom: "1px solid #f0f0f0",
                     }}
                 >
-                    <Typography 
-                        variant="h5" 
+                    <Typography
+                        variant="h5"
                         component="h2"
                         sx={{
                             fontWeight: 600,
@@ -97,81 +133,101 @@ export default function PopupModal({
                     </IconButton>
                 </Box>
 
-                {/* Form Content */}
                 <Box sx={{ p: 3, maxHeight: "60vh", overflow: "auto" }}>
                     <form onSubmit={handleSubmit(handleFormSubmit)}>
-                        {inputList?.map((input, index) => (
-                            <Box key={index} sx={{ mb: 3 }}>
-                                <Typography
-                                    component="label"
-                                    sx={{
-                                        display: "block",
-                                        mb: 1,
-                                        fontWeight: 500,
-                                        color: "#374151",
-                                        fontSize: "0.9rem",
-                                    }}
-                                >
-                                    {input.label}
-                                </Typography>
+                        {inputList?.map((input, index) => {
+                            const isLastItem = index === inputList.length - 1;
+                            const authValue = watch('auth');
+                            if (isLastItem && authValue !== 0) {
+                                return null;
+                            }
 
-                                {input.type === "dropdown" ? (
-                                    <TextField
-                                        select
-                                        fullWidth
-                                        defaultValue={defaultValues?.[input.name] ?? ""}
-                                        {...register(input.name)}
-                                        variant="outlined"
-                                        size="medium"
+                            return (
+                                <Box key={index} sx={{ mb: 3 }}>
+                                    <Typography
+                                        component="label"
                                         sx={{
-                                            "& .MuiOutlinedInput-root": {
-                                                borderRadius: 2,
-                                                backgroundColor: "#fafafa",
-                                                "&:hover": {
-                                                    backgroundColor: "#f5f5f5",
-                                                },
-                                                "&.Mui-focused": {
-                                                    backgroundColor: "#ffffff",
-                                                },
-                                            },
+                                            display: "block",
+                                            mb: 1,
+                                            fontWeight: 500,
+                                            color: "#374151",
+                                            fontSize: "0.9rem",
                                         }}
                                     >
-                                        {input.dropdownData?.map((option: any, idx: number) => (
-                                            <MenuItem key={idx} value={option.key}>
-                                                {option.value}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                ) : (
-                                    <TextField
-                                        type={input.type}
-                                        placeholder={input.placeholder}
-                                        {...register(input.name)}
-                                        fullWidth
-                                        variant="outlined"
-                                        size="medium"
-                                        sx={{
-                                            "& .MuiOutlinedInput-root": {
-                                                borderRadius: 2,
-                                                backgroundColor: "#fafafa",
-                                                "&:hover": {
-                                                    backgroundColor: "#f5f5f5",
-                                                },
-                                                "&.Mui-focused": {
-                                                    backgroundColor: "#ffffff",
-                                                },
-                                            },
-                                        }}
-                                    />
-                                )}
-                            </Box>
-                        ))}
+                                        {input.label}
+                                    </Typography>
 
-                        {/* Footer Buttons */}
-                        <Box 
-                            sx={{ 
-                                display: "flex", 
-                                justifyContent: "flex-end", 
+                                    {input.type === "dropdown" ? (
+                                        <TextField
+                                            select
+                                            fullWidth
+                                            value={watch(input.name) ?? ""}
+                                            {...register(input.name)}
+                                            variant="outlined"
+                                            size="medium"
+                                            sx={{
+                                                "& .MuiOutlinedInput-root": {
+                                                    borderRadius: 2,
+                                                    backgroundColor: "#fafafa",
+                                                    "&:hover": {
+                                                        backgroundColor: "#f5f5f5",
+                                                    },
+                                                    "&.Mui-focused": {
+                                                        backgroundColor: "#ffffff",
+                                                    },
+                                                },
+                                            }}
+                                        >
+                                            {input.name == 'company' ?
+                                                companyList?.map((option: any, idx: number) => (
+                                                    <MenuItem key={idx} value={option.key}>
+                                                        {option.value}
+                                                    </MenuItem>
+                                                ))
+                                                :
+                                                input.name == 'industry_name' ?
+                                                    typeList?.map((option: any, idx: number) => (
+                                                        <MenuItem key={idx} value={option.key}>
+                                                            {option.value}
+                                                        </MenuItem>
+                                                    ))
+                                                    :
+                                                    input.dropdownData?.map((option: any, idx: number) => (
+                                                        <MenuItem key={idx} value={option.key}>
+                                                            {option.value}
+                                                        </MenuItem>
+                                                    ))
+                                            }
+                                        </TextField>
+                                    ) : (
+                                        <TextField
+                                            type={input.type}
+                                            placeholder={input.placeholder}
+                                            {...register(input.name)}
+                                            fullWidth
+                                            variant="outlined"
+                                            size="medium"
+                                            sx={{
+                                                "& .MuiOutlinedInput-root": {
+                                                    borderRadius: 2,
+                                                    backgroundColor: "#fafafa",
+                                                    "&:hover": {
+                                                        backgroundColor: "#f5f5f5",
+                                                    },
+                                                    "&.Mui-focused": {
+                                                        backgroundColor: "#ffffff",
+                                                    },
+                                                },
+                                            }}
+                                        />
+                                    )}
+                                </Box>)
+                        })}
+
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "flex-end",
                                 gap: 2,
                                 pt: 2,
                                 borderTop: "1px solid #f0f0f0",

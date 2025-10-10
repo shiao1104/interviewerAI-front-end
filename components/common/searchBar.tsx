@@ -3,18 +3,14 @@ import { Grid, Button } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import styles from "@/styles/components/common/manage/SearchBar.module.scss";
 import InputField from "./InputField";
-
-export type DropdownOption = {
-  key: number;
-  value: string;
-};
+import { DropdownTypes } from "@/lib/types/dropdownTypes";
 
 export type SearchBarItem = {
   name: string;
   label: string;
   type: string;
   placeholder?: string;
-  dropdownData?: DropdownOption[];
+  dropdownData?: DropdownTypes[];
 };
 
 export type SearchBarProps = {

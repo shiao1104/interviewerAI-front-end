@@ -5,16 +5,16 @@ import Layout from "@/components/Layout/AdminLayout";
 import CompanyAPI from "@/lib/api/CompanyAPI";
 import { companyCreateData } from "@/lib/data/admin/companyCreateData";
 import { companySearchData } from "@/lib/data/admin/companySearchData";
+import { useLoading } from "@/lib/hook/loading";
 import { SearchType } from "@/lib/types/searchTypes";
 import { AccountCircle, Add, Delete, Edit, MoreHoriz } from "@mui/icons-material";
 import { Box, Typography, Button, IconButton } from "@mui/material";
-import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 export default function Company() {
-    const router = useRouter();
+    const { showLoading, hideLoading } = useLoading()
     const formProps = useForm();
     const [searchParams, setSearchParams] = useState<any>();
     const [filterDataList, setFilterDataList] = useState<any>([]);
@@ -24,41 +24,73 @@ export default function Company() {
     const [editingCompany, setEditingCompany] = useState<any>(null);
 
     const handleEdit = async (row: any) => {
+        showLoading();
+
         try {
             const res = await CompanyAPI.getData(row.company_id);
             setEditingCompany(res.data);
             setPopupEditActive(true);
         } catch (error) {
             toast.error("無法載入公司資訊");
-        }
+        } finally { hideLoading() }
     };
 
     const handleUpdate = async (formData: any) => {
+        showLoading();
+
+        formData = {
+            ...formData,
+            'industry': formData.industry_name
+        }
+
+        delete formData.industry_name;
         try {
             await CompanyAPI.update(formData, formData.company_id);
             toast.success("公司資料已更新！");
             setPopupEditActive(false);
             setEditingCompany(null);
-            fetchData(); // 重新載入
+            fetchData();
         } catch (error) {
             toast.error("更新失敗，請稍後再試。");
-        }
+        } finally { hideLoading() }
     };
 
 
-    const deleteCompany = async () => {
+    const deleteCompany = async (id: number) => {
+        showLoading();
+
         try {
-            await CompanyAPI.delete(1);
+            await CompanyAPI.delete(id);
             toast.success("公司資料已成功刪除！");
             fetchData();
         } catch (error) {
             toast.error("無法刪除公司資料，請稍後再試。");
-        }
+        } finally { hideLoading() }
     };
 
+    const submit = async (data: any) => {
+        showLoading();
+
+        data = {
+            ...data,
+            'industry': data.industry_name
+        }
+
+        delete data.industry_name;
+        try {
+            await CompanyAPI.create(data);
+            toast.success("公司資料已新增！");
+            setPopupCreateActive(false);
+            fetchData();
+        } catch (error) {
+            toast.error("新增失敗，請稍後再試。");
+        } finally { hideLoading() }
+    }
+
     const columns = [
-        { id: "company_id", label: "公司 ID", sortable: true },
+        { id: "company_id", label: "ID", sortable: true },
         { id: "company_name", label: "公司名稱", textAlign: "center" },
+        { id: "industry_name", label: "公司類別", textAlign: "center" },
         {
             id: "actions",
             label: "操作",
@@ -74,7 +106,7 @@ export default function Company() {
                     </IconButton>
 
                     <IconButton
-                        onClick={deleteCompany}
+                        onClick={() => deleteCompany(row.company_id)}
                         size="small"
                         title="刪除"
                         color="error"
@@ -88,13 +120,14 @@ export default function Company() {
     ];
 
     const fetchData = async () => {
+        showLoading();
         try {
             const response = await CompanyAPI.getData();
             setCompanyData(response.data);
             setFilterDataList(response.data);
         } catch (error) {
             toast.error("無法載入公司資料，請稍後再試。");
-        }
+        } finally { hideLoading() }
     };
 
     useEffect(() => {
@@ -184,7 +217,7 @@ export default function Company() {
                     </Button>
                 </Box>
 
-                {/* <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'end', gap: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'end', gap: 1 }}>
                     <SearchBar
                         items={companySearchData}
                         formProps={formProps}
@@ -198,7 +231,7 @@ export default function Company() {
                     >
                         重置篩選
                     </Button>
-                </Box> */}
+                </Box>
 
                 <Box
                     sx={{
@@ -225,16 +258,7 @@ export default function Company() {
                     title="新增公司"
                     inputList={companyCreateData}
                     onClose={() => setPopupCreateActive(false)}
-                    onSubmit={async (data) => {
-                        try {
-                            await CompanyAPI.create(data);
-                            toast.success("公司資料已新增！");
-                            setPopupCreateActive(false);
-                            fetchData();
-                        } catch (error) {
-                            toast.error("新增失敗，請稍後再試。");
-                        }
-                    }}
+                    onSubmit={(data) => submit(data)}
                 />
             )}
         </Layout>
