@@ -15,7 +15,7 @@ import DataTable from "@/components/common/DataTables";
 import { Add, Delete, Edit, HelpOutline } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import QuestionAPI from "@/lib/api/QuestionAPI";
-import { QuestionsTypes } from "@/lib/types/questionsTypes";
+import { QuestionDetail } from "@/lib/types/questionsTypes";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
@@ -27,8 +27,8 @@ export default function Questions() {
   const formProps = useForm();
   const { showLoading, hideLoading } = useLoading();
   const [searchParams, setSearchParams] = useState<SearchType>();
-  const [dataList, setDataList] = useState<QuestionsTypes[]>([]);
-  const [filteredDataList, setFilteredDataList] = useState<QuestionsTypes[]>([]);
+  const [dataList, setDataList] = useState<QuestionDetail[]>([]);
+  const [filteredDataList, setFilteredDataList] = useState<QuestionDetail[]>([]);
 
   const fetchData = async () => {
     showLoading();
@@ -69,7 +69,7 @@ export default function Questions() {
       return Object.entries(filterParams).every(([key, value]) => {
         if (!value || value === '') return true;
 
-        const itemValue = item[key as keyof QuestionsTypes];
+        const itemValue = item[key as keyof QuestionDetail];
 
         if (!itemValue) return false;
 

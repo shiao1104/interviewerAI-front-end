@@ -3,7 +3,7 @@ import Layout from "@/components/Layout/ManageLayout";
 import QuestionAPI from "@/lib/api/QuestionAPI";
 import { createQuestionData } from "@/lib/data/createQuestionsData";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
-import { QuestionDataType, QuestionsTypes, ReportTypes } from "@/lib/types/questionsTypes";
+import { QuestionDetail, ReportTypes } from "@/lib/types/questionsTypes";
 import { Edit as EditIcon, KeyboardBackspace, Save } from "@mui/icons-material";
 import { Box, Button, Grid, Typography, Paper, Divider, Chip, MenuItem, OutlinedInput, Select, SelectChangeEvent } from "@mui/material";
 import axios from "axios";
@@ -23,30 +23,38 @@ export default function Edit() {
     question_type: [],
   });
   const formProps = useForm<ReportTypes>();
-  const { handleSubmit: handleFormSubmit, getValues } = formProps;
+  const { handleSubmit: handleFormSubmit, getValues, setValue } = formProps;
   const [openingList, setOpeningList] = useState<DropdownTypes[]>([]);
   const [selectedOpenings, setSelectedOpenings] = useState<{ [key: number]: string[] }>({});
+  
+  const [selectedQuestionTypes, setSelectedQuestionTypes] = useState<number[]>([]);
 
   const handleOpeningsChange = (questionIndex: number) => (event: SelectChangeEvent<string[]>) => {
     const {
       target: { value },
     } = event;
     const newValue = typeof value === 'string' ? value.split(',') : value;
-    // setSelectedOpenings(prev => ({
-    //   ...prev,
-    //   [questionIndex]: newValue
-    // }));
+    setSelectedOpenings(prev => ({
+      ...prev,
+      [questionIndex]: newValue
+    }));
+  };
 
-    // formProps.setValue(`questions.opening_id`, newValue);
+  const handleQuestionTypeChange = (event: SelectChangeEvent<number[]>) => {
+    const {
+      target: { value },
+    } = event;
+    const newValue = typeof value === 'string' ? [parseInt(value)] : value;
+    setSelectedQuestionTypes(newValue);
+    setValue('question_type_detail', newValue);
   };
 
   const fetchOpeningJobs = async () => {
     try {
       const response = await QuestionAPI.getOpeningJobs();
       setOpeningList(response.data || []);
-
     } catch (error) {
-      toast.error("無法取得職缺列表，請稍後再試");
+      toast.error("無法取得職缺列表,請稍後再試");
     }
   };
 
@@ -58,10 +66,26 @@ export default function Edit() {
         QuestionAPI.getQuestionType(),
       ]);
 
-      const questionData = response[0].data as unknown as QuestionsTypes;
+      const questionData = response[0].data as unknown as QuestionDetail;
+
+      // 處理問題類型資料: 將單一物件轉換為陣列格式
+      let initialQuestionTypes: number[] = [];
+      if (questionData?.question_type_detail) {
+        // 如果是物件,取其 question_type_id
+        if (typeof questionData.question_type_detail === 'object' && 'question_type_id' in questionData.question_type_detail) {
+          initialQuestionTypes = [questionData.question_type_detail.question_type_id];
+        }
+        // 如果已經是陣列
+        else if (Array.isArray(questionData.question_type_detail)) {
+          initialQuestionTypes = questionData.question_type_detail;
+        }
+      }
+
+      setSelectedQuestionTypes(initialQuestionTypes);
 
       formProps.reset({
         question_type: questionData?.question_type,
+        question_type_detail: initialQuestionTypes,
         question: questionData.question,
         time_allowed: questionData.time_allowed,
         difficulty: questionData.difficulty
@@ -82,23 +106,29 @@ export default function Edit() {
       fetch();
       fetchOpeningJobs();
     }
-  }, [id, formProps]);
+  }, [id]);
 
-  const onSubmit = async (data: QuestionsTypes) => {
+  const onSubmit = async (data: any) => {
     try {
-      console.log("提交的資料:", data);
-      await QuestionAPI.update(Number(id), data);
+      // 確保問題類型資料格式正確
+      const submitData = {
+        ...data,
+        question_type_detail: selectedQuestionTypes
+      };
+      
+      console.log("提交的資料:", submitData);
+      await QuestionAPI.update(Number(id), submitData);
       toast.success("問題更新成功");
       router.push("/manage/questions");
     } catch (error) {
       console.error("更新失敗:", error);
-      toast.error("更新問題失敗，請稍後再試");
+      toast.error("更新問題失敗,請稍後再試");
     }
   };
 
   const handleManualSubmit = () => {
     const formData = getValues();
-    onSubmit(formData as QuestionsTypes);
+    onSubmit(formData as unknown as QuestionDetail);
   };
 
   return (
@@ -192,51 +222,6 @@ export default function Edit() {
               />
             </Grid>
           ))}
-
-          {/* <Grid sx={{ mt: 2 }}>
-            <Typography variant="subtitle1">
-              <Typography component="span" color="error" fontSize="0.75rem">
-                *{" "}
-              </Typography>
-              適用職缺
-            </Typography>
-            <Select
-              fullWidth
-              multiple
-              sx={{
-                borderRadius: "5px",
-                "& .MuiOutlinedInput-input": {
-                  padding: "10px 14px",
-                },
-              }}
-              value={selectedOpenings || []}
-              onChange={handleOpeningsChange()}
-              input={<OutlinedInput />}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip
-                      key={value}
-                      label={openingList.find((item: { key: any }) => item.key === value)?.value || value}
-                    />
-                  ))}
-                </Box>
-              )}
-              error={!selectedOpenings?.length}
-            >
-              <MenuItem disabled value="">
-                請選擇適用職缺
-              </MenuItem>
-              {openingList.map((name) => (
-                <MenuItem
-                  key={name.key}
-                  value={name.key}
-                >
-                  {name.value}
-                </MenuItem>
-              ))}
-            </Select>
-          </Grid> */}
         </Paper>
       </Box>
     </Layout>

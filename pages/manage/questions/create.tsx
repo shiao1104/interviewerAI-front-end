@@ -64,7 +64,7 @@ export default function Create() {
       [questionIndex]: newValue
     }));
 
-    formProps.setValue(`questions.${questionIndex}.opening_id`, newValue);
+    formProps.setValue(`questions.${questionIndex}.opening_ids`, newValue);
   };
 
   const fetchOpeningJobs = async () => {

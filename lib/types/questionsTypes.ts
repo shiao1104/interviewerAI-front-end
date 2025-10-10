@@ -2,6 +2,10 @@ export interface QuestionDetail {
   question: string;
   question_id?: number;
   question_type?: number;
+  question_type_detail: string;
+  time_allowed?: string;
+  difficulty?: string;
+  
 }
 
 export interface AnswerType {
