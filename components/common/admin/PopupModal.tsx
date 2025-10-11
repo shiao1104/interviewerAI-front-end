@@ -48,13 +48,10 @@ export default function PopupModal({
         data = {
             ...defaultValues,
             'auth': defaultValues.is_staff ? 0 : defaultValues.is_superuser ? 1 : 2,
-            // TODO:companyID
-            'company': 9
+            'company': defaultValues.company_id ? defaultValues.company_id : '',
+            'industry_name': defaultValues.industry_id
+
         }
-        data = {
-                ...defaultValues,
-                'industry_name': defaultValues.industry_id
-            }
         reset(data);
     }, [])
 

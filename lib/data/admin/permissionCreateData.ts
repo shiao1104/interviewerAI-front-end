@@ -23,11 +23,7 @@ export const permissionCreateData: InputFieldTypes[] = [
       {
         'key': 1,
         'value': '管理者'
-      },
-      {
-        'key': 2,
-        'value': '面試者'
-      },
+      }
     ]
   },
   {

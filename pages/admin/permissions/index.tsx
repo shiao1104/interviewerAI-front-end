@@ -30,7 +30,6 @@ export default function Permissions() {
         {
             id: "auth",
             label: "權限",
-            sortable: true,
             textAlign: "center",
             render: (_: any, row: { is_staff: boolean, is_superuser: boolean }) => (
                 <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
@@ -86,11 +85,20 @@ export default function Permissions() {
 
     const filterData = (params: SearchType | undefined) => {
         if (!params || Object.keys(params).length === 0) {
-            setFilterDataList(companyData);
+            // 當沒有搜尋參數時，過濾掉 is_staff 和 is_superuser 都為 false 的資料
+            const filtered = companyData.filter((item: any) =>
+                item.is_staff === true || item.is_superuser === true
+            );
+            setFilterDataList(filtered);
             return;
         }
 
         const filtered = companyData.filter((item: any) => {
+            // 先檢查 is_staff 和 is_superuser，如果都為 false 就過濾掉
+            if (item.is_staff === false && item.is_superuser === false) {
+                return false;
+            }
+
             const { nowPage, ...filterParams } = params;
 
             return Object.entries(filterParams).every(([key, value]) => {

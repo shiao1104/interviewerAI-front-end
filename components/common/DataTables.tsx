@@ -129,7 +129,7 @@ export default function DataTable({
           sx={{
             fontWeight: "bold",
             fontSize: "16px",
-            textAlign: column.textAlign,
+            textAlign: `${column.textAlign}`,
           }}
         >
           {column.label}
@@ -143,7 +143,7 @@ export default function DataTable({
         sx={{
           fontWeight: "bold",
           fontSize: "16px",
-          textAlign: column.textAlign,
+          textAlign: `${column.textAlign}`,
         }}
       >
         <TableSortLabel
@@ -187,7 +187,7 @@ export default function DataTable({
                   <TableCell
                     sx={{ maxWidth: column.maxWidth, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                     key={`${row.id}-${column.id}`}
-                    style={{ textAlign: column.textAlign }}
+                    style={{ 'textAlign': `${column.textAlign}` }}
                   >
                     {column.render
                       ? column.render(row[column.id], row)
