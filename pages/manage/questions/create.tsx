@@ -3,7 +3,6 @@ import Layout from "@/components/Layout/ManageLayout";
 import QuestionAPI from "@/lib/api/QuestionAPI";
 import { createQuestionData } from "@/lib/data/createQuestionsData";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
-import { QuestionsTypes } from "@/lib/types/questionsTypes";
 import {
   CreateNewFolder,
   KeyboardBackspace,
@@ -40,7 +39,7 @@ export default function Create() {
     opening_jobs: [],
     question_type: [],
   });
-  const formProps = useForm<{ questions: QuestionsTypes[] }>({
+  const formProps = useForm<{ questions: any[] }>({
     defaultValues: {
       questions: [{}],
     },
@@ -93,7 +92,7 @@ export default function Create() {
     fetchOpeningJobs();
   }, []);
 
-  const onSubmit = async (data: { questions: QuestionsTypes[] }) => {
+  const onSubmit = async (data: { questions: any[] }) => {
     try {
       const hasEmptyOpenings = data.questions.some(
         (q, index) => !selectedOpenings[index]?.length

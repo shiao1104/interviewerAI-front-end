@@ -3,13 +3,13 @@ import Layout from "@/components/Layout/ManageLayout";
 import QuestionAPI from "@/lib/api/QuestionAPI";
 import { createQuestionData } from "@/lib/data/createQuestionsData";
 import { DropdownTypes } from "@/lib/types/dropdownTypes";
-import { QuestionDetail, ReportTypes } from "@/lib/types/questionsTypes";
+import { QuestionDetail } from "@/lib/types/questionsTypes";
 import { Edit as EditIcon, KeyboardBackspace, Save } from "@mui/icons-material";
-import { Box, Button, Grid, Typography, Paper, Divider, Chip, MenuItem, OutlinedInput, Select, SelectChangeEvent } from "@mui/material";
+import { Box, Button, Grid, Typography, Paper, Chip, MenuItem, OutlinedInput, Select, SelectChangeEvent } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { FieldValues, useForm, UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 export default function Edit() {
@@ -22,31 +22,17 @@ export default function Edit() {
     company_id: [],
     question_type: [],
   });
-  const formProps = useForm<ReportTypes>();
+  const formProps = useForm<any>();
   const { handleSubmit: handleFormSubmit, getValues, setValue } = formProps;
   const [openingList, setOpeningList] = useState<DropdownTypes[]>([]);
-  const [selectedOpenings, setSelectedOpenings] = useState<{ [key: number]: string[] }>({});
-  
-  const [selectedQuestionTypes, setSelectedQuestionTypes] = useState<number[]>([]);
+  const [selectedOpenings, setSelectedOpenings] = useState<number[]>([]);
 
-  const handleOpeningsChange = (questionIndex: number) => (event: SelectChangeEvent<string[]>) => {
-    const {
-      target: { value },
-    } = event;
-    const newValue = typeof value === 'string' ? value.split(',') : value;
-    setSelectedOpenings(prev => ({
-      ...prev,
-      [questionIndex]: newValue
-    }));
-  };
-
-  const handleQuestionTypeChange = (event: SelectChangeEvent<number[]>) => {
+  const handleOpeningsChange = (event: SelectChangeEvent<number[]>) => {
     const {
       target: { value },
     } = event;
     const newValue = typeof value === 'string' ? [parseInt(value)] : value;
-    setSelectedQuestionTypes(newValue);
-    setValue('question_type_detail', newValue);
+    setSelectedOpenings(newValue);
   };
 
   const fetchOpeningJobs = async () => {
@@ -66,22 +52,23 @@ export default function Edit() {
         QuestionAPI.getQuestionType(),
       ]);
 
-      const questionData = response[0].data as unknown as QuestionDetail;
+      const questionData = response[0].data as any;
 
-      // 處理問題類型資料: 將單一物件轉換為陣列格式
       let initialQuestionTypes: number[] = [];
       if (questionData?.question_type_detail) {
-        // 如果是物件,取其 question_type_id
         if (typeof questionData.question_type_detail === 'object' && 'question_type_id' in questionData.question_type_detail) {
           initialQuestionTypes = [questionData.question_type_detail.question_type_id];
-        }
-        // 如果已經是陣列
-        else if (Array.isArray(questionData.question_type_detail)) {
+        } else if (Array.isArray(questionData.question_type_detail)) {
           initialQuestionTypes = questionData.question_type_detail;
         }
       }
 
-      setSelectedQuestionTypes(initialQuestionTypes);
+      let initialOpenings: number[] = [];
+      if (questionData?.using_openings && Array.isArray(questionData.using_openings)) {
+        initialOpenings = questionData.using_openings.map((item: any) => item.opening);
+      }
+
+      setSelectedOpenings(initialOpenings);
 
       formProps.reset({
         question_type: questionData?.question_type,
@@ -110,12 +97,20 @@ export default function Edit() {
 
   const onSubmit = async (data: any) => {
     try {
-      // 確保問題類型資料格式正確
+      if (!selectedOpenings || selectedOpenings.length === 0) {
+        toast.error("請選擇至少一個適用職缺");
+        return;
+      }
+
       const submitData = {
-        ...data,
-        question_type_detail: selectedQuestionTypes
+        question_type: data.question_type,
+        difficulty: data.difficulty,
+        time_allowed: data.time_allowed,
+        question: data.question,
+        opening_ids: selectedOpenings,
+        opening_action: 'replace'
       };
-      
+
       console.log("提交的資料:", submitData);
       await QuestionAPI.update(Number(id), submitData);
       toast.success("問題更新成功");
@@ -222,6 +217,51 @@ export default function Edit() {
               />
             </Grid>
           ))}
+
+          <Grid sx={{ mt: 2 }}>
+            <Typography variant="subtitle1">
+              <Typography component="span" color="error" fontSize="0.75rem">
+                *{" "}
+              </Typography>
+              適用職缺
+            </Typography>
+            <Select
+              fullWidth
+              multiple
+              sx={{
+                borderRadius: "5px",
+                "& .MuiOutlinedInput-input": {
+                  padding: "10px 14px",
+                },
+              }}
+              value={selectedOpenings}
+              onChange={handleOpeningsChange}
+              input={<OutlinedInput />}
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((value) => (
+                    <Chip
+                      key={value}
+                      label={openingList.find((item: any) => item.key === value)?.value || value}
+                    />
+                  ))}
+                </Box>
+              )}
+              error={!selectedOpenings?.length}
+            >
+              <MenuItem disabled value="">
+                請選擇適用職缺
+              </MenuItem>
+              {openingList.map((name) => (
+                <MenuItem
+                  key={name.key}
+                  value={name.key}
+                >
+                  {name.value}
+                </MenuItem>
+              ))}
+            </Select>
+          </Grid>
         </Paper>
       </Box>
     </Layout>
