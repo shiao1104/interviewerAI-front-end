@@ -30,6 +30,7 @@ export default function EditCompanyInfo() {
   const router = useRouter();
   const { showLoading, hideLoading } = useLoading();
   const [companyBenefits, setCompanyBenefits] = useState<string[]>([]);
+  const [companyId, setCompanyId] = useState<number>();
   const [dropdownOptions, setDropdownOptions] = useState<{
     industry_id: DropdownTypes[];
   }>({
@@ -45,8 +46,7 @@ export default function EditCompanyInfo() {
   const fetch = async () => {
     try {
       const response = await axios.all([
-        // TODO: 這裡的 company_id 先寫死，之後要改成動態抓取
-        CompanyAPI.getData(11),
+        CompanyAPI.getData(companyId),
         CompanyAPI.getIndustryList()
       ]);
       const data = response[0].data as unknown as CompanyTypes;
@@ -78,8 +78,11 @@ export default function EditCompanyInfo() {
 
   useEffect(() => {
     showLoading();
-    fetch();
-  }, []);
+    setCompanyId(Number(sessionStorage.getItem('companyId')));
+    if (companyId) {
+      fetch();
+    }
+  }, [companyId]);
 
   const handleBenefitsChange = (newBenefits: string[]) => {
     setCompanyBenefits(newBenefits);

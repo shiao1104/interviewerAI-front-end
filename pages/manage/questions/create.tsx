@@ -32,6 +32,7 @@ import { toast } from "react-toastify";
 export default function Create() {
   const router = useRouter();
   const [openingList, setOpeningList] = useState<DropdownTypes[]>([]);
+  const [companyId, setCompanyId] = useState<number>();
   const [dropdownOptions, setDropdownOptions] = useState<{
     opening_jobs: DropdownTypes[];
     question_type: DropdownTypes[];
@@ -88,9 +89,12 @@ export default function Create() {
   };
 
   useEffect(() => {
-    fetch();
-    fetchOpeningJobs();
-  }, []);
+    setCompanyId(Number(sessionStorage.getItem('companyId')));
+    if (companyId) {
+      fetch();
+      fetchOpeningJobs();
+    }
+  }, [companyId]);
 
   const onSubmit = async (data: { questions: any[] }) => {
     try {
@@ -102,8 +106,12 @@ export default function Create() {
         toast.error("請為每個問題選擇適用職缺");
         return;
       }
+      const dataList = {
+        ...data.questions,
+        'company': companyId
+      }
 
-      await QuestionAPI.create(data.questions);
+      await QuestionAPI.create(dataList);
       toast.success("問題新增成功");
       router.push("/manage/questions");
     } catch (error) {

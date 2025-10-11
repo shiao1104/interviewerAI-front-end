@@ -5,8 +5,8 @@ import { Response } from "@/lib/types/requestType";
 const BASE_URL = "/opening";
 
 const OpeningAPI = {
-  getData: (): Promise<Response<never>> =>
-    API.get(`${BASE_URL}/openings/`),
+  getData: (company: number): Promise<Response<never>> =>
+    API.get(`${BASE_URL}/openings/`, { params: { company } }),
 
   getRecord: (opening_id: number): Promise<Response<never>> =>
     API.get(`${BASE_URL}/openings/${opening_id}/`),

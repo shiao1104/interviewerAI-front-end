@@ -18,13 +18,14 @@ import { createOpeningData } from "@/lib/data/createOpeningData";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import { OpeningTypes } from "@/lib/types/openingTypes";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLoading } from "@/lib/hook/loading";
 
 export default function Edit() {
   const router = useRouter();
   const { showLoading, hideLoading } = useLoading();
   const { id } = router.query;
+  const [companyId, setCompanyId] = useState<number>();
 
   const formProps = useForm<OpeningTypes>({
     defaultValues: {
@@ -48,18 +49,18 @@ export default function Edit() {
   };
 
   useEffect(() => {
-    if (router.isReady && id) {
+    setCompanyId(Number(sessionStorage.getItem('companyId')));
+    if (router.isReady && id && companyId) {
       fetchOpeningData();
     }
-  }, [router.isReady, id]);
+  }, [router.isReady, id, companyId]);
 
   const handleSubmit = async () => {
     showLoading();
     const openings = formProps.getValues();
     const data = {
       ...openings,
-      // TODO: temporarily fix
-      company: 11
+      company: companyId ?? 0
     }
 
     try {

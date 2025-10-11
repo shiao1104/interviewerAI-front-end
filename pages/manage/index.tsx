@@ -24,13 +24,11 @@ export default function Home() {
   const { showLoading, hideLoading } = useLoading();
   const [dataList, setDataList] = useState<CompanyTypes>();
   const [benefitList, setBenefitList] = useState<string[]>([]);
+  const [companyId, setCompanyId] = useState<number>();
 
   const fetch = async () => {
-    showLoading();
-    
     try {
-      // TODO: 這裡的 company_id 先寫死，之後要改成動態抓取
-      const response = await CompanyAPI.getData(11);
+      const response = await CompanyAPI.getData(companyId);
       const data = response.data as unknown as CompanyTypes;
       setDataList(data);
       setBenefitList(data.company_benefits?.split('、') || []);
@@ -42,8 +40,13 @@ export default function Home() {
   }
 
   useEffect(() => {
-    fetch();
-  }, []);
+    showLoading();
+
+    setCompanyId(Number(sessionStorage.getItem('companyId')));
+    if (companyId) {
+      fetch();
+    }
+  }, [companyId]);
 
   return (
     <Layout>

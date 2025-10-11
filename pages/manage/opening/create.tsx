@@ -18,9 +18,13 @@ import { createOpeningData } from "@/lib/data/createOpeningData";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import { OpeningTypes } from "@/lib/types/openingTypes";
 import { toast } from "react-toastify";
+import { useEffect, useState } from "react";
+import { useLoading } from "@/lib/hook/loading";
 
 export default function Create() {
   const router = useRouter();
+  const { showLoading, hideLoading } = useLoading()
+  const [companyId, setCompanyId] = useState<number>();
 
   const formProps = useForm<OpeningTypes>({
     defaultValues: {
@@ -32,15 +36,26 @@ export default function Create() {
     },
   });
 
+  useEffect(() => {
+    setCompanyId(Number(sessionStorage.getItem('companyId')));
+  }, [companyId])
+
   const handleSubmit = async () => {
+    showLoading();
     const openings = formProps.getValues();
+    const dataList = {
+      ...openings,
+      'company': companyId ?? 0
+    }
 
     try {
-      await OpeningAPI.create(openings);
+      await OpeningAPI.create(dataList);
       toast.success("職缺資料已成功儲存！");
       router.push("/manage/opening");
     } catch (error) {
       toast.error("儲存職缺資料失敗，請稍後再試。");
+    } finally {
+      hideLoading();
     }
   }
 

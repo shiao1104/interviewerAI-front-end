@@ -26,12 +26,11 @@ export default function Opening() {
   const [searchParams, setSearchParams] = useState<SearchType>();
   const [localOpeningData, setLocalOpeningData] = useState<OpeningTypes[]>([]);
   const [filteredDataList, setFilteredDataList] = useState<OpeningTypes[]>([]);
+  const [companyId, setCompanyId] = useState<number>();
 
   const fetchData = async () => {
-    showLoading();
-
     try {
-      const response = await OpeningAPI.getData();
+      const response = await OpeningAPI.getData(companyId ?? 0);
       setLocalOpeningData(response.data || []);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "取得資料失敗，請稍後再試");
@@ -74,8 +73,13 @@ export default function Opening() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    showLoading();
+
+    setCompanyId(Number(sessionStorage.getItem('companyId')))
+    if (companyId) {
+      fetchData();
+    }
+  }, [companyId]);
 
   useEffect(() => {
     if (localOpeningData.length > 0) {
