@@ -196,6 +196,11 @@ export default function Report() {
     return comments[type][level] || "評分分析中...";
   };
 
+  // 檢查是否有有效的評分
+  const hasValidScore = (score: number | undefined): boolean => {
+    return score !== null && score !== undefined && score !== 0;
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -394,6 +399,7 @@ export default function Report() {
                   {scoreItems.map((item) => {
                     const key = item.key as keyof Pick<InterviewData, 'score_expression' | 'score_attitude' | 'score_technical' | 'score_collaboration'>;
                     const score = interviewData[key] || 0;
+                    const isValidScore = hasValidScore(score);
 
                     return (
                       <Grid key={item.key}>
@@ -416,49 +422,62 @@ export default function Report() {
                           >
                             {item.title}
                           </Typography>
-                          <Box sx={{ mb: 1 }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                              }}
-                            >
+                          
+                          {isValidScore ? (
+                            <>
+                              <Box sx={{ mb: 1 }}>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                  }}
+                                >
+                                  <Typography
+                                    variant="body2"
+                                    color={customColors.textSecondary}
+                                  >
+                                    {item.label}
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    fontWeight="medium"
+                                    color={customColors.text}
+                                  >
+                                    {score}/100
+                                  </Typography>
+                                </Box>
+                                <LinearProgress
+                                  variant="determinate"
+                                  value={score}
+                                  sx={{
+                                    mt: 0.5,
+                                    height: 8,
+                                    borderRadius: 4,
+                                    bgcolor: customColors.blueLight,
+                                    "& .MuiLinearProgress-bar": {
+                                      bgcolor: customColors.primary,
+                                      borderRadius: 4,
+                                    },
+                                  }}
+                                />
+                              </Box>
                               <Typography
                                 variant="body2"
                                 color={customColors.textSecondary}
+                                sx={{ mt: 2, lineHeight: 1.6 }}
                               >
-                                {item.label}
+                                {generateScoreComment(score, item.key as ScoreType)}
                               </Typography>
-                              <Typography
-                                variant="body2"
-                                fontWeight="medium"
-                                color={customColors.text}
-                              >
-                                {score}/100
-                              </Typography>
-                            </Box>
-                            <LinearProgress
-                              variant="determinate"
-                              value={score}
-                              sx={{
-                                mt: 0.5,
-                                height: 8,
-                                borderRadius: 4,
-                                bgcolor: customColors.blueLight,
-                                "& .MuiLinearProgress-bar": {
-                                  bgcolor: customColors.primary,
-                                  borderRadius: 4,
-                                },
-                              }}
-                            />
-                          </Box>
-                          <Typography
-                            variant="body2"
-                            color={customColors.textSecondary}
-                            sx={{ mt: 2, lineHeight: 1.6 }}
-                          >
-                            {generateScoreComment(score, item.key as ScoreType)}
-                          </Typography>
+                            </>
+                          ) : (
+                            <Typography
+                              variant="body2"
+                              color={customColors.textSecondary}
+                              sx={{ mt: 2, lineHeight: 1.6, fontStyle: 'italic' }}
+                            >
+                              此面試無包含此類型問題
+                            </Typography>
+                          )}
                         </Card>
                       </Grid>
                     );

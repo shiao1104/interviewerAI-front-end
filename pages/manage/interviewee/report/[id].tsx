@@ -99,6 +99,11 @@ export default function IntervieweeDetail() {
     },
   ];
 
+  // 檢查評分是否有效
+  const hasValidScore = (score: number | undefined): boolean => {
+    return score !== null && score !== undefined && score !== 0;
+  };
+
   const getCommentByScore = (score: number, type: string) => {
     if (score <= 25) {
       switch (type) {
@@ -616,76 +621,87 @@ export default function IntervieweeDetail() {
                             gap: "2rem",
                           }}
                         >
-                          {scoreItems.map((item) => (
-                            <Grid key={item.key}>
-                              <Card
-                                sx={{
-                                  p: 2,
-                                  borderRadius: 2,
-                                  border: `1px solid ${theme.palette.divider}`,
-                                }}
-                              >
-                                <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-                                  {item.title}
-                                </Typography>
-                                <Box sx={{ mb: 2 }}>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                      mb: 0.5,
-                                    }}
-                                  >
+                          {scoreItems.map((item) => {
+                            const score = intervieweeData?.scores[
+                              item.key as keyof typeof intervieweeData.scores
+                            ] || 0;
+                            const isValidScore = hasValidScore(score);
+
+                            return (
+                              <Grid key={item.key}>
+                                <Card
+                                  sx={{
+                                    p: 2,
+                                    borderRadius: 2,
+                                    border: `1px solid ${theme.palette.divider}`,
+                                  }}
+                                >
+                                  <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+                                    {item.title}
+                                  </Typography>
+
+                                  {isValidScore ? (
+                                    <>
+                                      <Box sx={{ mb: 2 }}>
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            mb: 0.5,
+                                          }}
+                                        >
+                                          <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                          >
+                                            {item.label}
+                                          </Typography>
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight="medium"
+                                          >
+                                            {score}/100
+                                          </Typography>
+                                        </Box>
+                                        <LinearProgress
+                                          variant="determinate"
+                                          value={score}
+                                          sx={{
+                                            height: 8,
+                                            borderRadius: 4,
+                                            bgcolor: theme.palette.grey[100],
+                                            "& .MuiLinearProgress-bar": {
+                                              bgcolor: item.color,
+                                              borderRadius: 4,
+                                            },
+                                          }}
+                                        />
+                                      </Box>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{ lineHeight: 1.5 }}
+                                      >
+                                        {
+                                          intervieweeData?.comments[
+                                          item.key as keyof typeof intervieweeData.comments
+                                          ]
+                                        }
+                                      </Typography>
+                                    </>
+                                  ) : (
                                     <Typography
                                       variant="body2"
                                       color="text.secondary"
+                                      sx={{ lineHeight: 1.5, fontStyle: 'italic' }}
                                     >
-                                      {item.label}
+                                      此面試無包含此類型問題
                                     </Typography>
-                                    <Typography
-                                      variant="body2"
-                                      fontWeight="medium"
-                                    >
-                                      {
-                                        intervieweeData?.scores[
-                                        item.key as keyof typeof intervieweeData.scores
-                                        ]
-                                      }
-                                      /100
-                                    </Typography>
-                                  </Box>
-                                  <LinearProgress
-                                    variant="determinate"
-                                    value={
-                                      intervieweeData?.scores[
-                                      item.key as keyof typeof intervieweeData.scores
-                                      ]
-                                    }
-                                    sx={{
-                                      height: 8,
-                                      borderRadius: 4,
-                                      bgcolor: theme.palette.grey[100],
-                                      "& .MuiLinearProgress-bar": {
-                                        bgcolor: item.color,
-                                        borderRadius: 4,
-                                      },
-                                    }}
-                                  />
-                                </Box>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                  sx={{ lineHeight: 1.5 }}
-                                >
-                                  {
-                                    intervieweeData?.comments[
-                                    item.key as keyof typeof intervieweeData.comments
-                                    ]
-                                  }
-                                </Typography>
-                              </Card>
-                            </Grid>
-                          ))}
+                                  )}
+                                </Card>
+                              </Grid>
+                            );
+                          })}
                         </Grid>
                       )}
                     </Box>
