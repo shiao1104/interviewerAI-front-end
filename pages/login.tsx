@@ -24,6 +24,7 @@ import styles from "@/styles/pages/Login.module.scss";
 import UserAPI from "@/lib/api/UserAPI";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
+import { useLoading } from "@/lib/hook/loading";
 
 interface LoginFormInputs {
   email: string;
@@ -73,6 +74,7 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignIn(props: { disableCustomTheme?: boolean }) {
+  const { showLoading, hideLoading } = useLoading();
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
   const [isClient, setIsClient] = React.useState(false);
@@ -97,12 +99,14 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   };
 
   const onSubmit = async (data: LoginFormInputs) => {
+
     const dataList = {
       username: data.email,
       password: data.password,
     };
 
     try {
+      showLoading();
       const response = await UserAPI.access(dataList);
       if (response.data && response.data.access) {
         sessionStorage.setItem("token", response.data.access);
@@ -113,6 +117,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         try {
           const meRes = await UserAPI.me();
           const me = meRes.data;
+          console.log(meRes)
 
           if (me) {
             const userName =
@@ -159,7 +164,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         });
       }
     } catch {
-      toast.error("登入失敗", {
+      toast.error("帳號或密碼錯誤", {
         position: "top-center",
         autoClose: 1500,
         hideProgressBar: true,
@@ -169,6 +174,8 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         progress: undefined,
         theme: "light",
       });
+    } finally {
+      hideLoading();
     }
   };
 
