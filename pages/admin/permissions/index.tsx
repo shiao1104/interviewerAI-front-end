@@ -12,6 +12,7 @@ import { Box, Typography, Button, IconButton, Chip } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 export default function Permissions() {
     const { showLoading, hideLoading } = useLoading()
@@ -149,20 +150,23 @@ export default function Permissions() {
         if (formData.auth == 0) {
             dataList = {
                 ...formData,
+                is_superuser: false,
                 is_staff: true,
                 company_id: dataList.company
             }
         } else if (formData.auth == 1) {
             dataList = {
                 ...formData,
+                is_staff: false,
                 is_superuser: true
             }
         }
         delete dataList.auth;
         delete dataList.company
+        console.log(dataList)
 
         try {
-            await AdminAPI.update(formData.id, formData);
+            await AdminAPI.update(formData.id, dataList);
             toast.success("更新成功");
             setPopupEditActive(false);
             setEditingCompany(null);
@@ -174,8 +178,18 @@ export default function Permissions() {
 
 
     const deleteCompany = async (id: string) => {
-        showLoading();
+        const result = await Swal.fire({
+            title: '確認刪除?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: '確認刪除',
+            cancelButtonText: '取消'
+        })
 
+        if (!result.isConfirmed) { return; }
+        showLoading();
         try {
             await AdminAPI.delete(id);
             toast.success("刪除成功");
@@ -193,12 +207,14 @@ export default function Permissions() {
         if (data.auth == 0) {
             dataList = {
                 ...data,
-                is_staff: true
+                role: '員工',
+                company_id: data.company
             }
         } else if (data.auth == 1) {
             dataList = {
                 ...data,
-                is_superuser: true
+                role: '管理者',
+                company_id: data.company
             }
         }
         delete dataList.auth;
