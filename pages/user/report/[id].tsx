@@ -21,6 +21,7 @@ import {
   CheckCircle,
   Cancel,
   Schedule,
+  QueryBuilder,
 } from "@mui/icons-material";
 import CircleProgress from "@/components/common/manage/CircleProgress";
 import Layout from "@/components/Layout/Layout";
@@ -234,70 +235,145 @@ export default function Report() {
           返回主畫面
         </Button>
 
-        {/* Main Content Grid */}
         <Box sx={{ display: "grid", gap: "1.5rem" }}>
-          {/* Job Information Card */}
           <Paper
             elevation={0}
             sx={{
               borderRadius: 2,
               border: `1px solid ${customColors.borderLight}`,
-              overflow: "hidden",
+              overflow: 'hidden',
             }}
           >
             <Box sx={{ p: 2, bgcolor: customColors.blueGray }}>
-              <Typography variant="h6" fontWeight="500" color={customColors.text}>
+              <Typography variant="h6" fontWeight="600" color={customColors.text}>
                 職缺資訊
               </Typography>
             </Box>
+
             <Box sx={{ p: 3 }}>
-              <Grid container spacing={3}>
+              <Grid sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
                 <Grid>
-                  <Box sx={{ display: "flex", mb: 2 }}>
-                    <Business sx={{ color: customColors.primary, mr: 1 }} />
-                    <Typography variant="body1" fontWeight="medium" color={customColors.text}>
-                      {interviewData.opening_detail?.company_name || "公司名稱"}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" color={customColors.textSecondary} sx={{ ml: 4, mb: 1 }}>
-                    <Work sx={{ fontSize: 16, mr: 0.5, verticalAlign: "text-bottom" }} />
-                    職位：{interviewData.opening_detail?.opening_name || "職位名稱"}
-                  </Typography>
-                </Grid>
-                <Grid>
-                  <Box sx={{ display: "flex", mb: 2 }}>
-                    <CalendarMonth sx={{ color: customColors.primary, mr: 1 }} />
-                    <Typography variant="body1" fontWeight="medium" color={customColors.text}>
-                      面試資訊
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" color={customColors.textSecondary} sx={{ ml: 4, mb: 1 }}>
-                    日期：{dateTime.date}
-                  </Typography>
-                  <Typography variant="body2" color={customColors.textSecondary} sx={{ ml: 4, mb: 1 }}>
-                    時間：{dateTime.time}
-                  </Typography>
-                  <Typography variant="body2" color={customColors.textSecondary} sx={{ ml: 4, mb: 1 }}>
-                    面試編號：#{interviewData.interview_id}
-                  </Typography>
-                  <Box sx={{ ml: 4, mt: 1 }}>
-                    <Chip
-                      icon={statusDisplay.icon}
-                      label={statusDisplay.text}
-                      size="small"
+                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    <Box
                       sx={{
-                        color: statusDisplay.color,
-                        bgcolor: `${statusDisplay.color}15`,
-                        border: `1px solid ${statusDisplay.color}30`,
-                        fontWeight: 500
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 40,
+                        height: 40,
+                        borderRadius: 1.5,
+                        bgcolor: `${customColors.primary}10`,
                       }}
-                    />
+                    >
+                      <Business sx={{ fontSize: 20, color: customColors.primary }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" color={customColors.textSecondary} sx={{ display: 'block', mb: 0.5 }}>
+                        公司名稱
+                      </Typography>
+                      <Typography variant="body1" fontWeight="600" color={customColors.text}>
+                        {interviewData.opening_detail?.company_name || '公司名稱'}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 40,
+                        height: 40,
+                        borderRadius: 1.5,
+                        bgcolor: `${customColors.primary}10`,
+                      }}
+                    >
+                      <Work sx={{ fontSize: 20, color: customColors.primary }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" color={customColors.textSecondary} sx={{ display: 'block', mb: 0.5 }}>
+                        職位名稱
+                      </Typography>
+                      <Typography variant="body1" fontWeight="600" color={customColors.text}>
+                        {interviewData.opening_detail?.opening_name || '職位名稱'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                <Grid>
+                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 40,
+                        height: 40,
+                        borderRadius: 1.5,
+                        bgcolor: `${customColors.primary}10`,
+                      }}
+                    >
+                      <CalendarMonth sx={{ fontSize: 20, color: customColors.primary }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" color={customColors.textSecondary} sx={{ display: 'block', mb: 0.5 }}>
+                        面試日期
+                      </Typography>
+                      <Typography variant="body1" fontWeight="600" color={customColors.text}>
+                        {dateTime.date}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 40,
+                        height: 40,
+                        borderRadius: 1.5,
+                        bgcolor: `${customColors.primary}10`,
+                      }}
+                    >
+                      <QueryBuilder sx={{ fontSize: 20, color: customColors.primary }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" color={customColors.textSecondary} sx={{ display: 'block', mb: 0.5 }}>
+                        面試時間
+                      </Typography>
+                      <Typography variant="body1" fontWeight="600" color={customColors.text}>
+                        {dateTime.time}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Grid>
               </Grid>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 3, pt: 3, borderTop: `1px solid ${customColors.borderLight}` }}>
+                <Typography variant="body2" color={customColors.textSecondary}>
+                  面試編號：<Typography component="span" variant="body2" fontWeight="600" color={customColors.text}>
+                    #{interviewData.interview_id}
+                  </Typography>
+                </Typography>
+                <Chip
+                  icon={statusDisplay.icon}
+                  label={statusDisplay.text}
+                  size="small"
+                  sx={{
+                    color: statusDisplay.color,
+                    bgcolor: `${statusDisplay.color}15`,
+                    border: `1px solid ${statusDisplay.color}30`,
+                    fontWeight: 600,
+                    ml: '1rem'
+                  }}
+                />
+              </Box>
             </Box>
           </Paper>
-
           <Paper
             elevation={0}
             sx={{
@@ -375,7 +451,7 @@ export default function Report() {
                 <Grid container sx={{
                   mt: 0,
                   display: "grid",
-                  templateColumns: "1fr",
+                  gridTemplateColumns: "1fr 1fr",
                   gap: 2
                 }}>
                   {scoreItems.map((item) => {
@@ -468,32 +544,6 @@ export default function Report() {
               )}
             </Box>
           </Paper>
-
-          {/* Additional Information */}
-          {interviewData.remark && (
-            <Paper
-              elevation={0}
-              sx={{
-                borderRadius: 2,
-                border: `1px solid ${customColors.borderLight}`,
-                overflow: "hidden",
-              }}
-            >
-              <Box sx={{ p: 2, bgcolor: customColors.blueGray }}>
-                <Typography variant="h6" fontWeight="500" color={customColors.text}>
-                  備註
-                </Typography>
-              </Box>
-              <Box sx={{ p: 3 }}>
-                <Typography
-                  variant="body1"
-                  sx={{ color: customColors.text, lineHeight: 1.6 }}
-                >
-                  {interviewData.remark}
-                </Typography>
-              </Box>
-            </Paper>
-          )}
         </Box>
       </Box>
     </Layout>
