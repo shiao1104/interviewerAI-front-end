@@ -31,6 +31,11 @@ API.interceptors.response.use(
     return response.data;
   },
   error => {
+    const requestUrl = error.config?.url || "";
+
+    if (requestUrl.includes("/login")) {
+      return Promise.reject(error);
+    }
 
     if (error.response?.status === 401) {
       Swal.fire({

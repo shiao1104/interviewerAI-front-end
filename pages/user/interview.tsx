@@ -64,13 +64,13 @@ export default function Interview() {
   const [canSkip, setCanSkip] = useState<boolean>(false);
   const [companyName, setCompanyName] = useState('');
   const [openingName, setOpeningName] = useState('');
-  const [interviewId] = useState<string | null>(sessionStorage.getItem('interview_id'));
+  const [interviewId, setInterviewId] = useState<number>();
 
   const recorderRef = useRef<VideoRecorderRef>(null);
 
-  const fetchQuestion = async (id: string) => {
+  const fetchQuestion = async () => {
     try {
-      const response = await QuestionTempAPI.getNextQuestion(Number(id));
+      const response = await QuestionTempAPI.getNextQuestion(interviewId ?? 0);
       if (response?.data && response.data as Question) {
         const questionData = response.data as Question;
         setQuestion(questionData);
@@ -93,17 +93,20 @@ export default function Interview() {
   };
 
   useEffect(() => {
-    fetchQuestion(sessionStorage.getItem('interview_id') || '');
-    setCompanyName(sessionStorage.getItem('company_name') || '');
-    setOpeningName(sessionStorage.getItem('opening_name') || '');
-  }, []);
+    setInterviewId(Number(sessionStorage.getItem('interview_id')))
+    if (interviewId) {
+      fetchQuestion();
+      setCompanyName(sessionStorage.getItem('company_name') || '');
+      setOpeningName(sessionStorage.getItem('opening_name') || '');
+    }
+  }, [interviewId]);
 
   const finishAnswer = async () => {
     if (recorderRef.current) {
       recorderRef.current.stopRecording();
     }
 
-    await fetchQuestion(sessionStorage.getItem('interview_id') || '');
+    await fetchQuestion();
 
     setIsPreparing(true);
     setQuestionNo((prev) => prev + 1);
@@ -121,7 +124,7 @@ export default function Interview() {
     if (!question?.question_id || !Array.isArray(blobs) || blobs.length === 0) return;
 
     const formData = new FormData();
-    formData.append('interview_id', interviewId || '');
+    formData.append('interview_id', interviewId?.toString() ?? '');
     formData.append('question_id', question.question_id.toString());
     const videoBlob = new Blob(blobs, { type: 'video/webm' });
     const audioBlob = new Blob(blobs, { type: 'audio/webm' });

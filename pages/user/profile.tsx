@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -6,9 +6,6 @@ import {
   Typography,
   Paper,
   TextField,
-  Avatar,
-  Divider,
-  IconButton,
   Grid
 } from "@mui/material";
 import { styled, ThemeProvider, createTheme } from "@mui/material/styles";
@@ -19,17 +16,15 @@ import {
   Person as PersonIcon,
   Email as EmailIcon,
   Phone as PhoneIcon,
-  LocationOn as LocationIcon,
-  Work as WorkIcon,
-  CalendarToday as CalendarIcon,
-  PhotoCamera as PhotoCameraIcon,
   KeyboardBackspace as BackIcon
 } from "@mui/icons-material";
 import Layout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
 import UserAPI from "@/lib/api/UserAPI";
+import { useLoading } from "@/lib/hook/loading";
+import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
 
-// 建立藍白主題
 const theme = createTheme({
   palette: {
     primary: {
@@ -61,73 +56,34 @@ const InfoSection = styled(Box)(({ theme }) => ({
 const InfoGrid = styled(Grid)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   display: "grid",
-  gridTemplateColumns: "1fr 1fr 1fr",
+  gridTemplateColumns: "",
   gap: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
     gridTemplateColumns: "1fr",
   },
 }));
 
-const SingleInfoGrid = styled(Grid)(({ theme }) => ({
-  marginBottom: theme.spacing(2),
-  display: "grid",
-  gridTemplateColumns: "1fr",
-  gap: theme.spacing(2),
-}));
-
 export default function ProfilePage() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { showLoading, hideLoading } = useLoading();
   const [isEditing, setIsEditing] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState<string>("");
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const { register, setValue, handleSubmit, reset, getValues } = useForm();
 
-  const [profile, setProfile] = useState({
-    name: "王小明",
-    email: "wang.xiaoming@example.com",
-    phone_number: "0912-345-678",
-    location: "台北市信義區忠孝東路四段123號",
-    company: "科技創新股份有限公司",
-    position: "前端工程師",
-    joinDate: "2023年1月15日",
-  });
-
-  const [editProfile, setEditProfile] = useState(profile);
-
-  // 取得目前使用者資料 → 帶入個人檔案
   useEffect(() => {
+    showLoading();
     const init = async () => {
       try {
-        const meRes = await UserAPI.me();
-        const me = (meRes as any).data?.data ?? (meRes as any).data ?? meRes;
+        const response = await UserAPI.me();
 
-        const fullName =
-          me.full_name ??
-          `${me.last_name ?? ""}${me.first_name ?? ""}`.trim() ||
-          me.username ||
-          profile.name;
-
-        setProfile((prev) => ({
-          ...prev,
-          name: fullName,
-          email: me.email ?? prev.email,
-          userId: String(me.id ?? ""),
-          role: me.role ?? "",
-          phone_number: me.phone_number ?? prev.phone_number,
-        }));
-        setEditProfile((prev) => ({
-          ...prev,
-          name: fullName,
-          email: me.email ?? prev.email,
-          userId: String(me.id ?? ""),
-          role: me.role ?? "",
-          phone_number: me.phone_number ?? prev.phone_number,
-        }));
-
-        const sid = sessionStorage.getItem("user_id");
-        console.log("[ProfilePage] session user_id =", sid, " / me.id =", me.id);
+        const data = response.data;
+        setValue('first_name', data?.first_name);
+        setValue('last_name', data?.last_name);
+        setValue('email', data?.email);
+        setValue('phone_number', data?.phone_number);
       } catch (e) {
-        console.warn("[ProfilePage] 無法取得 /user/me/，使用預設資料。", e);
+        toast.error('查無資料')
+      } finally {
+        hideLoading();
       }
     };
     init();
@@ -135,60 +91,25 @@ export default function ProfilePage() {
 
   const handleEdit = () => {
     setIsEditing(true);
-    setEditProfile(profile);
   };
 
-  const handleSave = () => {
-    setProfile(editProfile);
+  const handleSave = async (data: any) => {
+    showLoading();
     setIsEditing(false);
-    // 這裡可以加入API呼叫來儲存資料
-    console.log("儲存資料:", editProfile);
+
+    try {
+      await UserAPI.update(data);
+      reset(data);
+      toast.success('更新成功')
+    } catch {
+      toast.error('更新失敗')
+    } finally {
+      hideLoading();
+    }
   };
 
   const handleCancel = () => {
-    setEditProfile(profile);
     setIsEditing(false);
-    setAvatarPreview(""); // 重置頭像預覽
-    setAvatarFile(null);
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setEditProfile(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  // 處理頭像上傳
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // 驗證文件類型
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-      if (!allowedTypes.includes(file.type)) {
-        alert('請上傳 JPG、PNG 或 GIF 格式的圖片');
-        return;
-      }
-
-      // 驗證文件大小 (限制為 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('圖片大小不能超過 5MB');
-        return;
-      }
-
-      setAvatarFile(file);
-
-      // 創建預覽URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setAvatarPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleGoBack = () => {
@@ -231,105 +152,52 @@ export default function ProfilePage() {
               backgroundColor: "#fff",
             }}
           >
-            {/* 基本信息區塊 */}
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-              個人基本資訊
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              請填寫您的個人資訊，這些資訊將顯示在您的個人檔案中
-            </Typography>
-
-            {/* 大頭照上傳區塊 */}
-            <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 500 }}>
-                個人大頭照
-              </Typography>
-
-              <Box sx={{ position: 'relative', mb: 2 }}>
-                <Avatar
-                  src={avatarPreview}
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    cursor: isEditing ? 'pointer' : 'default',
-                    border: isEditing ? '2px dashed #ccc' : '2px solid #e0e0e0',
-                    '&:hover': isEditing ? {
-                      border: '2px dashed #1976d2',
-                    } : {},
-                  }}
-                  onClick={isEditing ? handleAvatarClick : undefined}
-                >
-                  {!avatarPreview && (
-                    <PersonIcon sx={{ fontSize: 60, color: 'grey.500' }} />
-                  )}
-                </Avatar>
-
-                {isEditing && (
-                  <IconButton
-                    sx={{
-                      position: 'absolute',
-                      bottom: -5,
-                      right: -5,
-                      backgroundColor: 'primary.main',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: 'primary.dark',
-                      },
-                      width: 35,
-                      height: 35,
-                    }}
-                    onClick={handleAvatarClick}
-                  >
-                    <PhotoCameraIcon fontSize="small" />
-                  </IconButton>
-                )}
-              </Box>
-
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleAvatarChange}
-                accept="image/jpeg,image/jpg,image/png,image/gif"
-                style={{ display: 'none' }}
-              />
-
-              {isEditing && (
-                <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-                  點擊上傳個人大頭照<br />
-                  支援 JPG、PNG、GIF 格式，檔案大小不超過 5MB
-                </Typography>
-              )}
-            </Box>
-
-            <Divider sx={{ mb: 3 }} />
-
-            {/* 個人基本信息表單 */}
             <InfoSection>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: "primary.main" }}>
                 基本資料
               </Typography>
 
               <InfoGrid container>
-                <Grid>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    <PersonIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
-                    姓名
-                  </Typography>
-                  {isEditing ? (
-                    <TextField
-                      fullWidth
-                      value={editProfile.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="請輸入姓名"
-                      variant="outlined"
-                      size="small"
-                    />
-                  ) : (
-                    <Typography variant="body1" sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                      {profile.name}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
+                  <Grid>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      <PersonIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
+                      姓氏
                     </Typography>
-                  )}
-                </Grid>
+                    {isEditing ? (
+                      <TextField
+                        fullWidth
+                        {...register('last_name')}
+                        placeholder="請輸入姓氏"
+                        variant="outlined"
+                        size="small"
+                      />
+                    ) : (
+                      <Typography variant="body1" sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                        {getValues('last_name')}
+                      </Typography>
+                    )}
+                  </Grid>
+                  <Grid>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      <PersonIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
+                      名字
+                    </Typography>
+                    {isEditing ? (
+                      <TextField
+                        fullWidth
+                        {...register('first_name')}
+                        placeholder="請輸入名字"
+                        variant="outlined"
+                        size="small"
+                      />
+                    ) : (
+                      <Typography variant="body1" sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                        {getValues('first_name')}
+                      </Typography>
+                    )}
+                  </Grid>
+                </Box>
 
                 <Grid>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -339,8 +207,7 @@ export default function ProfilePage() {
                   {isEditing ? (
                     <TextField
                       fullWidth
-                      value={editProfile.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      {...register('email')}
                       placeholder="請輸入電子郵件"
                       variant="outlined"
                       size="small"
@@ -348,7 +215,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <Typography variant="body1" sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                      {profile.email}
+                      {getValues('email')}
                     </Typography>
                   )}
                 </Grid>
@@ -361,29 +228,27 @@ export default function ProfilePage() {
                   {isEditing ? (
                     <TextField
                       fullWidth
-                      value={editProfile.phone_number}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      {...register('phone_number')}
                       placeholder="請輸入電話號碼"
                       variant="outlined"
                       size="small"
                     />
                   ) : (
                     <Typography variant="body1" sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                      {profile.phone_number}
+                      {getValues('phone_number')}
                     </Typography>
                   )}
                 </Grid>
               </InfoGrid>
             </InfoSection>
 
-            {/* 操作按鈕 */}
             <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2, mt: 4 }}>
               {isEditing ? (
                 <>
                   <Button
                     variant="contained"
                     startIcon={<SaveIcon />}
-                    onClick={handleSave}
+                    onClick={handleSubmit(handleSave)}
                     sx={{ height: "40px" }}
                   >
                     儲存更新

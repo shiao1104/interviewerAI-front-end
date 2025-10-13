@@ -34,10 +34,14 @@ export type MeData = {
   email: string;
   is_staff: boolean;
   is_superuser: boolean;
+  phone_number: number;
 };
 
 
 const UserAPI = {
+  update: ( data: any): Promise<Response<TokenData>> =>
+    API.put(`/user/me/edit/`, data),
+
   access: (data: Params): Promise<Response<TokenData>> =>
     API.post(`/user/login/`, data),
 
