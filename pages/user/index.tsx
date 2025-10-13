@@ -25,7 +25,7 @@ import CompanyIntroPopup from "@/components/common/user/CompanyIntroPopup";
 import OpeningAPI from "@/lib/api/OpeningAPI";
 import InterviewAPI from "@/lib/api/InterviewAPI";
 import { toast } from "react-toastify";
-import UserAPI from "@/lib/api/UserAPI";
+import { useLoading } from "@/lib/hook/loading";
 
 export interface CompanyInfo {
   company_name: string;
@@ -53,18 +53,17 @@ export type ReportListType = {
 
 export default function InterviewerDashboard() {
   const router = useRouter();
+  const { showLoading, hideLoading } = useLoading();
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedInterview, setSelectedInterview] =
     useState<InterviewApiData | null>(null);
   const [openDetail, setOpenDetail] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const [companyIntro, setCompanyIntro] = useState<InterviewApiData[]>([]);
-  const [loading, setLoading] = useState(false);
   const [reportList, setReportList] = useState<any[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
-  const fetchInterviews = async (uid: number) => {
-    setLoading(true);
 
+  const fetchInterviews = async (uid: number) => {
     try {
       const response = await OpeningAPI.getMyApplied(uid);
       const reportListResponse = await InterviewAPI.getReportList(uid);
@@ -78,32 +77,22 @@ export default function InterviewerDashboard() {
       toast.error("獲取面試數據失敗，請稍後重試。");
       setCompanyIntro([]);
     } finally {
-      setLoading(false);
+      hideLoading();
     }
   };
 
   useEffect(() => {
+    showLoading();
     sessionStorage.removeItem('interview_id');
     sessionStorage.removeItem('opening_name');
     sessionStorage.removeItem('company_name');
-    setAnimateIn(true);
-    (async () => {
-      try {
-        const me = await UserAPI.me();
-        if (me?.data?.id) {
-          setUserId(me.data.id);
-        } else {
-          console.warn("No user id from /user/me/");
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    })();
   }, []);
 
   useEffect(() => {
+    setUserId(Number(sessionStorage.getItem('user_id')));
     if (userId == null) return;
     fetchInterviews(userId);
+    setAnimateIn(true);
   }, [userId]);
 
   const handleOpenDialog = (interview: InterviewApiData) => {
@@ -148,13 +137,6 @@ export default function InterviewerDashboard() {
               </Typography>
             </div>
           </div>
-
-          {/* 顯示載入狀態 */}
-          {loading && (
-            <div className={styles.loadingMessage}>
-              <Typography>正在載入面試數據...</Typography>
-            </div>
-          )}
 
           <div className={styles.interviewCards}>
             {/* 渲染來自 API 的真實面試數據 */}

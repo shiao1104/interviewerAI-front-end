@@ -25,6 +25,7 @@ import {
 import CircleProgress from "@/components/common/manage/CircleProgress";
 import Layout from "@/components/Layout/Layout";
 import InterviewAPI from "@/lib/api/InterviewAPI";
+import { useLoading } from "@/lib/hook/loading";
 
 type InterviewData = {
   interview_id: number;
@@ -47,10 +48,10 @@ type InterviewData = {
 
 export default function Report() {
   const router = useRouter();
+  const { showLoading, hideLoading } = useLoading();
   const { id } = router.query;
-  const [interviewData, setInterviewData] = useState<InterviewData | null>(null);
+  const [interviewData, setInterviewData] = useState<any>(null);
   const [tabValue, setTabValue] = useState(0);
-  const [loading, setLoading] = useState(true);
 
   const customColors = {
     primary: "#3069d3",
@@ -96,17 +97,17 @@ export default function Report() {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      const response = await InterviewAPI.getRecord(Number(id));
-      setInterviewData(response.data ?? null);
+      const response = await InterviewAPI.getRepert(Number(id));
+      setInterviewData(response.data?.interview_info);
     } catch (error) {
       console.error("Error fetching interview data:", error);
     } finally {
-      setLoading(false);
+      hideLoading();
     }
   };
 
   useEffect(() => {
+    showLoading();
     if (router.isReady && id) {
       fetchData();
     }
@@ -117,7 +118,6 @@ export default function Report() {
     setTabValue(newValue);
   };
 
-  // 格式化日期時間顯示
   const formatDateTime = (datetime: string | number | Date) => {
     if (!datetime) return { date: "", time: "" };
     const date = new Date(datetime);
@@ -135,7 +135,6 @@ export default function Report() {
     };
   };
 
-  // 取得面試狀態顯示的顏色和圖標
   const getInterviewStatusDisplay = (status: string, result: string | string[]) => {
     if (status === "已完成") {
       if (result?.includes("通過")) {
@@ -166,7 +165,6 @@ export default function Report() {
     }
   };
 
-  // 生成評分說明文字
   type ScoreType = 'score_expression' | 'score_attitude' | 'score_technical' | 'score_collaboration';
   const generateScoreComment = (score: number, type: ScoreType) => {
     const comments: Record<ScoreType, { high: string; medium: string; low: string }> = {
@@ -196,29 +194,13 @@ export default function Report() {
     return comments[type][level] || "評分分析中...";
   };
 
-  // 檢查是否有有效的評分
   const hasValidScore = (score: number | undefined): boolean => {
     return score !== null && score !== undefined && score !== 0;
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-          <Typography>載入中...</Typography>
-        </Box>
-      </Layout>
-    );
-  }
 
   if (!interviewData) {
-    return (
-      <Layout>
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-          <Typography color="error">無法載入面試資料</Typography>
-        </Box>
-      </Layout>
-    );
+    return;
   }
 
   const statusDisplay = getInterviewStatusDisplay(
@@ -422,7 +404,7 @@ export default function Report() {
                           >
                             {item.title}
                           </Typography>
-                          
+
                           {isValidScore ? (
                             <>
                               <Box sx={{ mb: 1 }}>
