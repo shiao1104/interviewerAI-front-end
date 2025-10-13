@@ -125,7 +125,6 @@ export default function InterviewerDashboard() {
       <div
         className={`${styles.mainContent} ${animateIn ? styles.animateIn : ""}`}
       >
-        {/* 面試排程概覽 */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionTitleWrapper}>
@@ -139,11 +138,9 @@ export default function InterviewerDashboard() {
           </div>
 
           <div className={styles.interviewCards}>
-            {/* 渲染來自 API 的真實面試數據 */}
             {companyIntro.length > 0 && companyIntro.map((apiInterview, index) => {
               const interviewTime = new Date(apiInterview.interview_datetime);
               const now = new Date();
-              console.log("Comparing times:", now, interviewTime);
 
               const isDisabled = now.getTime() < interviewTime.getTime() - (5 * 60 * 1000);
 
@@ -219,7 +216,7 @@ export default function InterviewerDashboard() {
               </div>
               <List className={styles.completedList}>
                 {reportList
-                  .filter((item) => item.interview_status === "已完成")   // 🔑 過濾只留下已完成
+                  .filter((item) => item.interview_status === "已完成") 
                   .map((item) => (
                     <ListItem key={item.id} className={styles.completedItem}>
                       <ListItemIcon>
