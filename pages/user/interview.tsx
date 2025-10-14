@@ -244,7 +244,7 @@ export default function Interview() {
               </Typography>
 
               <Stack direction="row" spacing={1}>
-                <Chip label={question?.question_type} />
+                <Chip label={question?.question_type_detail.question_type} />
                 <Chip
                   icon={<TimerOutlined />}
                   label={isPreparing ? "準備中" : `限時 ${question?.time_allowed} 秒`}
@@ -261,7 +261,7 @@ export default function Interview() {
             </Grid>
 
             <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-              {question?.question_content}
+              {question?.question}
             </Typography>
 
             <Stack spacing={1} mt={2}>
