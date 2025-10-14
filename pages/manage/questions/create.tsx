@@ -106,12 +106,22 @@ export default function Create() {
         toast.error("請為每個問題選擇適用職缺");
         return;
       }
-      const dataList = {
-        ...data.questions,
-        'company': companyId
-      }
 
-      await QuestionAPI.create(dataList);
+      await Promise.all(
+        data.questions.map(async (value) => {
+          const dataList = {
+            'difficulty': value.difficulty,
+            'opening_ids': value.opening_ids,
+            'question': value.question,
+            'question_type': value.question_type,
+            'time_allowed': value.time_allowed,
+            'company_id': companyId
+          };
+
+          return QuestionAPI.create(dataList);
+        })
+      );
+
       toast.success("問題新增成功");
       router.push("/manage/questions");
     } catch (error) {
