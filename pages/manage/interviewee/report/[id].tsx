@@ -183,7 +183,7 @@ export default function IntervieweeDetail() {
         phone: data.candidate_detail?.phone_number || '',
         position: data.opening_detail?.opening_name || '',
         interviewDate,
-        interviewTime,
+        interviewTime: `${data.interview_datetime?.split('T')[1].split(':')[0]} : ${data.interview_datetime?.split('T')[1].split(':')[1]}`,
         interview_result: data.interview_result,
         interview_status: data.interview_status || '',
         resumeUrl: '#',
@@ -513,6 +513,7 @@ export default function IntervieweeDetail() {
                       時間:
                     </Typography>
                     <Typography variant="body2">
+                      {intervieweeData?.interview_datetime}
                       {intervieweeData?.interviewTime || '未設定'}
                     </Typography>
                   </Box>

@@ -346,7 +346,7 @@ export default function Report() {
                         面試時間
                       </Typography>
                       <Typography variant="body1" fontWeight="600" color={customColors.text}>
-                        {dateTime.time}
+                        {interviewData.interview_datetime.split('T')[1].split(':')[0]}:{interviewData.interview_datetime.split('T')[1].split(':')[1]}
                       </Typography>
                     </Box>
                   </Box>

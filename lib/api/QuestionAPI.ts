@@ -1,4 +1,3 @@
-import { QuestionsTypes } from "../types/questionsTypes";
 import API from "./api";
 import { Response } from "@/lib/types/requestType";
 
@@ -11,13 +10,13 @@ const QuestionAPI = {
   getRecord: (question_id?: number): Promise<Response<never>> =>
     API.get(`${BASE_URL}/questions/${question_id}/`),
 
-  create: (data: QuestionsTypes[]): Promise<Response<never>> =>
+  create: (data: any): Promise<Response<never>> =>
     API.post(`${BASE_URL}/questions/`, data),
 
   delete: (question_id: number): Promise<Response<never>> =>
     API.delete(`${BASE_URL}/questions/${question_id}/`),
 
-  update: (question_id: number, data: QuestionsTypes): Promise<Response<never>> =>
+  update: (question_id: number, data: any): Promise<Response<never>> =>
     API.put(`${BASE_URL}/questions/${question_id}/`, data),
 
   getQuestionType: (): Promise<Response<never>> =>
