@@ -40,11 +40,9 @@ import { useRouter } from "next/router";
 
 interface Question {
   question_id: number;
-  question: string;
   time_allowed: number;
-  question_type_detail: {
-    question_type: string;
-  };
+  question_type: string;
+  question_content: string;
 }
 
 export default function Interview() {
@@ -74,6 +72,7 @@ export default function Interview() {
       if (response?.data && response.data as Question) {
         const questionData = response.data as Question;
         setQuestion(questionData);
+        console.log(questionData.question_type)
       } else {
         Swal.fire({
           title: "面試結束",
@@ -249,7 +248,7 @@ export default function Interview() {
               </Typography>
 
               <Stack direction="row" spacing={1}>
-                <Chip label={question?.question_type_detail.question_type} />
+                <Chip label={question?.question_type} />
                 <Chip
                   icon={<TimerOutlined />}
                   label={isPreparing ? "準備中" : `限時 ${question?.time_allowed} 秒`}
@@ -266,7 +265,7 @@ export default function Interview() {
             </Grid>
 
             <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-              {question?.question}
+              {question?.question_content}
             </Typography>
 
             <Stack spacing={1} mt={2}>

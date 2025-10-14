@@ -50,7 +50,7 @@ export function StartInterviewDialog({
             面試職位: {openingName}
           </Typography>
           <Typography variant="body1" gutterBottom>
-            面試將包含 {totalQuestions} 個問題，每個問題都有時間限制。
+            面試將包含多個問題，每個問題都有時間限制。
           </Typography>
           <Typography variant="body1" gutterBottom>
             請確保您的鏡頭和麥克風已就緒，在安靜的環境中進行面試。
