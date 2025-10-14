@@ -6,14 +6,12 @@ import {
   Button,
   Paper,
   Box,
-  LinearProgress,
   Chip,
   Grid,
   Stack,
 } from "@mui/material";
 import {
   ExitToAppOutlined,
-  PlayArrowOutlined,
   TimerOutlined,
 } from "@mui/icons-material";
 import { mockInterviewQuestions } from "@/lib/data/testData";
@@ -21,8 +19,6 @@ import { mockInterviewQuestions } from "@/lib/data/testData";
 // 導入拆分後的組件
 import {
   StartInterviewDialog,
-  EndInterviewDialog,
-  NotificationSnackbar,
   PermissionCheckingBackdrop,
 } from "@/components/common/user";
 

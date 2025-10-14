@@ -21,8 +21,8 @@ export interface Profile {
   location: string;
   company: string;
   position: string;
-  joinDate: string;       
-  avatar_url?: string;    
+  joinDate: string;
+  avatar_url?: string;
 }
 
 export type MeData = {
@@ -39,7 +39,13 @@ export type MeData = {
 
 
 const UserAPI = {
-  update: ( data: any): Promise<Response<TokenData>> =>
+  resetPassword: (password: string, token: string): Promise<Response<TokenData>> =>
+    API.post(`/user/reset-password/`, { new_password: password, token: token }),
+
+  forgetPassword: (email: string): Promise<Response<TokenData>> =>
+    API.post(`/user/forgot-password/`, { email: email }),
+
+  update: (data: any): Promise<Response<TokenData>> =>
     API.put(`/user/me/edit/`, data),
 
   access: (data: Params): Promise<Response<TokenData>> =>

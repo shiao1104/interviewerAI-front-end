@@ -33,7 +33,7 @@ export default function App({ Component, pageProps }: AppProps) {
       if (
         (!sessionStorage.getItem("google_token") &&
           !sessionStorage.getItem("token")) &&
-        (pathname !== "/login" && pathname !== "/sign-up")
+        (pathname !== "/login" && pathname !== "/sign-up" && pathname !== "/reset-password")
       ) {
         router.push("/login");
       }

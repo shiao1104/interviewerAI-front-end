@@ -33,7 +33,7 @@ API.interceptors.response.use(
   error => {
     const requestUrl = error.config?.url || "";
 
-    if (requestUrl.includes("/login")) {
+    if (requestUrl.includes("/login") || requestUrl.includes("/reset-password")) {
       return Promise.reject(error);
     }
 
