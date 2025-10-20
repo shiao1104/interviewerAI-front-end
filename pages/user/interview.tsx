@@ -1,4 +1,3 @@
-// Interview.tsx - 整合實時音頻可視化和自動錄影的面試頁面
 import { useState, useEffect, useRef } from "react";
 import styles from "@/styles/pages/user/Interview.module.scss";
 import {
@@ -16,13 +15,11 @@ import {
 } from "@mui/icons-material";
 import { mockInterviewQuestions } from "@/lib/data/testData";
 
-// 導入拆分後的組件
 import {
   StartInterviewDialog,
   PermissionCheckingBackdrop,
 } from "@/components/common/user";
 
-// 導入音頻可視化相關組件
 import { RecordingIndicator } from "@/components/common/user/RecordingIndicator";
 import { NonRecordingUI } from "@/components/common/user/NonRecordingUI";
 import VideoRecorder, {
@@ -33,12 +30,16 @@ import AnalyzeAPI from "@/lib/api/AnalyzeAPI";
 import CountdownTimer from "@/lib/hook/countdownTimer";
 import Swal from "sweetalert2";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
 
 interface Question {
   question_id: number;
   time_allowed: number;
   question_type: string;
-  question_content: string;
+  question: string;
+  question_type_detail: {
+    question_type: string;
+  }
 }
 
 export default function Interview() {
@@ -68,7 +69,6 @@ export default function Interview() {
       if (response?.data && response.data as Question) {
         const questionData = response.data as Question;
         setQuestion(questionData);
-        console.log(questionData.question_type)
       } else {
         Swal.fire({
           title: "面試結束",
@@ -128,10 +128,9 @@ export default function Interview() {
     formData.append('audio_file', audioBlob, `question_${question.question_id}_audio.webm`);
 
     try {
-      console.log("Uploading recording for question ID:", question.question_id);
       await AnalyzeAPI.uploadMedia(formData);
     } catch (error) {
-      console.error('Recording upload failed:', error);
+      toast.error(error instanceof Error ? error.message : "上傳失敗，請稍後再試");
     }
   };
 
@@ -156,7 +155,6 @@ export default function Interview() {
 
       return true;
     } catch (error) {
-      console.error("無法取得媒體權限:", error);
       setMediaPermissions({
         camera: false,
         microphone: false,
