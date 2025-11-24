@@ -11,7 +11,7 @@ type ResultType = {
 }
 
 const InterviewAPI = {
-  getData: (): Promise<Response<never>> =>
+  getData: (): Promise<Response<IntervieweeTypes[]>> =>
     API.get(`${BASE_URL}/`),
 
   getRecord: (interview_id?: number): Promise<Response<never>> =>

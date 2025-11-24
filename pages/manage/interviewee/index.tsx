@@ -4,7 +4,7 @@ import { Typography, Box, Chip, IconButton, Button } from "@mui/material";
 import { SearchType } from "@/lib/types/searchTypes";
 import { useForm } from "react-hook-form";
 import DataTable from "@/components/common/DataTables";
-import { AccountCircle, Add, Edit, MoreHoriz, Search } from "@mui/icons-material";
+import { AccountCircle, Add, Edit, MoreHoriz, Search, Assessment } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import InterviewAPI from "@/lib/api/InterviewAPI";
@@ -18,9 +18,9 @@ export default function Interviewee() {
   const router = useRouter();
   const formProps = useForm();
   const { showLoading, hideLoading } = useLoading();
-  const [intervieweeData, setIntervieweeData] = useState([]);
+  const [intervieweeData, setIntervieweeData] = useState<any[]>([]);
   const [searchParams, setSearchParams] = useState<SearchType>();
-  const [filteredIntervieweeData, setFilteredIntervieweeData] = useState([]);
+  const [filteredIntervieweeData, setFilteredIntervieweeData] = useState<any[]>([]);
   const [dropdownOptions, setDropdownOptions] = useState<{
     opening: DropdownTypes[];
   }>({
@@ -259,15 +259,26 @@ export default function Interviewee() {
             面試者管理
           </Typography>
 
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Add />}
-            onClick={() => router.push("/manage/interviewee/create")}
-            sx={{ height: 40 }}
-          >
-            新增面試者
-          </Button>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<Assessment />}
+              onClick={() => router.push("/manage/interviewee/dashboard")}
+              sx={{ height: 40 }}
+            >
+              圖表模式
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Add />}
+              onClick={() => router.push("/manage/interviewee/create")}
+              sx={{ height: 40 }}
+            >
+              新增面試者
+            </Button>
+          </Box>
         </Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
