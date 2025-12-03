@@ -60,6 +60,7 @@ export default function Interview() {
   const [companyName, setCompanyName] = useState('');
   const [openingName, setOpeningName] = useState('');
   const [interviewId, setInterviewId] = useState<number>();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const recorderRef = useRef<VideoRecorderRef>(null);
 
@@ -101,8 +102,12 @@ export default function Interview() {
       recorderRef.current.stopRecording();
     }
 
-    await fetchQuestion();
+    setIsAnalyzing(true);
+  };
 
+  const finishAnalysis = async () => {
+    await fetchQuestion();
+    setIsAnalyzing(false);
     setIsPreparing(true);
     setQuestionNo((prev) => prev + 1);
   };
@@ -245,57 +250,56 @@ export default function Interview() {
                 <Chip label={question?.question_type_detail.question_type} />
                 <Chip
                   icon={<TimerOutlined />}
-                  label={isPreparing ? "準備中" : `限時 ${question?.time_allowed} 秒`}
+                  label={isAnalyzing ? "分析中" : (isPreparing ? "準備中" : `限時 ${question?.time_allowed} 秒`)}
                   color="warning"
                   variant="outlined"
                 />
                 <CountdownTimer
-                  key={`${question?.question_id}-${isPreparing ? "prep" : "answer"}`}
-                  timeAllowed={isPreparing ? 60 : question?.time_allowed || 60}
-                  onTimeUp={isPreparing ? finishPreparation : finishAnswer}
+                  key={`${question?.question_id}-${isAnalyzing ? "analyze" : (isPreparing ? "prep" : "answer")}`}
+                  timeAllowed={isAnalyzing ? 30 : (isPreparing ? 10 : question?.time_allowed || 60)}
+                  onTimeUp={isAnalyzing ? finishAnalysis : (isPreparing ? finishPreparation : finishAnswer)}
                   onCanSkip={canSkip => setCanSkip(canSkip)}
                 />
               </Stack>
             </Grid>
 
-            <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-              {question?.question}
-            </Typography>
+            {isAnalyzing ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <Typography variant="h5" color="primary">
+                  正在分析回答內容...
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
+                  {question?.question}
+                </Typography>
 
-            <Stack spacing={1} mt={2}>
-              {isPreparing ?
-                <Button
-                  variant="contained"
-                  color="info"
-                  startIcon={<TimerOutlined />}
-                  onClick={finishPreparation}
-                  fullWidth
-                  disabled={!canSkip}
-                >
-                  跳過準備時間
-                </Button>
-                :
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={finishAnswer}
-                  startIcon={<ExitToAppOutlined />}
-                  fullWidth
-                >
-                  下一題
-                </Button>
-              }
+                <Stack spacing={1} mt={2}>
+                  {!isPreparing &&
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={finishAnswer}
+                      startIcon={<ExitToAppOutlined />}
+                      fullWidth
+                    >
+                      下一題
+                    </Button>
+                  }
 
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<ExitToAppOutlined />}
-                fullWidth
-                onClick={exitInterview}
-              >
-                結束面試
-              </Button>
-            </Stack>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<ExitToAppOutlined />}
+                    fullWidth
+                    onClick={exitInterview}
+                  >
+                    結束面試
+                  </Button>
+                </Stack>
+              </>
+            )}
           </Paper>
         </Box>
 
